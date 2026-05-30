@@ -676,7 +676,16 @@ onAuthStateChanged(auth, async user => {
 // ── Tier detection ─────────────────────────────────────
 async function _detectAndRoute(uid) {
   try {
-    // 1. Check user_registry subscription tier
+    // 1. Gym ownership takes priority — a gym owner always goes to the gym portal
+    //    regardless of what subscriptionTier is set on their user_registry doc
+    const gymQ    = query(collection(db, 'gyms'), where('ownerId', '==', uid));
+    const gymSnap = await getDocs(gymQ);
+    if (!gymSnap.empty) {
+      await _loadGymPortal(gymSnap.docs[0]);
+      return;
+    }
+
+    // 2. Check user_registry subscription tier
     const regSnap = await getDoc(doc(db, 'user_registry', uid));
     const tier    = regSnap.exists() ? regSnap.data().subscriptionTier : null;
 
@@ -694,14 +703,6 @@ async function _detectAndRoute(uid) {
     }
     if (['champion','sports_team','sports_league','sports_association','team','league','association'].includes(tier)) {
       _showComingSoon('SPORTS HUB');
-      return;
-    }
-
-    // 2. Check if gym owner (tier lives on the gym doc, not user_registry)
-    const gymQ    = query(collection(db, 'gyms'), where('ownerId', '==', uid));
-    const gymSnap = await getDocs(gymQ);
-    if (!gymSnap.empty) {
-      await _loadGymPortal(gymSnap.docs[0]);
       return;
     }
 
