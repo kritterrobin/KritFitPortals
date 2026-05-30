@@ -79,9 +79,66 @@
 
     /* Compact padding for portal navs */
     #trainer-top-nav .nav-btn, #trainer-subnav .nav-btn,
-    #gym-top-nav .nav-btn,     #gym-subnav .nav-btn     { padding:5px 10px; }
+    #gym-top-nav .nav-btn, #gym-members-nav .nav-btn, #gym-setup-nav .nav-btn { padding:5px 10px; }
     #trainer-top-nav .nav-btn .icon, #trainer-subnav .nav-btn .icon,
-    #gym-top-nav .nav-btn .icon,     #gym-subnav .nav-btn .icon     { font-size:14px; }
+    #gym-top-nav .nav-btn .icon, #gym-members-nav .nav-btn .icon, #gym-setup-nav .nav-btn .icon { font-size:14px; }
+
+    /* ── Member table ── */
+    .member-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:11px; }
+    .member-table th { background:var(--s1); color:#999; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:8px 10px; text-align:left; border-bottom:2px solid var(--border); white-space:nowrap; }
+    .member-table td { padding:7px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .member-table tr:hover td { background:#fafffe; }
+    .member-table input[type=text], .member-table input[type=date] {
+      border:none; background:transparent; font-family:var(--font-mono); font-size:11px;
+      color:var(--text); width:100%; min-width:80px; padding:2px 4px;
+    }
+    .member-table input:focus { outline:2px solid var(--accent); border-radius:2px; background:#fff; }
+    .status-badge { font-size:10px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:3px; cursor:pointer; white-space:nowrap; }
+    .status-active   { background:#e8f5e9; color:#2e7d32; }
+    .status-paused   { background:#fff3e0; color:#e65100; }
+    .status-inactive { background:#fafafa; color:#bbb; }
+    .pay-badge { font-size:10px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:3px; cursor:pointer; white-space:nowrap; }
+    .pay-paid    { background:#e8f5e9; color:#2e7d32; }
+    .pay-unpaid  { background:#fff8e1; color:#f57f17; }
+    .pay-overdue { background:#ffebee; color:#c62828; }
+    .tbl-action { background:none; border:none; cursor:pointer; font-size:14px; padding:2px 4px; opacity:.5; }
+    .tbl-action:hover { opacity:1; }
+
+    /* ── Toolbar row ── */
+    .toolbar { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    .toolbar input[type=text] { flex:1; min-width:160px; padding:7px 12px; border:2px solid #ddd; border-radius:4px; font-family:var(--font-mono); font-size:12px; }
+    .toolbar input:focus { outline:none; border-color:var(--accent); }
+    .btn { background:var(--accent); color:#fff; border:none; font-family:var(--font-mono); font-size:11px; font-weight:700; padding:7px 16px; cursor:pointer; letter-spacing:.5px; border-radius:3px; white-space:nowrap; }
+    .btn-outline { background:#fff; color:var(--accent); border:2px solid var(--accent); font-family:var(--font-mono); font-size:11px; font-weight:700; padding:5px 14px; cursor:pointer; letter-spacing:.5px; border-radius:3px; white-space:nowrap; }
+    .btn-red { background:#c62828; }
+    .btn:hover { opacity:.88; }
+
+    /* ── Setup form ── */
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+    .form-row.full { grid-template-columns:1fr; }
+    @media(max-width:600px){ .form-row { grid-template-columns:1fr; } }
+    .form-group { display:flex; flex-direction:column; gap:4px; }
+    .form-label { font-family:var(--font-mono); font-size:10px; font-weight:700; color:#999; letter-spacing:2px; text-transform:uppercase; }
+    .form-input { padding:9px 12px; border:2px solid #ddd; border-radius:4px; font-family:var(--font-mono); font-size:12px; color:var(--text); }
+    .form-input:focus { outline:none; border-color:var(--accent); }
+    textarea.form-input { resize:vertical; min-height:80px; }
+    .save-btn { background:var(--accent); color:#fff; border:none; font-family:var(--font-mono); font-size:12px; font-weight:700; padding:10px 28px; cursor:pointer; letter-spacing:1px; border-radius:3px; margin-top:8px; }
+
+    /* ── Module toggles ── */
+    .module-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border); }
+    .module-info { font-family:var(--font-mono); }
+    .module-name { font-size:12px; font-weight:700; color:var(--text); }
+    .module-desc { font-size:10px; color:#999; margin-top:2px; }
+    .toggle { position:relative; width:44px; height:24px; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:#ddd; border-radius:24px; cursor:pointer; transition:.2s; }
+    .toggle-slider:before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+    .toggle input:checked + .toggle-slider { background:var(--accent); }
+    .toggle input:checked + .toggle-slider:before { transform:translateX(20px); }
+
+    /* ── Hours grid ── */
+    .hours-grid { display:grid; grid-template-columns:80px 1fr 1fr 60px; gap:6px; align-items:center; font-family:var(--font-mono); font-size:11px; margin-bottom:4px; }
+    .hours-grid .day-label { font-weight:700; color:#666; }
 
     /* ── Sub-nav wrapper ── */
     .subnav-wrap {
@@ -366,15 +423,37 @@
        GYM PORTAL
   ══════════════════════════════════════════ -->
   <div class="portal-panel" id="gym-portal">
-    <nav class="nav lv-hide" id="gym-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
+
+    <!-- NAV-1 -->
+    <nav class="nav" id="gym-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
       <button class="nav-btn active" id="gtab-members"  onclick="_gNav('members')"> <span class="icon">👥</span>MEMBERS</button>
-      <button class="nav-btn"        id="gtab-schedule" onclick="_gNav('schedule')"><span class="icon">📅</span>SCHEDULE</button>
-      <button class="nav-btn"        id="gtab-messages" onclick="_gNav('messages')"><span class="icon">💬</span>MESSAGES</button>
-      <button class="nav-btn"        id="gtab-reports"  onclick="_gNav('reports')"> <span class="icon">📊</span>REPORTS</button>
-      <button class="nav-btn"        id="gtab-settings" onclick="_gNav('settings')"><span class="icon">⚙️</span>SETTINGS</button>
+      <button class="nav-btn"        id="gtab-payments" onclick="_gNav('payments')"><span class="icon">💳</span>PAYMENTS</button>
+      <button class="nav-btn"        id="gtab-trainers" onclick="_gNav('trainers')"><span class="icon">🏋️</span>TRAINERS</button>
+      <button class="nav-btn"        id="gtab-store"    onclick="_gNav('store')">   <span class="icon">🛍️</span>STORE</button>
+      <button class="nav-btn"        id="gtab-setup"    onclick="_gNav('setup')">   <span class="icon">⚙️</span>SETUP</button>
     </nav>
 
-    <!-- MEMBERS -->
+    <!-- NAV-2: Members sub-nav -->
+    <div id="gym-members-subnav" style="display:none;flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="gym-members-nav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="gmtab-manage"    onclick="_gMembersTab('manage')">   <span class="icon">📋</span>MANAGE</button>
+        <button class="nav-btn"        id="gmtab-analytics" onclick="_gMembersTab('analytics')"><span class="icon">📊</span>ANALYTICS</button>
+      </nav>
+    </div>
+
+    <!-- NAV-2: Setup sub-nav -->
+    <div id="gym-setup-subnav" style="display:none;flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="gym-setup-nav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="gstab-gym"     onclick="_gSetupTab('gym')">    <span class="icon">🏠</span>GYM</button>
+        <button class="nav-btn"        id="gstab-classes" onclick="_gSetupTab('classes')"><span class="icon">📅</span>CLASSES</button>
+        <button class="nav-btn"        id="gstab-modules" onclick="_gSetupTab('modules')"><span class="icon">🧩</span>MODULES</button>
+        <button class="nav-btn"        id="gstab-tiers"   onclick="_gSetupTab('tiers')">  <span class="icon">🎖️</span>TIERS</button>
+        <button class="nav-btn"        id="gstab-stripe"  onclick="_gSetupTab('stripe')"> <span class="icon">💳</span>STRIPE</button>
+        <button class="nav-btn"        id="gstab-archive" onclick="_gSetupTab('archive')"><span class="icon">📦</span>ARCHIVE</button>
+      </nav>
+    </div>
+
+    <!-- ══ MEMBERS TAB ══ -->
     <div class="tab-panel active" id="g-members">
       <div class="stat-row">
         <div class="stat-card"><div class="stat-num" id="g-stat-members">—</div><div class="stat-label">Active Members</div></div>
@@ -382,68 +461,177 @@
         <div class="stat-card"><div class="stat-num" id="g-stat-trainers">—</div><div class="stat-label">Trainers</div></div>
         <div class="stat-card"><div class="stat-num" id="g-stat-checkins">—</div><div class="stat-label">Check-ins Today</div></div>
       </div>
-      <div class="section-title">Member Roster</div>
-      <div id="g-members-list" class="ph-card">
-        <div class="ph-icon">👥</div>
-        <div class="ph-title">No members yet</div>
-        Members join via the KritFit app using your gym's join code.
+
+      <!-- MANAGE sub-panel -->
+      <div id="gm-manage">
+        <div class="toolbar">
+          <input type="text" id="g-member-search" placeholder="Search name, code…" oninput="_gFilterMembers()">
+          <button class="btn" onclick="_gAddMember()">+ ADD MEMBER</button>
+          <button class="btn-outline" onclick="_gExportCSV()">EXPORT CSV</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="member-table" id="g-member-table">
+            <thead>
+              <tr>
+                <th>CODE</th><th>NAME</th><th>STATUS</th>
+                <th>VALID TO</th><th>LAST CHECK-IN</th>
+                <th>PAY STATUS</th><th>AMOUNT</th><th>NOTES</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="g-member-tbody">
+              <tr><td colspan="9" style="text-align:center;padding:32px;color:#bbb;font-family:var(--font-mono)">Loading members…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ANALYTICS sub-panel -->
+      <div id="gm-analytics" style="display:none">
+        <div class="section-title">Check-ins Today</div>
+        <div id="g-checkins-today" class="ph-card">
+          <div class="ph-icon">✓</div>
+          <div class="ph-title">No check-ins yet today</div>
+        </div>
+        <div class="section-title" style="margin-top:20px">Date Range Report</div>
+        <div class="toolbar">
+          <input type="date" id="g-ci-from" class="form-input" style="width:150px">
+          <input type="date" id="g-ci-to"   class="form-input" style="width:150px">
+          <button class="btn" onclick="_gLoadPeriod()">LOAD</button>
+        </div>
+        <div id="g-ci-period" class="ph-card">
+          <div class="ph-icon">📅</div>
+          <div class="ph-title">Select a date range above</div>
+        </div>
       </div>
     </div>
 
-    <!-- SCHEDULE -->
-    <div class="tab-panel" id="g-schedule">
-      <div class="section-title">Class Schedule</div>
-      <div class="ph-card">
-        <div class="ph-icon">📅</div>
-        <div class="ph-title">Schedule Manager</div>
-        Coming soon — create and manage your gym's class timetable.
+    <!-- ══ PAYMENTS TAB ══ -->
+    <div class="tab-panel" id="g-payments">
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="g-pay-paid">—</div><div class="stat-label">Paid</div></div>
+        <div class="stat-card"><div class="stat-num" id="g-pay-unpaid">—</div><div class="stat-label">Unpaid</div></div>
+        <div class="stat-card"><div class="stat-num" id="g-pay-overdue">—</div><div class="stat-label">Overdue</div></div>
+      </div>
+      <div class="section-title">Payment Overview</div>
+      <div id="g-payments-list" class="ph-card">
+        <div class="ph-icon">💳</div>
+        <div class="ph-title">Payment tracking</div>
+        Payment status is managed per member in the MEMBERS tab. Stripe integration coming soon.
       </div>
     </div>
 
-    <!-- MESSAGES -->
-    <div class="tab-panel" id="g-messages">
-      <div class="section-title">Member Messages</div>
-      <div id="g-messages-list" class="ph-card">
-        <div class="ph-icon">💬</div>
-        <div class="ph-title">No messages</div>
-        Member messages appear here. You can also broadcast to all members.
+    <!-- ══ TRAINERS TAB ══ -->
+    <div class="tab-panel" id="g-trainers">
+      <div class="section-title">Gym Trainers</div>
+      <div class="toolbar">
+        <button class="btn" onclick="_gAddTrainer()">+ ADD TRAINER</button>
       </div>
-      <div class="section-title" style="margin-top:24px">Broadcast</div>
-      <div class="ph-card">
-        <div class="ph-icon">📢</div>
-        <div class="ph-title">Send Announcement</div>
-        Coming soon — broadcast a message to all members or a filtered group.
+      <div id="g-trainers-list" class="ph-card">
+        <div class="ph-icon">🏋️</div>
+        <div class="ph-title">No trainers yet</div>
+        Add a trainer from your member roster to give them trainer tools within your gym.
       </div>
     </div>
 
-    <!-- REPORTS -->
-    <div class="tab-panel" id="g-reports">
-      <div class="section-title">Reports</div>
-      <div class="ph-card">
-        <div class="ph-icon">📊</div>
-        <div class="ph-title">Attendance & Revenue</div>
-        Coming soon — check-in history, membership revenue, class attendance.
+    <!-- ══ STORE TAB ══ -->
+    <div class="tab-panel" id="g-store">
+      <div class="section-title">Inventory</div>
+      <div class="toolbar">
+        <button class="btn" onclick="_gAddProduct()">+ ADD PRODUCT</button>
+      </div>
+      <div id="g-store-list" class="ph-card">
+        <div class="ph-icon">🛍️</div>
+        <div class="ph-title">No products yet</div>
+        Add products to sell to your members — supplements, merch, PT packages.
+      </div>
+      <div class="section-title" style="margin-top:20px">Recent Sales</div>
+      <div id="g-sales-list" class="ph-card">
+        <div class="ph-icon">🧾</div>
+        <div class="ph-title">No sales yet</div>
       </div>
     </div>
 
-    <!-- SETTINGS -->
-    <div class="tab-panel" id="g-settings">
-      <div class="section-title">Gym Profile</div>
-      <div id="g-gym-name" style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;color:var(--accent);margin-bottom:4px">—</div>
-      <div id="g-gym-tier" style="font-family:var(--font-mono);font-size:11px;color:#999;letter-spacing:2px;margin-bottom:20px"></div>
+    <!-- ══ SETUP TAB ══ -->
+    <div class="tab-panel" id="g-setup">
 
-      <div class="section-title">Join Code</div>
-      <p style="font-family:var(--font-mono);font-size:12px;color:#888;margin-bottom:8px">Members enter this code in the KritFit app to join your gym.</p>
-      <div class="code-badge" id="g-join-code" onclick="_copyCode()" title="Click to copy">——</div>
-      <div class="code-hint">Click to copy · Share on posters, screens, front desk</div>
-
-      <div class="section-title" style="margin-top:28px">Staff & Permissions</div>
-      <div class="ph-card">
-        <div class="ph-icon">🔐</div>
-        <div class="ph-title">Staff Management</div>
-        Coming soon — add staff, assign roles, set permissions.
+      <!-- GYM INFO -->
+      <div id="gs-gym">
+        <div class="section-title">Gym Information</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Gym Name</label><input type="text" id="gs-name" class="form-input" placeholder="e.g. Peak Performance Gym"></div>
+          <div class="form-group"><label class="form-label">URL Slug</label><input type="text" id="gs-slug" class="form-input" placeholder="e.g. peak-performance"></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label class="form-label">About / Description</label><textarea id="gs-about" class="form-input" rows="3" placeholder="Tell members about your gym…"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Phone</label><input type="text" id="gs-phone" class="form-input" placeholder="+1 555 000 0000"></div>
+          <div class="form-group"><label class="form-label">Website</label><input type="text" id="gs-website" class="form-input" placeholder="https://"></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label class="form-label">Address</label><input type="text" id="gs-address" class="form-input" placeholder="Street, City, State, ZIP"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Currency Symbol</label><input type="text" id="gs-currency" class="form-input" placeholder="$" style="max-width:80px"></div>
+          <div class="form-group"><label class="form-label">Logo URL</label><input type="text" id="gs-logo" class="form-input" placeholder="https://…/logo.png"></div>
+        </div>
+        <div class="section-title" style="margin-top:20px">Opening Hours</div>
+        <div id="gs-hours-grid"></div>
+        <button class="save-btn" onclick="_gSaveAbout()">SAVE GYM INFO</button>
       </div>
-    </div>
+
+      <!-- CLASSES -->
+      <div id="gs-classes" style="display:none">
+        <div class="section-title">Class Schedule</div>
+        <div class="toolbar"><button class="btn" onclick="_gAddClass()">+ ADD CLASS</button></div>
+        <div id="gs-classes-list" class="ph-card">
+          <div class="ph-icon">📅</div>
+          <div class="ph-title">No classes yet</div>
+          Add group classes to display your schedule to members.
+        </div>
+      </div>
+
+      <!-- MODULES -->
+      <div id="gs-modules" style="display:none">
+        <div class="section-title">Feature Modules</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:16px">Enable or disable features for your gym. Changes take effect immediately.</p>
+        <div class="module-row"><div class="module-info"><div class="module-name">PAYMENTS</div><div class="module-desc">Track member payment status and amounts</div></div><label class="toggle"><input type="checkbox" id="mod-payments" onchange="_gToggleModule('payments',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="module-row"><div class="module-info"><div class="module-name">CHECK-INS</div><div class="module-desc">QR code check-in system at the door</div></div><label class="toggle"><input type="checkbox" id="mod-checkins" onchange="_gToggleModule('checkins',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="module-row"><div class="module-info"><div class="module-name">TRAINERS</div><div class="module-desc">Gym trainers with client assignment (+$5.67/mo per trainer)</div></div><label class="toggle"><input type="checkbox" id="mod-trainers" onchange="_gToggleModule('trainers',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="module-row"><div class="module-info"><div class="module-name">CLASSES</div><div class="module-desc">Group class schedule visible to members</div></div><label class="toggle"><input type="checkbox" id="mod-classes" onchange="_gToggleModule('classes',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="module-row"><div class="module-info"><div class="module-name">STORE</div><div class="module-desc">Sell products to members (+$7.89/mo)</div></div><label class="toggle"><input type="checkbox" id="mod-store" onchange="_gToggleModule('store',this.checked)"><span class="toggle-slider"></span></label></div>
+      </div>
+
+      <!-- TIERS -->
+      <div id="gs-tiers" style="display:none">
+        <div class="section-title">Membership Tiers</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:16px">Define the pricing options available when members join.</p>
+        <div id="gs-tiers-list"></div>
+        <button class="btn" onclick="_gAddTier()" style="margin-top:12px">+ ADD TIER</button>
+      </div>
+
+      <!-- STRIPE -->
+      <div id="gs-stripe" style="display:none">
+        <div class="section-title">Stripe Integration</div>
+        <div id="gs-stripe-status" class="ph-card">
+          <div class="ph-icon">💳</div>
+          <div class="ph-title">Stripe not connected</div>
+          Connect your Stripe account to accept payments directly from members in the KritFit app.
+        </div>
+      </div>
+
+      <!-- ARCHIVE -->
+      <div id="gs-archive" style="display:none">
+        <div class="section-title">Data Archives</div>
+        <div class="ph-card">
+          <div class="ph-icon">📦</div>
+          <div class="ph-title">Monthly Archives</div>
+          Automatic monthly exports of members, check-ins and payment history. Coming soon.
+        </div>
+      </div>
+
+    </div><!-- /g-setup -->
+
   </div><!-- /gym-portal -->
 
 </div><!-- /portal-app -->
@@ -454,7 +642,10 @@
 ════════════════════════════════════════════════════════ -->
 <script>
   // Stub onclick handlers until module loads
-  ['_doSignIn','_doSignOut','_tNav','_gNav','_copyCode'].forEach(fn => window[fn] = () => {});
+  ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
+   '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
+   '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gAddProduct',
+   '_gAddClass','_gLoadPeriod','_copyCode','_ownerEnter'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -590,45 +781,286 @@ async function _loadTrainerPortal(uid) {
 }
 
 // ── Gym portal ─────────────────────────────────────────
-async function _loadGymPortal(gymDoc) {
-  const gym = gymDoc.data();
-  document.getElementById('portal-badge').textContent    = 'GYM PORTAL';
-  document.getElementById('g-gym-name').textContent      = gym.name || 'Your Gym';
-  document.getElementById('g-gym-tier').textContent      = (gym.subscriptionTier || '').toUpperCase().replace('_',' ');
-  document.getElementById('g-join-code').textContent     = gym.joinCode || '—';
+let _gymId = null;
+let _gymData = null;
+let _gymMembers = [];
 
-  // Member stats
+async function _loadGymPortal(gymDoc) {
+  _gymId   = gymDoc.id;
+  _gymData = gymDoc.data();
+  document.getElementById('portal-badge').textContent = (_gymData.name || 'GYM') + ' PORTAL';
+  _showPortal('gym');
+  await _gdLoadMembers();
+  _gdPopulateSetup();
+}
+
+async function _gdLoadMembers() {
   try {
-    const memQ    = query(collection(db, 'gyms', gymDoc.id, 'members'));
+    const memQ    = query(collection(db, 'gyms', _gymId, 'members'));
     const memSnap = await getDocs(memQ);
-    const active  = memSnap.docs.filter(d => d.data().status === 'active').length;
-    const pending = memSnap.docs.filter(d => d.data().status === 'pending').length;
-    const trainers= memSnap.docs.filter(d => d.data().isTrainer === true).length;
+    _gymMembers   = memSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _gdRenderMembers(_gymMembers);
+
+    // Stats
+    const today    = new Date().toISOString().slice(0,10);
+    const active   = _gymMembers.filter(m => m.status === 'active').length;
+    const pending  = _gymMembers.filter(m => m.status === 'pending').length;
+    const trainers = _gymMembers.filter(m => m.isTrainer === true).length;
     document.getElementById('g-stat-members').textContent  = active;
     document.getElementById('g-stat-pending').textContent  = pending;
     document.getElementById('g-stat-trainers').textContent = trainers;
-    document.getElementById('g-stat-checkins').textContent = '—';
 
-    if (active > 0) {
-      const items = memSnap.docs
-        .filter(d => d.data().status === 'active')
-        .map(d => {
-          const md = d.data();
-          return `<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:var(--s1)">
-            <span style="font-size:24px">${md.isTrainer ? '🎽' : '👤'}</span>
-            <div style="flex:1">
-              <div style="font-family:var(--font-mono);font-size:12px;font-weight:700">${md.name || md.userId}</div>
-              <div style="font-family:var(--font-mono);font-size:10px;color:#999">${md.isTrainer ? 'Trainer · ' : ''}Joined ${md.joinedAt ? new Date(md.joinedAt.toDate()).toLocaleDateString() : '—'}</div>
-            </div>
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);font-weight:700">${(md.subscriptionTier||'').toUpperCase()}</div>
-          </div>`;
-        }).join('');
-      document.getElementById('g-members-list').innerHTML = items;
-    }
-  } catch(_) {}
+    // Today's check-ins
+    const ciQ    = query(collection(db, 'gyms', _gymId, 'checkins'), where('date','==',today));
+    const ciSnap = await getDocs(ciQ);
+    document.getElementById('g-stat-checkins').textContent = ciSnap.size;
 
-  _showPortal('gym');
+    // Payment stats
+    document.getElementById('g-pay-paid').textContent    = _gymMembers.filter(m => m.payStatus === 'paid').length;
+    document.getElementById('g-pay-unpaid').textContent  = _gymMembers.filter(m => m.payStatus === 'unpaid').length;
+    document.getElementById('g-pay-overdue').textContent = _gymMembers.filter(m => m.payStatus === 'overdue').length;
+  } catch(e) { console.error('[Gym] load members:', e); }
 }
+
+function _gdRenderMembers(members) {
+  const tbody = document.getElementById('g-member-tbody');
+  if (!members.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:#bbb;font-family:var(--font-mono)">No members yet — share your join code to get started.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = members.map(m => {
+    const statusClass = m.status === 'active' ? 'status-active' : m.status === 'paused' ? 'status-paused' : 'status-inactive';
+    const payClass    = m.payStatus === 'paid' ? 'pay-paid' : m.payStatus === 'overdue' ? 'pay-overdue' : 'pay-unpaid';
+    return `<tr data-id="${m.id}">
+      <td><span style="font-family:var(--font-mono);font-size:10px;color:#888">${m.code||'—'}</span></td>
+      <td><input type="text" value="${m.name||''}" onblur="_gdSave('${m.id}','name',this.value)" style="font-weight:700"></td>
+      <td><span class="status-badge ${statusClass}" onclick="_gdCycleStatus(this,'${m.id}','${m.status||'active'}')">${(m.status||'active').toUpperCase()}</span></td>
+      <td><input type="date" value="${m.validTo||''}" onchange="_gdSave('${m.id}','validTo',this.value)"></td>
+      <td style="color:#999;font-size:10px">${m.lastCheckin||'—'}</td>
+      <td><span class="pay-badge ${payClass}" onclick="_gdCyclePay(this,'${m.id}','${m.payStatus||'unpaid'}')">${(m.payStatus||'unpaid').toUpperCase()}</span></td>
+      <td><input type="text" value="${m.payAmount||''}" onblur="_gdSave('${m.id}','payAmount',this.value)" style="max-width:60px"></td>
+      <td><input type="text" value="${m.comment||''}" onblur="_gdSave('${m.id}','comment',this.value)" placeholder="notes…"></td>
+      <td><button class="tbl-action" onclick="_gdRemoveMember('${m.id}','${(m.name||'').replace(/'/g,'')}')" title="Remove">🗑️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+window._gFilterMembers = () => {
+  const q = document.getElementById('g-member-search').value.toLowerCase();
+  const filtered = q ? _gymMembers.filter(m =>
+    (m.name||'').toLowerCase().includes(q) ||
+    (m.code||'').toLowerCase().includes(q) ||
+    (m.comment||'').toLowerCase().includes(q)
+  ) : _gymMembers;
+  _gdRenderMembers(filtered);
+};
+
+window._gdSave = async (memberId, field, value) => {
+  try { await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js')
+    .then(({updateDoc,doc:d2}) => updateDoc(d2(db,'gyms',_gymId,'members',memberId),{[field]:value}));
+    const m = _gymMembers.find(x => x.id === memberId);
+    if (m) m[field] = value;
+  } catch(e) { console.error('[Gym] save:', e); }
+};
+
+window._gdCycleStatus = async (el, memberId, current) => {
+  const cycle = { active:'paused', paused:'inactive', inactive:'active' };
+  const next  = cycle[current] || 'active';
+  const cls   = { active:'status-active', paused:'status-paused', inactive:'status-inactive' };
+  el.className = 'status-badge ' + cls[next];
+  el.textContent = next.toUpperCase();
+  el.onclick = () => _gdCycleStatus(el, memberId, next);
+  await _gdSave(memberId, 'status', next);
+};
+
+window._gdCyclePay = async (el, memberId, current) => {
+  const cycle = { unpaid:'paid', paid:'overdue', overdue:'unpaid' };
+  const next  = cycle[current] || 'unpaid';
+  const cls   = { paid:'pay-paid', unpaid:'pay-unpaid', overdue:'pay-overdue' };
+  el.className = 'pay-badge ' + cls[next];
+  el.textContent = next.toUpperCase();
+  el.onclick = () => _gdCyclePay(el, memberId, next);
+  await _gdSave(memberId, 'payStatus', next);
+};
+
+window._gAddMember = async () => {
+  const name = prompt('Member name:');
+  if (!name?.trim()) return;
+  const code = name.trim().toUpperCase().replace(/\s+/g,'-') + '-' + Math.random().toString(36).slice(2,5).toUpperCase();
+  try {
+    const {addDoc,collection:col,serverTimestamp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await addDoc(col(db,'gyms',_gymId,'members'), { name:name.trim(), code, status:'active', payStatus:'unpaid', isTrainer:false, createdAt:serverTimestamp() });
+    await _gdLoadMembers();
+  } catch(e) { console.error('[Gym] add member:', e); }
+};
+
+window._gdRemoveMember = async (memberId, name) => {
+  if (!confirm(`Remove ${name || 'this member'}?`)) return;
+  try {
+    const {deleteDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(d2(db,'gyms',_gymId,'members',memberId));
+    _gymMembers = _gymMembers.filter(m => m.id !== memberId);
+    _gdRenderMembers(_gymMembers);
+  } catch(e) { console.error('[Gym] remove member:', e); }
+};
+
+window._gExportCSV = () => {
+  const rows = [['CODE','NAME','STATUS','VALID TO','LAST CHECK-IN','PAY STATUS','AMOUNT','NOTES']];
+  _gymMembers.forEach(m => rows.push([m.code||'',m.name||'',m.status||'',m.validTo||'',m.lastCheckin||'',m.payStatus||'',m.payAmount||'',m.comment||'']));
+  const csv  = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a    = document.createElement('a');
+  a.href     = 'data:text/csv,' + encodeURIComponent(csv);
+  a.download = 'members.csv';
+  a.click();
+};
+
+window._gLoadPeriod = async () => {
+  const from = document.getElementById('g-ci-from').value;
+  const to   = document.getElementById('g-ci-to').value;
+  if (!from || !to) return;
+  try {
+    const ciQ    = query(collection(db,'gyms',_gymId,'checkins'), where('date','>=',from), where('date','<=',to));
+    const ciSnap = await getDocs(ciQ);
+    const el = document.getElementById('g-ci-period');
+    if (!ciSnap.size) { el.innerHTML = '<div class="ph-icon">📅</div><div class="ph-title">No check-ins in this range</div>'; el.className='ph-card'; return; }
+    el.className = '';
+    el.innerHTML = `<table class="member-table"><thead><tr><th>DATE</th><th>TIME</th><th>NAME</th><th>CODE</th><th>STATUS</th></tr></thead><tbody>${
+      ciSnap.docs.sort((a,b)=>b.data().date.localeCompare(a.data().date)).map(d=>{
+        const c=d.data(); const t=c.timestamp?.toDate?.();
+        return `<tr><td>${c.date||'—'}</td><td>${t?t.toLocaleTimeString():'—'}</td><td>${c.memberName||'—'}</td><td>${c.memberCode||'—'}</td><td><span class="status-badge ${c.status==='valid'?'status-active':'status-inactive'}">${(c.status||'').toUpperCase()}</span></td></tr>`;
+      }).join('')
+    }</tbody></table>`;
+  } catch(e) { console.error('[Gym] period:', e); }
+};
+
+function _gdPopulateSetup() {
+  if (!_gymData) return;
+  const g = _gymData;
+  document.getElementById('gs-name').value     = g.name || '';
+  document.getElementById('gs-slug').value     = g.slug || '';
+  document.getElementById('gs-about').value    = g.aboutText || '';
+  document.getElementById('gs-phone').value    = g.phone || '';
+  document.getElementById('gs-website').value  = g.website || '';
+  document.getElementById('gs-address').value  = g.address || '';
+  document.getElementById('gs-currency').value = g.currency || '$';
+  document.getElementById('gs-logo').value     = g.logoUrl || '';
+
+  // Hours
+  const days = ['mon','tue','wed','thu','fri','sat','sun'];
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const hoursDiv = document.getElementById('gs-hours-grid');
+  hoursDiv.innerHTML = days.map((d,i) => {
+    const h = g.hours?.[d] || {};
+    return `<div class="hours-grid">
+      <span class="day-label">${labels[i]}</span>
+      <input type="time" value="${h.open||'06:00'}" class="form-input" id="gh-${d}-open" style="padding:4px 8px">
+      <input type="time" value="${h.close||'22:00'}" class="form-input" id="gh-${d}-close" style="padding:4px 8px">
+      <label style="display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:10px">
+        <input type="checkbox" id="gh-${d}-closed" ${h.closed?'checked':''} onchange="document.getElementById('gh-${d}-open').disabled=this.checked;document.getElementById('gh-${d}-close').disabled=this.checked">
+        CLOSED
+      </label>
+    </div>`;
+  }).join('');
+
+  // Modules
+  const mods = g.enabledModules || [];
+  ['payments','checkins','trainers','classes','store'].forEach(m => {
+    const el = document.getElementById('mod-' + m);
+    if (el) el.checked = mods.includes(m);
+  });
+
+  // Tiers
+  _gdRenderTiers(g.membershipTiers || []);
+}
+
+window._gSaveAbout = async () => {
+  if (!_gymId) return;
+  const days = ['mon','tue','wed','thu','fri','sat','sun'];
+  const hours = {};
+  days.forEach(d => {
+    hours[d] = {
+      open:   document.getElementById('gh-'+d+'-open')?.value  || '06:00',
+      close:  document.getElementById('gh-'+d+'-close')?.value || '22:00',
+      closed: document.getElementById('gh-'+d+'-closed')?.checked || false
+    };
+  });
+  const data = {
+    name:       document.getElementById('gs-name').value.trim(),
+    slug:       document.getElementById('gs-slug').value.trim(),
+    aboutText:  document.getElementById('gs-about').value.trim(),
+    phone:      document.getElementById('gs-phone').value.trim(),
+    website:    document.getElementById('gs-website').value.trim(),
+    address:    document.getElementById('gs-address').value.trim(),
+    currency:   document.getElementById('gs-currency').value.trim() || '$',
+    logoUrl:    document.getElementById('gs-logo').value.trim(),
+    hours
+  };
+  try {
+    const {updateDoc,doc:d2,serverTimestamp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db,'gyms',_gymId), { ...data, updatedAt: serverTimestamp() });
+    _gymData = { ..._gymData, ...data };
+    document.getElementById('portal-badge').textContent = (data.name || 'GYM') + ' PORTAL';
+    alert('Gym info saved.');
+  } catch(e) { console.error('[Gym] save about:', e); alert('Save failed.'); }
+};
+
+window._gToggleModule = async (mod, enabled) => {
+  if (!_gymId || !_gymData) return;
+  const mods = [...(_gymData.enabledModules || [])];
+  const i    = mods.indexOf(mod);
+  if (enabled && i === -1) mods.push(mod);
+  if (!enabled && i !== -1) mods.splice(i,1);
+  try {
+    const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db,'gyms',_gymId), { enabledModules: mods });
+    _gymData.enabledModules = mods;
+  } catch(e) { console.error('[Gym] toggle module:', e); }
+};
+
+function _gdRenderTiers(tiers) {
+  const el = document.getElementById('gs-tiers-list');
+  if (!tiers.length) { el.innerHTML = '<div class="ph-card" style="margin-bottom:12px"><div class="ph-title">No tiers yet</div>Add a membership tier to define pricing for joining members.</div>'; return; }
+  el.innerHTML = tiers.map((t,i) => `
+    <div style="border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px;background:var(--s1)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700">${t.name||'Tier '+(i+1)}</span>
+        <button class="tbl-action btn-red" onclick="_gdDeleteTier(${i})">🗑️</button>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:#888">${_gymData?.currency||'$'}${t.price||0} / ${t.interval||'month'}</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:#bbb;margin-top:4px">${t.terms||''}</div>
+    </div>`).join('');
+}
+
+window._gAddTier = async () => {
+  const name     = prompt('Tier name (e.g. Standard, Premium):');
+  if (!name?.trim()) return;
+  const price    = parseFloat(prompt('Price:') || '0');
+  const interval = prompt('Interval (month/year/week/session/term):') || 'month';
+  const terms    = prompt('Terms text (optional):') || '';
+  const tiers    = [...(_gymData?.membershipTiers || []), { name:name.trim(), price, interval, terms }];
+  try {
+    const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db,'gyms',_gymId), { membershipTiers: tiers });
+    _gymData.membershipTiers = tiers;
+    _gdRenderTiers(tiers);
+  } catch(e) { alert('Save failed.'); }
+};
+
+window._gdDeleteTier = async (index) => {
+  if (!confirm('Delete this tier?')) return;
+  const tiers = [...(_gymData?.membershipTiers || [])];
+  tiers.splice(index,1);
+  try {
+    const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db,'gyms',_gymId), { membershipTiers: tiers });
+    _gymData.membershipTiers = tiers;
+    _gdRenderTiers(tiers);
+  } catch(e) { alert('Save failed.'); }
+};
+
+window._gAddTrainer  = () => alert('Select a member and mark isTrainer — coming soon.');
+window._gAddProduct  = () => alert('Store product editor — coming soon.');
+window._gAddClass    = () => alert('Class editor — coming soon.');
 
 // ── Nav handlers ───────────────────────────────────────
 window._tNav = (tab) => {
@@ -643,6 +1075,24 @@ window._gNav = (tab) => {
   document.querySelectorAll('#gym-portal .tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('gtab-' + tab)?.classList.add('active');
   document.getElementById('g-' + tab)?.classList.add('active');
+  // Show/hide sub-navs
+  document.getElementById('gym-members-subnav').style.display = tab === 'members' ? '' : 'none';
+  document.getElementById('gym-setup-subnav').style.display   = tab === 'setup'   ? '' : 'none';
+};
+
+window._gMembersTab = (tab) => {
+  document.querySelectorAll('#gym-members-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('gmtab-' + tab)?.classList.add('active');
+  document.getElementById('gm-manage').style.display    = tab === 'manage'    ? '' : 'none';
+  document.getElementById('gm-analytics').style.display = tab === 'analytics' ? '' : 'none';
+};
+
+window._gSetupTab = (tab) => {
+  document.querySelectorAll('#gym-setup-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('gstab-' + tab)?.classList.add('active');
+  ['gym','classes','modules','tiers','stripe','archive'].forEach(t =>
+    document.getElementById('gs-' + t).style.display = t === tab ? '' : 'none'
+  );
 };
 
 window._copyCode = () => {
@@ -690,7 +1140,11 @@ window._ownerEnter = async (which) => {
   if (which === 'trainer') {
     await _loadTrainerPortal(auth.currentUser.uid);
   } else if (which === 'gym') {
-    _showComingSoon('GYM PORTAL');
+    // Find the owner's gym doc for testing
+    const gymQ = query(collection(db, 'gyms'), where('ownerId', '==', auth.currentUser.uid));
+    const gymSnap = await getDocs(gymQ);
+    if (!gymSnap.empty) { await _loadGymPortal(gymSnap.docs[0]); }
+    else { _showComingSoon('GYM PORTAL — No gym found for this account'); }
   } else if (which === 'nutrition') {
     _showComingSoon('NUTRITIONIST PORTAL');
   } else if (which === 'sports') {
