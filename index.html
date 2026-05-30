@@ -265,7 +265,8 @@
       <button onclick="_ownerEnter('trainer')"  style="background:var(--accent);color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🎽 TRAINER</button>
       <button onclick="_ownerEnter('gym')"      style="background:#c62828;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🏟️ GYM</button>
       <button onclick="_ownerEnter('nutrition')" style="background:#e65100;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🥗 NUTRITIONIST</button>
-      <button onclick="_ownerEnter('sports')"   style="background:#1565c0;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🏆 SPORTS</button>
+      <button onclick="_ownerEnter('sports')"    style="background:#1565c0;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🏆 SPORTS</button>
+      <button onclick="_ownerEnter('therapist')" style="background:#6a1b9a;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🧠 THERAPIST</button>
     </div>
   </div>
 
@@ -687,6 +688,8 @@ window._ownerEnter = async (which) => {
     _showComingSoon('NUTRITIONIST PORTAL');
   } else if (which === 'sports') {
     _showComingSoon('SPORTS HUB');
+  } else if (which === 'therapist') {
+    _showComingSoon('THERAPIST PORTAL');
   }
 };
 
