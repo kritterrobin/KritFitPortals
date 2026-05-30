@@ -711,22 +711,28 @@ onAuthStateChanged(auth, async user => {
 // ── Tier detection ─────────────────────────────────────
 async function _detectAndRoute(uid) {
   try {
-    // 1. Check user_registry for trainer tier
+    // 1. Check user_registry subscription tier
     const regSnap = await getDoc(doc(db, 'user_registry', uid));
-    const tier = regSnap.exists() ? regSnap.data().subscriptionTier : null;
+    const tier    = regSnap.exists() ? regSnap.data().subscriptionTier : null;
 
     if (tier === 'trainer') {
       await _loadTrainerPortal(uid);
       return;
     }
-
-    // Future: nutritionist tier
     if (tier === 'nutritionist') {
       _showComingSoon('NUTRITIONIST PORTAL');
       return;
     }
+    if (tier === 'therapist') {
+      _showComingSoon('THERAPIST PORTAL');
+      return;
+    }
+    if (['champion','sports_team','sports_league','sports_association','team','league','association'].includes(tier)) {
+      _showComingSoon('SPORTS HUB');
+      return;
+    }
 
-    // 2. Check if gym owner
+    // 2. Check if gym owner (tier lives on the gym doc, not user_registry)
     const gymQ    = query(collection(db, 'gyms'), where('ownerId', '==', uid));
     const gymSnap = await getDocs(gymQ);
     if (!gymSnap.empty) {
@@ -734,7 +740,14 @@ async function _detectAndRoute(uid) {
       return;
     }
 
-    // No portal subscription
+    // 3. Check cfg.isTrainer as fallback (some trainer accounts use this flag)
+    const cfgSnap = await getDoc(doc(db, 'users', uid, 'settings', 'cfg'));
+    if (cfgSnap.exists() && cfgSnap.data().isTrainer === true) {
+      await _loadTrainerPortal(uid);
+      return;
+    }
+
+    // No portal subscription found
     _showNoPortal(tier);
   } catch(e) {
     console.error('[Portal] detection error:', e);
