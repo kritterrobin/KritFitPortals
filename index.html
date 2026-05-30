@@ -251,6 +251,99 @@
     }
     .cs-title { font-family:var(--font-display); font-size:40px; letter-spacing:4px; color:#ddd; }
     .cs-desc { font-family:var(--font-mono); font-size:11px; color:#bbb; letter-spacing:1px; max-width:380px; line-height:1.9; }
+
+    /* ── Portal workspace (sidebar + main) ── */
+    #portal-workspace { display:flex; min-height:calc(100vh - 57px); }
+
+    #sidebar {
+      width:268px; flex-shrink:0; position:sticky; top:57px;
+      height:calc(100vh - 57px); overflow:hidden;
+      background:var(--s1); border-right:1px solid var(--border);
+      transition:width .22s ease; display:flex; flex-direction:column;
+    }
+    #sidebar.collapsed { width:28px; }
+
+    #sidebar-content {
+      width:240px; flex-shrink:0; overflow-y:auto; overflow-x:hidden;
+      scrollbar-width:none; padding-bottom:24px;
+    }
+    #sidebar-content::-webkit-scrollbar { display:none; }
+
+    /* Toggle strip — always 28px, right edge of sidebar */
+    #sidebar-toggle {
+      position:absolute; right:0; top:0; bottom:0; width:28px;
+      display:flex; align-items:center; justify-content:center;
+      background:none; border:none; border-left:1px solid var(--border);
+      cursor:pointer; flex-shrink:0; transition:background .15s;
+      writing-mode:vertical-rl;
+    }
+    #sidebar-toggle:hover { background:var(--s3); }
+    #sidebar-toggle .sb-arrow {
+      font-size:11px; font-family:var(--font-mono); font-weight:700;
+      letter-spacing:0; color:#bbb; transition:color .2s;
+    }
+    #sidebar-toggle.green .sb-arrow { color:var(--accent); }
+    #sidebar-toggle.red   .sb-arrow { color:#c62828; }
+
+    /* Sidebar portal header */
+    .sb-portal-hdr {
+      padding:14px 16px 10px; border-bottom:2px solid var(--border);
+    }
+    .sb-portal-label {
+      font-family:var(--font-mono); font-size:9px; font-weight:700;
+      letter-spacing:3px; color:#bbb; text-transform:uppercase; margin-bottom:4px;
+    }
+    #sb-portal-name {
+      font-family:var(--font-display); font-size:18px; letter-spacing:3px;
+      color:var(--accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    /* Sidebar sections */
+    .sb-section {
+      display:flex; align-items:flex-start; gap:10px;
+      padding:12px 14px; border-bottom:1px solid var(--border);
+      cursor:pointer; transition:background .15s; min-width:0;
+    }
+    .sb-section:hover { background:var(--s3); }
+    .sb-icon { font-size:17px; flex-shrink:0; margin-top:1px; }
+    .sb-body { flex:1; min-width:0; }
+    .sb-label {
+      font-family:var(--font-mono); font-size:9px; font-weight:700;
+      letter-spacing:2px; color:#aaa; text-transform:uppercase; margin-bottom:3px;
+    }
+    .sb-value {
+      font-family:var(--font-mono); font-size:11px; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .sb-sub {
+      font-family:var(--font-mono); font-size:10px; color:#aaa; margin-top:2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .sb-badge {
+      background:#c62828; color:#fff; font-family:var(--font-mono);
+      font-size:10px; font-weight:700; padding:1px 6px;
+      border-radius:10px; flex-shrink:0; align-self:center;
+    }
+    .sb-divider { height:1px; background:var(--border); margin:6px 0; }
+    .sb-action {
+      display:flex; align-items:center; gap:10px; padding:10px 14px;
+      cursor:pointer; font-family:var(--font-mono); font-size:11px; color:#888;
+      background:none; border:none; width:100%; text-align:left; transition:color .15s;
+    }
+    .sb-action:hover { color:var(--accent); }
+    .sb-action .sb-icon { font-size:14px; }
+
+    /* Portal main */
+    #portal-main { flex:1; min-width:0; display:flex; flex-direction:column; }
+
+    /* Mobile: sidebar hidden by default, toggle floats */
+    @media(max-width:767px) {
+      #sidebar { position:fixed; top:57px; left:0; z-index:180; width:268px; transform:translateX(-240px); transition:transform .22s ease; }
+      #sidebar.collapsed { transform:translateX(-240px); }
+      #sidebar.open      { transform:translateX(0); }
+      #sidebar-toggle    { writing-mode:horizontal-tb; width:28px; height:48px; top:50%; bottom:auto; transform:translateY(-50%); border-radius:0 6px 6px 0; background:var(--s1); box-shadow:2px 0 6px rgba(0,0,0,.1); }
+      #portal-main       { margin-left:0; }
+    }
   </style>
 </head>
 <body>
@@ -320,6 +413,84 @@
     <div class="cs-title" id="cs-portal-name">PORTAL</div>
     <div class="cs-desc">This portal is in active development. You'll be notified as soon as it launches. Your subscription will activate automatically.</div>
   </div>
+
+  <!-- ══════════════════════════════════════════
+       PORTAL WORKSPACE (sidebar + content)
+  ══════════════════════════════════════════ -->
+  <div id="portal-workspace" style="display:none">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div id="sidebar-content">
+
+        <!-- Portal identity -->
+        <div class="sb-portal-hdr">
+          <div class="sb-portal-label">PORTAL</div>
+          <div id="sb-portal-name">—</div>
+        </div>
+
+        <!-- INBOX -->
+        <div class="sb-section" onclick="_sbOpen('inbox')">
+          <div class="sb-icon">💬</div>
+          <div class="sb-body">
+            <div class="sb-label">INBOX</div>
+            <div class="sb-value" id="sb-inbox-value">No new messages</div>
+          </div>
+          <span class="sb-badge" id="sb-inbox-badge" style="display:none">0</span>
+        </div>
+
+        <!-- CALENDAR -->
+        <div class="sb-section" onclick="_sbOpen('calendar')">
+          <div class="sb-icon">📅</div>
+          <div class="sb-body">
+            <div class="sb-label">CALENDAR</div>
+            <div class="sb-value" id="sb-cal-value">No events today</div>
+            <div class="sb-sub"  id="sb-cal-sub"></div>
+          </div>
+        </div>
+
+        <!-- REVENUE -->
+        <div class="sb-section" onclick="_sbOpen('revenue')">
+          <div class="sb-icon">💰</div>
+          <div class="sb-body">
+            <div class="sb-label">REVENUE</div>
+            <div class="sb-value" id="sb-rev-value">— this month</div>
+            <div class="sb-sub"  id="sb-rev-sub"></div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="sb-section" onclick="_sbOpen('notifications')">
+          <div class="sb-icon">🔔</div>
+          <div class="sb-body">
+            <div class="sb-label">NOTIFICATIONS</div>
+            <div class="sb-value" id="sb-notif-value">All clear</div>
+          </div>
+          <span class="sb-badge" id="sb-notif-badge" style="display:none">0</span>
+        </div>
+
+        <div class="sb-divider"></div>
+
+        <!-- MANAGE BILLING -->
+        <button class="sb-action" onclick="_sbOpen('billing')">
+          <span class="sb-icon">💳</span> Manage Billing
+        </button>
+
+        <!-- ADD STORE (hidden if already subscribed) -->
+        <button class="sb-action" id="sb-store-btn" onclick="_sbOpen('add-store')">
+          <span class="sb-icon">🛍️</span> Add Store · $3.45/mo
+        </button>
+
+      </div><!-- /sidebar-content -->
+
+      <!-- Toggle strip — always visible, changes colour -->
+      <button id="sidebar-toggle" class="gray" onclick="_sidebarToggle()" title="Toggle sidebar">
+        <span class="sb-arrow" id="sb-arrow">◀</span>
+      </button>
+    </div><!-- /sidebar -->
+
+    <!-- PORTAL MAIN CONTENT -->
+    <div id="portal-main">
 
   <!-- ══════════════════════════════════════════
        TRAINER PORTAL
@@ -614,6 +785,9 @@
 
   </div><!-- /gym-portal -->
 
+    </div><!-- /portal-main -->
+  </div><!-- /portal-workspace -->
+
 </div><!-- /portal-app -->
 
 
@@ -625,7 +799,7 @@
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gAddProduct',
-   '_gAddClass','_gLoadPeriod','_copyCode'].forEach(fn => window[fn] = () => {});
+   '_gAddClass','_gLoadPeriod','_copyCode','_sidebarToggle','_sbOpen'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1088,17 +1262,22 @@ window._copyCode = () => {
 
 // ── Screen helpers ─────────────────────────────────────
 function _showScreen(which) {
-  document.getElementById('sign-in-screen').style.display = which === 'sign-in' ? 'flex' : 'none';
-  document.getElementById('portal-app').style.display     = which !== 'sign-in'  ? ''     : 'none';
-  document.getElementById('loading-screen').style.display = which === 'loading'  ? 'flex' : 'none';
-  document.getElementById('no-portal-screen').style.display    = 'none';
-  document.getElementById('coming-soon-screen').style.display  = 'none';
+  const isSignIn = which === 'sign-in';
+  document.getElementById('sign-in-screen').style.display        = isSignIn       ? 'flex'  : 'none';
+  document.getElementById('portal-app').style.display            = isSignIn       ? 'none'  : '';
+  document.getElementById('loading-screen').style.display        = which === 'loading'   ? 'flex' : 'none';
+  document.getElementById('no-portal-screen').style.display      = 'none';
+  document.getElementById('coming-soon-screen').style.display    = 'none';
+  document.getElementById('portal-workspace').style.display      = 'none';
   document.querySelectorAll('.portal-panel').forEach(p => p.classList.remove('active'));
 }
 
 function _showPortal(which) {
-  _showScreen('app');
+  _showScreen('portal');
+  document.getElementById('portal-workspace').style.display = 'flex';
   document.getElementById(which + '-portal')?.classList.add('active');
+  document.getElementById('sb-portal-name').textContent =
+    document.getElementById('portal-badge').textContent || which.toUpperCase();
 }
 
 function _showNoPortal(tier) {
@@ -1110,12 +1289,43 @@ function _showNoPortal(tier) {
   }
 }
 
-
 function _showComingSoon(name) {
   _showScreen('app');
   document.getElementById('cs-portal-name').textContent = name;
   document.getElementById('coming-soon-screen').style.display = 'flex';
   document.getElementById('portal-badge').textContent = name;
+}
+
+// ── Sidebar ────────────────────────────────────────────
+let _sbOpen_fn = null;
+
+window._sidebarToggle = () => {
+  const sb   = document.getElementById('sidebar');
+  const open = sb.classList.toggle('collapsed');
+  // on mobile swap between 'open' class and collapsed
+  if (window.innerWidth < 768) {
+    sb.classList.toggle('open', !sb.classList.contains('collapsed'));
+  }
+  document.getElementById('sb-arrow').textContent = sb.classList.contains('collapsed') ? '▶' : '◀';
+};
+
+window._sbOpen = (section) => {
+  // Overlays built in subsequent passes — stubs for now
+  console.log('_sbOpen', section);
+};
+
+// Call after loading sidebar data to update indicator colour
+function _updateSidebarIndicator() {
+  const unread  = parseInt(document.getElementById('sb-inbox-badge').textContent)  || 0;
+  const notifs  = parseInt(document.getElementById('sb-notif-badge').textContent)  || 0;
+  const toggle  = document.getElementById('sidebar-toggle');
+  if (unread > 0 || notifs > 0) {
+    toggle.className = 'red';
+  } else if (document.getElementById('sb-cal-value').textContent !== 'No events today') {
+    toggle.className = 'green';
+  } else {
+    toggle.className = 'gray';
+  }
 }
 </script>
 </body>
