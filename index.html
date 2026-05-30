@@ -314,26 +314,6 @@
     <button class="np-cta" onclick="window.open('https://kritfit.com','_blank')">GET A PORTAL SUBSCRIPTION →</button>
   </div>
 
-  <!-- Owner portal selector -->
-  <div id="owner-selector-screen" style="display:none;min-height:calc(100vh - 60px);align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:40px 20px;text-align:center">
-    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:3px;color:#999;text-transform:uppercase">Owner Mode</div>
-    <div style="font-family:var(--font-display);font-size:36px;letter-spacing:4px;color:var(--accent)">SELECT PORTAL</div>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px">
-      <button onclick="_ownerEnter('trainer')"  style="background:var(--accent);color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🎽 TRAINER</button>
-      <button onclick="_ownerEnter('gym')"      style="background:#c62828;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🏟️ GYM</button>
-      <button onclick="_ownerEnter('nutrition')" style="background:#e65100;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🥗 NUTRITIONIST</button>
-      <button onclick="_ownerEnter('therapist')" style="background:#6a1b9a;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🧠 THERAPIST</button>
-    </div>
-    <div style="width:100%;max-width:500px;display:flex;align-items:center;gap:12px;margin:4px 0">
-      <div style="flex:1;height:1px;background:var(--border)"></div>
-      <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:3px;color:#bbb;text-transform:uppercase">Sports Organisations</span>
-      <div style="flex:1;height:1px;background:var(--border)"></div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">
-      <button onclick="_ownerEnter('sports')" style="background:#1565c0;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🏆 SPORTS</button>
-    </div>
-  </div>
-
   <!-- Coming soon (nutritionist / therapist / sports) -->
   <div id="coming-soon-screen">
     <span class="cs-badge">Coming Soon</span>
@@ -645,7 +625,7 @@
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gAddProduct',
-   '_gAddClass','_gLoadPeriod','_copyCode','_ownerEnter'].forEach(fn => window[fn] = () => {});
+   '_gAddClass','_gLoadPeriod','_copyCode'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -680,15 +660,6 @@ window._doSignOut = async () => {
 };
 
 // ── Owner hash (SHA-256 of richardson.christopher@gmail.com) ──
-const OWNER_HASHES = new Set([
-  '71fd4838a07de72d9716c02b53595250f4ee4e84eb47171b49d7cd6a7550794a', // richardson.christopher@gmail.com
-]);
-
-async function _hashEmail(email) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.toLowerCase().trim()));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
 // ── Auth state ─────────────────────────────────────────
 onAuthStateChanged(auth, async user => {
   if (!user) {
@@ -697,14 +668,6 @@ onAuthStateChanged(auth, async user => {
   }
   _showScreen('loading');
   document.getElementById('user-name').textContent = user.displayName || user.email;
-
-  // Owner bypass — skip tier detection, show portal selector
-  const h = await _hashEmail(user.email);
-  if (OWNER_HASHES.has(h)) {
-    _showOwnerSelector();
-    return;
-  }
-
   await _detectAndRoute(user.uid);
 });
 
@@ -1144,30 +1107,6 @@ function _showNoPortal(tier) {
   }
 }
 
-function _showOwnerSelector() {
-  _showScreen('app');
-  document.getElementById('portal-badge').textContent = 'OWNER MODE';
-  document.getElementById('owner-selector-screen').style.display = 'flex';
-}
-
-window._ownerEnter = async (which) => {
-  document.getElementById('owner-selector-screen').style.display = 'none';
-  if (which === 'trainer') {
-    await _loadTrainerPortal(auth.currentUser.uid);
-  } else if (which === 'gym') {
-    // Find the owner's gym doc for testing
-    const gymQ = query(collection(db, 'gyms'), where('ownerId', '==', auth.currentUser.uid));
-    const gymSnap = await getDocs(gymQ);
-    if (!gymSnap.empty) { await _loadGymPortal(gymSnap.docs[0]); }
-    else { _showComingSoon('GYM PORTAL — No gym found for this account'); }
-  } else if (which === 'nutrition') {
-    _showComingSoon('NUTRITIONIST PORTAL');
-  } else if (which === 'sports') {
-    _showComingSoon('SPORTS HUB');
-  } else if (which === 'therapist') {
-    _showComingSoon('THERAPIST PORTAL');
-  }
-};
 
 function _showComingSoon(name) {
   _showScreen('app');
