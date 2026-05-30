@@ -649,7 +649,9 @@ const db   = getFirestore(app);
 window._doSignIn = async () => {
   try {
     document.getElementById('sign-in-error').textContent = '';
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    await signInWithPopup(auth, provider);
   } catch(e) {
     document.getElementById('sign-in-error').textContent = 'Sign-in failed — please try again.';
   }
