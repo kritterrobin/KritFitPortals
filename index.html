@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KritFit Portals</title>
+  <meta name="description" content="KritFit professional portals for trainers, gyms, nutritionists and sports organisations.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <meta name="theme-color" content="#2d7d32">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #ffffff;
+      --s1:           #f4f4f4;
+      --s2:           #ffffff;
+      --s3:           #ebebeb;
+      --border:       rgba(0,0,0,.1);
+      --text:         #1a1a1a;
+      --muted:        #666666;
+      --accent:       #2d7d32;
+      --accent-bright:#4caf50;
+      --accent-dark:  #1b5e20;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-mono:    'DM Mono', monospace;
+      --font-body:    'DM Sans', sans-serif;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; }
+
+    /* ── Top bar ── */
+    #top-bar {
+      background:#fff; border-bottom:1px solid #e0e0e0;
+      box-shadow:0 1px 6px rgba(0,0,0,.08);
+      position:sticky; top:0; z-index:200; padding:0 20px;
+    }
+    #top-bar-inner {
+      max-width:1400px; margin:0 auto;
+      display:flex; align-items:center; gap:16px; padding:10px 0;
+    }
+    .brand { display:flex; flex-direction:column; line-height:1; gap:2px; text-decoration:none; }
+    .brand-name { font-family:var(--font-display); font-size:clamp(22px,2.5vw,32px); letter-spacing:4px; color:var(--accent); }
+    .brand-name span { color:#1a1a1a; }
+    .brand-sub { font-family:var(--font-mono); font-size:9px; letter-spacing:3px; color:#999; text-transform:uppercase; }
+    #top-bar-center { flex:1; text-align:center; }
+    #portal-badge {
+      display:inline-block; font-family:var(--font-mono); font-size:clamp(10px,1vw,12px);
+      font-weight:700; letter-spacing:2px; text-transform:uppercase;
+      background:var(--accent); color:#fff; padding:4px 14px; border-radius:3px;
+    }
+    #top-bar-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+    #user-name { font-family:var(--font-mono); font-size:11px; color:#888; }
+    #sign-out-btn {
+      background:none; border:2px solid #ddd; color:#888;
+      font-family:var(--font-mono); font-size:11px; font-weight:700;
+      padding:5px 12px; cursor:pointer; letter-spacing:.5px;
+    }
+    #sign-out-btn:hover { border-color:#c62828; color:#c62828; }
+    @media(max-width:600px) { #top-bar-center { display:none; } }
+
+    /* ── Nav standard (from CLAUDE.md) ── */
+    .nav {
+      display:flex; overflow-x:auto; scrollbar-width:none;
+      background:var(--s1); border-bottom:1px solid var(--border);
+      position:sticky; z-index:190;
+    }
+    .nav::-webkit-scrollbar { display:none; }
+    .nav-btn {
+      flex-shrink:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:8px 14px; border:none; background:none; color:#999;
+      font-family:var(--font-mono); font-size:clamp(9px,1vw,11px);
+      font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+      cursor:pointer; border-bottom:2px solid transparent;
+      transition:color .15s, border-color .15s; white-space:nowrap; gap:3px;
+    }
+    .nav-btn .icon { font-size:16px; }
+    .nav-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .nav-btn:hover:not(.active) { color:#333; }
+
+    /* Compact padding for portal navs */
+    #trainer-top-nav .nav-btn, #trainer-subnav .nav-btn,
+    #gym-top-nav .nav-btn,     #gym-subnav .nav-btn     { padding:5px 10px; }
+    #trainer-top-nav .nav-btn .icon, #trainer-subnav .nav-btn .icon,
+    #gym-top-nav .nav-btn .icon,     #gym-subnav .nav-btn .icon     { font-size:14px; }
+
+    /* ── Sub-nav wrapper ── */
+    .subnav-wrap {
+      flex-shrink:0; background:var(--s2);
+      border-bottom:1px solid var(--border);
+    }
+
+    /* ── Content panels ── */
+    .portal-panel { display:none; flex-direction:column; min-height:calc(100vh - 120px); }
+    .portal-panel.active { display:flex; }
+    .tab-panel { display:none; flex:1; padding:20px; max-width:1400px; margin:0 auto; width:100%; }
+    .tab-panel.active { display:block; }
+
+    /* ── Placeholder card ── */
+    .ph-card {
+      background:var(--s1); border:2px dashed #ddd; border-radius:8px;
+      padding:40px 20px; text-align:center; color:#bbb;
+      font-family:var(--font-mono); font-size:13px; letter-spacing:1px;
+    }
+    .ph-card .ph-icon { font-size:36px; margin-bottom:12px; opacity:.5; }
+    .ph-card .ph-title { font-size:16px; font-weight:700; color:#ccc; margin-bottom:6px; letter-spacing:2px; }
+
+    /* ── Stats row ── */
+    .stat-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:24px; }
+    .stat-card {
+      background:var(--s1); border:1px solid var(--border); border-radius:6px;
+      padding:16px; text-align:center;
+    }
+    .stat-num { font-family:var(--font-display); font-size:clamp(28px,3vw,40px); color:var(--accent); letter-spacing:2px; }
+    .stat-label { font-family:var(--font-mono); font-size:10px; color:#999; letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
+
+    /* ── Section title ── */
+    .section-title {
+      font-family:var(--font-mono); font-size:11px; font-weight:700;
+      color:#aaa; letter-spacing:3px; text-transform:uppercase;
+      margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border);
+    }
+
+    /* ── Connection code badge ── */
+    .code-badge {
+      display:inline-block; font-family:var(--font-display); font-size:32px;
+      letter-spacing:8px; color:var(--accent); background:var(--s1);
+      border:2px solid var(--accent); padding:12px 24px; border-radius:6px;
+      margin:12px 0; cursor:pointer;
+    }
+    .code-hint { font-family:var(--font-mono); font-size:10px; color:#999; letter-spacing:1px; }
+
+    /* ── Sign-in screen ── */
+    #sign-in-screen {
+      min-height:100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      background:linear-gradient(135deg,#f8fff8 0%,#f0f8f0 100%);
+      padding:40px 20px;
+    }
+    .sign-in-logo { font-family:var(--font-display); font-size:clamp(48px,6vw,72px); letter-spacing:8px; color:var(--accent); margin-bottom:4px; }
+    .sign-in-logo span { color:#1a1a1a; }
+    .sign-in-sub { font-family:var(--font-mono); font-size:12px; letter-spacing:4px; color:#999; text-transform:uppercase; margin-bottom:40px; }
+    .sign-in-card {
+      background:#fff; border:1px solid #e0e0e0; border-radius:12px;
+      padding:40px; max-width:400px; width:100%; text-align:center;
+      box-shadow:0 4px 24px rgba(0,0,0,.06);
+    }
+    .sign-in-title { font-family:var(--font-display); font-size:28px; letter-spacing:3px; color:#1a1a1a; margin-bottom:8px; }
+    .sign-in-desc { font-size:14px; color:#888; line-height:1.7; margin-bottom:28px; }
+    #google-sign-in-btn {
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      width:100%; padding:14px; border:2px solid #e0e0e0; border-radius:8px;
+      background:#fff; cursor:pointer; font-family:var(--font-mono);
+      font-size:13px; font-weight:700; color:#333; letter-spacing:.5px;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    #google-sign-in-btn:hover { border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,125,50,.1); }
+    #google-sign-in-btn svg { width:20px; height:20px; flex-shrink:0; }
+    #sign-in-error { color:#c62828; font-family:var(--font-mono); font-size:11px; margin-top:12px; }
+
+    /* ── Loading screen ── */
+    #loading-screen {
+      display:none; min-height:calc(100vh - 60px);
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:16px;
+    }
+    .spinner { width:36px; height:36px; border:3px solid #e0e0e0; border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-text { font-family:var(--font-mono); font-size:11px; letter-spacing:2px; color:#bbb; text-transform:uppercase; }
+
+    /* ── No portal screen ── */
+    #no-portal-screen {
+      display:none; min-height:calc(100vh - 60px);
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:16px; padding:40px 20px; text-align:center;
+    }
+    .np-icon { font-size:48px; opacity:.4; }
+    .np-title { font-family:var(--font-display); font-size:32px; letter-spacing:3px; color:#ccc; }
+    .np-desc { font-family:var(--font-mono); font-size:12px; color:#bbb; letter-spacing:1px; max-width:400px; line-height:1.8; }
+    .np-tiers { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:8px 0; }
+    .np-tier { border:2px solid var(--border); border-radius:6px; padding:10px 18px; font-family:var(--font-mono); font-size:11px; color:#888; letter-spacing:1px; }
+    .np-tier strong { display:block; font-size:14px; color:var(--accent); letter-spacing:2px; }
+    .np-cta { background:var(--accent); color:#fff; border:none; font-family:var(--font-mono); font-size:12px; font-weight:700; padding:12px 28px; cursor:pointer; letter-spacing:1px; margin-top:8px; }
+
+    /* ── Coming soon portal ── */
+    #coming-soon-screen {
+      display:none; min-height:calc(100vh - 60px);
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:12px; text-align:center; padding:40px 20px;
+    }
+    .cs-badge {
+      font-family:var(--font-mono); font-size:10px; font-weight:700;
+      letter-spacing:3px; background:var(--accent); color:#fff;
+      padding:4px 14px; text-transform:uppercase;
+    }
+    .cs-title { font-family:var(--font-display); font-size:40px; letter-spacing:4px; color:#ddd; }
+    .cs-desc { font-family:var(--font-mono); font-size:11px; color:#bbb; letter-spacing:1px; max-width:380px; line-height:1.9; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     SIGN-IN SCREEN
+════════════════════════════════════════════════════════ -->
+<div id="sign-in-screen">
+  <div class="sign-in-logo">KRIT<span>FIT</span></div>
+  <div class="sign-in-sub">Professional Portals</div>
+  <div class="sign-in-card">
+    <div class="sign-in-title">SIGN IN</div>
+    <div class="sign-in-desc">Access your trainer, gym, nutritionist or sports portal. Requires an active portal subscription.</div>
+    <button id="google-sign-in-btn" onclick="_doSignIn()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <div id="sign-in-error"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PORTAL APP SHELL
+════════════════════════════════════════════════════════ -->
+<div id="portal-app" style="display:none">
+
+  <!-- Top bar -->
+  <div id="top-bar">
+    <div id="top-bar-inner">
+      <a class="brand" href="#">
+        <div class="brand-name">KRIT<span>FIT</span></div>
+        <div class="brand-sub">Portals</div>
+      </a>
+      <div id="top-bar-center">
+        <span id="portal-badge">—</span>
+      </div>
+      <div id="top-bar-right">
+        <span id="user-name"></span>
+        <button id="sign-out-btn" onclick="_doSignOut()">SIGN OUT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading-screen" style="display:flex">
+    <div class="spinner"></div>
+    <div class="loading-text">Detecting portal…</div>
+  </div>
+
+  <!-- No portal subscription -->
+  <div id="no-portal-screen">
+    <div class="np-icon">🔒</div>
+    <div class="np-title">NO PORTAL</div>
+    <div class="np-desc" id="no-portal-desc">Your account doesn't have an active portal subscription. Upgrade in the KritFit app to access your professional tools here.</div>
+    <div class="np-tiers">
+      <div class="np-tier"><strong>TRAINER</strong>$5.67 / mo</div>
+      <div class="np-tier"><strong>GYM</strong>from $89 / mo</div>
+      <div class="np-tier"><strong>NUTRITIONIST</strong>$5.67 / mo</div>
+      <div class="np-tier"><strong>SPORTS</strong>$3.45–$45.67 / mo</div>
+    </div>
+    <button class="np-cta" onclick="window.open('https://kritfit.com','_blank')">GET A PORTAL SUBSCRIPTION →</button>
+  </div>
+
+  <!-- Coming soon (nutritionist / therapist / sports) -->
+  <div id="coming-soon-screen">
+    <span class="cs-badge">Coming Soon</span>
+    <div class="cs-title" id="cs-portal-name">PORTAL</div>
+    <div class="cs-desc">This portal is in active development. You'll be notified as soon as it launches. Your subscription will activate automatically.</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TRAINER PORTAL
+  ══════════════════════════════════════════ -->
+  <div class="portal-panel" id="trainer-portal">
+    <nav class="nav lv-hide" id="trainer-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
+      <button class="nav-btn active" id="ttab-clients"  onclick="_tNav('clients')"> <span class="icon">👥</span>CLIENTS</button>
+      <button class="nav-btn"        id="ttab-sessions" onclick="_tNav('sessions')"><span class="icon">📅</span>SESSIONS</button>
+      <button class="nav-btn"        id="ttab-messages" onclick="_tNav('messages')"><span class="icon">💬</span>MESSAGES</button>
+      <button class="nav-btn"        id="ttab-reports"  onclick="_tNav('reports')"> <span class="icon">📊</span>REPORTS</button>
+      <button class="nav-btn"        id="ttab-settings" onclick="_tNav('settings')"><span class="icon">⚙️</span>SETTINGS</button>
+    </nav>
+
+    <!-- CLIENTS -->
+    <div class="tab-panel active" id="t-clients">
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="t-stat-clients">—</div><div class="stat-label">Active Clients</div></div>
+        <div class="stat-card"><div class="stat-num" id="t-stat-pending">—</div><div class="stat-label">Pending Invites</div></div>
+        <div class="stat-card"><div class="stat-num" id="t-stat-sessions">—</div><div class="stat-label">Sessions This Month</div></div>
+      </div>
+      <div class="section-title">Active Clients</div>
+      <div id="t-clients-list" class="ph-card">
+        <div class="ph-icon">👥</div>
+        <div class="ph-title">No clients yet</div>
+        Share your connection code with clients to get started.
+      </div>
+      <div class="section-title" style="margin-top:24px">Pending Invites</div>
+      <div id="t-invites-list" class="ph-card">
+        <div class="ph-icon">📨</div>
+        <div class="ph-title">No pending invites</div>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div class="tab-panel" id="t-sessions">
+      <div class="section-title">Upcoming Sessions</div>
+      <div class="ph-card">
+        <div class="ph-icon">📅</div>
+        <div class="ph-title">Session Scheduling</div>
+        Coming soon — schedule and manage sessions with your clients.
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="tab-panel" id="t-messages">
+      <div class="section-title">Client Messages</div>
+      <div id="t-messages-list" class="ph-card">
+        <div class="ph-icon">💬</div>
+        <div class="ph-title">No messages</div>
+        Client messages will appear here. Replies are also sent via the KritFit app.
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="tab-panel" id="t-reports">
+      <div class="section-title">Reports</div>
+      <div class="ph-card">
+        <div class="ph-icon">📊</div>
+        <div class="ph-title">Client Progress Reports</div>
+        Coming soon — view and export progress data for each client.
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-panel" id="t-settings">
+      <div class="section-title">Your Connection Code</div>
+      <p style="font-family:var(--font-mono);font-size:12px;color:#888;margin-bottom:8px">Share this code with clients so they can connect to you in the KritFit app.</p>
+      <div class="code-badge" id="t-connection-code" onclick="_copyCode()" title="Click to copy">——</div>
+      <div class="code-hint">Click to copy · Code is permanent</div>
+
+      <div class="section-title" style="margin-top:28px">Trainer Profile</div>
+      <div class="ph-card">
+        <div class="ph-icon">🎽</div>
+        <div class="ph-title">Profile Editor</div>
+        Coming soon — edit your public trainer profile, bio, and specialties.
+      </div>
+    </div>
+  </div><!-- /trainer-portal -->
+
+  <!-- ══════════════════════════════════════════
+       GYM PORTAL
+  ══════════════════════════════════════════ -->
+  <div class="portal-panel" id="gym-portal">
+    <nav class="nav lv-hide" id="gym-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
+      <button class="nav-btn active" id="gtab-members"  onclick="_gNav('members')"> <span class="icon">👥</span>MEMBERS</button>
+      <button class="nav-btn"        id="gtab-schedule" onclick="_gNav('schedule')"><span class="icon">📅</span>SCHEDULE</button>
+      <button class="nav-btn"        id="gtab-messages" onclick="_gNav('messages')"><span class="icon">💬</span>MESSAGES</button>
+      <button class="nav-btn"        id="gtab-reports"  onclick="_gNav('reports')"> <span class="icon">📊</span>REPORTS</button>
+      <button class="nav-btn"        id="gtab-settings" onclick="_gNav('settings')"><span class="icon">⚙️</span>SETTINGS</button>
+    </nav>
+
+    <!-- MEMBERS -->
+    <div class="tab-panel active" id="g-members">
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="g-stat-members">—</div><div class="stat-label">Active Members</div></div>
+        <div class="stat-card"><div class="stat-num" id="g-stat-pending">—</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-num" id="g-stat-trainers">—</div><div class="stat-label">Trainers</div></div>
+        <div class="stat-card"><div class="stat-num" id="g-stat-checkins">—</div><div class="stat-label">Check-ins Today</div></div>
+      </div>
+      <div class="section-title">Member Roster</div>
+      <div id="g-members-list" class="ph-card">
+        <div class="ph-icon">👥</div>
+        <div class="ph-title">No members yet</div>
+        Members join via the KritFit app using your gym's join code.
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="tab-panel" id="g-schedule">
+      <div class="section-title">Class Schedule</div>
+      <div class="ph-card">
+        <div class="ph-icon">📅</div>
+        <div class="ph-title">Schedule Manager</div>
+        Coming soon — create and manage your gym's class timetable.
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="tab-panel" id="g-messages">
+      <div class="section-title">Member Messages</div>
+      <div id="g-messages-list" class="ph-card">
+        <div class="ph-icon">💬</div>
+        <div class="ph-title">No messages</div>
+        Member messages appear here. You can also broadcast to all members.
+      </div>
+      <div class="section-title" style="margin-top:24px">Broadcast</div>
+      <div class="ph-card">
+        <div class="ph-icon">📢</div>
+        <div class="ph-title">Send Announcement</div>
+        Coming soon — broadcast a message to all members or a filtered group.
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="tab-panel" id="g-reports">
+      <div class="section-title">Reports</div>
+      <div class="ph-card">
+        <div class="ph-icon">📊</div>
+        <div class="ph-title">Attendance & Revenue</div>
+        Coming soon — check-in history, membership revenue, class attendance.
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-panel" id="g-settings">
+      <div class="section-title">Gym Profile</div>
+      <div id="g-gym-name" style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;color:var(--accent);margin-bottom:4px">—</div>
+      <div id="g-gym-tier" style="font-family:var(--font-mono);font-size:11px;color:#999;letter-spacing:2px;margin-bottom:20px"></div>
+
+      <div class="section-title">Join Code</div>
+      <p style="font-family:var(--font-mono);font-size:12px;color:#888;margin-bottom:8px">Members enter this code in the KritFit app to join your gym.</p>
+      <div class="code-badge" id="g-join-code" onclick="_copyCode()" title="Click to copy">——</div>
+      <div class="code-hint">Click to copy · Share on posters, screens, front desk</div>
+
+      <div class="section-title" style="margin-top:28px">Staff & Permissions</div>
+      <div class="ph-card">
+        <div class="ph-icon">🔐</div>
+        <div class="ph-title">Staff Management</div>
+        Coming soon — add staff, assign roles, set permissions.
+      </div>
+    </div>
+  </div><!-- /gym-portal -->
+
+</div><!-- /portal-app -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     FIREBASE + APP LOGIC
+════════════════════════════════════════════════════════ -->
+<script>
+  // Stub onclick handlers until module loads
+  ['_doSignIn','_doSignOut','_tNav','_gNav','_copyCode'].forEach(fn => window[fn] = () => {});
+</script>
+<script type="module">
+import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs }
+                                   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const app  = initializeApp({
+  apiKey:            "AIzaSyBVZ6zLMkHHmKpPc8nDcMIJoqFtTvbCkko",
+  authDomain:        "kritfit-afe3f.firebaseapp.com",
+  projectId:         "kritfit-afe3f",
+  storageBucket:     "kritfit-afe3f.appspot.com",
+  messagingSenderId: "1040322275977",
+  appId:             "1:1040322275977:web:b4c3e2a4f8d1e6a7c9b0d2"
+});
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── Auth handlers ──────────────────────────────────────
+window._doSignIn = async () => {
+  try {
+    document.getElementById('sign-in-error').textContent = '';
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch(e) {
+    document.getElementById('sign-in-error').textContent = 'Sign-in failed — please try again.';
+  }
+};
+
+window._doSignOut = async () => {
+  await signOut(auth);
+};
+
+// ── Auth state ─────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    _showScreen('sign-in');
+    return;
+  }
+  _showScreen('loading');
+  document.getElementById('user-name').textContent = user.displayName || user.email;
+  await _detectAndRoute(user.uid);
+});
+
+// ── Tier detection ─────────────────────────────────────
+async function _detectAndRoute(uid) {
+  try {
+    // 1. Check user_registry for trainer tier
+    const regSnap = await getDoc(doc(db, 'user_registry', uid));
+    const tier = regSnap.exists() ? regSnap.data().subscriptionTier : null;
+
+    if (tier === 'trainer') {
+      await _loadTrainerPortal(uid);
+      return;
+    }
+
+    // Future: nutritionist tier
+    if (tier === 'nutritionist') {
+      _showComingSoon('NUTRITIONIST PORTAL');
+      return;
+    }
+
+    // 2. Check if gym owner
+    const gymQ    = query(collection(db, 'gyms'), where('ownerId', '==', uid));
+    const gymSnap = await getDocs(gymQ);
+    if (!gymSnap.empty) {
+      await _loadGymPortal(gymSnap.docs[0]);
+      return;
+    }
+
+    // No portal subscription
+    _showNoPortal(tier);
+  } catch(e) {
+    console.error('[Portal] detection error:', e);
+    _showNoPortal(null);
+  }
+}
+
+// ── Trainer portal ─────────────────────────────────────
+async function _loadTrainerPortal(uid) {
+  document.getElementById('portal-badge').textContent = 'TRAINER PORTAL';
+
+  // Connection code
+  try {
+    const cfgSnap = await getDoc(doc(db, 'users', uid, 'settings', 'cfg'));
+    const code = cfgSnap.data()?.trainerCode || '—';
+    document.getElementById('t-connection-code').textContent = code;
+  } catch(_) {}
+
+  // Client stats
+  try {
+    const connsQ    = query(collection(db, 'trainer_connections'), where('trainerId', '==', uid));
+    const connsSnap = await getDocs(connsQ);
+    const active    = connsSnap.docs.filter(d => d.data().status === 'active').length;
+    const pending   = connsSnap.docs.filter(d => d.data().status === 'pending').length;
+    document.getElementById('t-stat-clients').textContent  = active;
+    document.getElementById('t-stat-pending').textContent  = pending;
+
+    if (active > 0) {
+      const items = connsSnap.docs
+        .filter(d => d.data().status === 'active')
+        .map(d => {
+          const cd = d.data();
+          return `<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:var(--s1)">
+            <span style="font-size:24px">👤</span>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:12px;font-weight:700">${cd.clientName || cd.clientId}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:#999">Connected ${cd.connectedAt ? new Date(cd.connectedAt.toDate()).toLocaleDateString() : '—'}</div>
+            </div>
+          </div>`;
+        }).join('');
+      document.getElementById('t-clients-list').innerHTML = items;
+    }
+  } catch(_) {}
+
+  _showPortal('trainer');
+}
+
+// ── Gym portal ─────────────────────────────────────────
+async function _loadGymPortal(gymDoc) {
+  const gym = gymDoc.data();
+  document.getElementById('portal-badge').textContent    = 'GYM PORTAL';
+  document.getElementById('g-gym-name').textContent      = gym.name || 'Your Gym';
+  document.getElementById('g-gym-tier').textContent      = (gym.subscriptionTier || '').toUpperCase().replace('_',' ');
+  document.getElementById('g-join-code').textContent     = gym.joinCode || '—';
+
+  // Member stats
+  try {
+    const memQ    = query(collection(db, 'gyms', gymDoc.id, 'members'));
+    const memSnap = await getDocs(memQ);
+    const active  = memSnap.docs.filter(d => d.data().status === 'active').length;
+    const pending = memSnap.docs.filter(d => d.data().status === 'pending').length;
+    const trainers= memSnap.docs.filter(d => d.data().isTrainer === true).length;
+    document.getElementById('g-stat-members').textContent  = active;
+    document.getElementById('g-stat-pending').textContent  = pending;
+    document.getElementById('g-stat-trainers').textContent = trainers;
+    document.getElementById('g-stat-checkins').textContent = '—';
+
+    if (active > 0) {
+      const items = memSnap.docs
+        .filter(d => d.data().status === 'active')
+        .map(d => {
+          const md = d.data();
+          return `<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:var(--s1)">
+            <span style="font-size:24px">${md.isTrainer ? '🎽' : '👤'}</span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-mono);font-size:12px;font-weight:700">${md.name || md.userId}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:#999">${md.isTrainer ? 'Trainer · ' : ''}Joined ${md.joinedAt ? new Date(md.joinedAt.toDate()).toLocaleDateString() : '—'}</div>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);font-weight:700">${(md.subscriptionTier||'').toUpperCase()}</div>
+          </div>`;
+        }).join('');
+      document.getElementById('g-members-list').innerHTML = items;
+    }
+  } catch(_) {}
+
+  _showPortal('gym');
+}
+
+// ── Nav handlers ───────────────────────────────────────
+window._tNav = (tab) => {
+  document.querySelectorAll('#trainer-top-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#trainer-portal .tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('ttab-' + tab)?.classList.add('active');
+  document.getElementById('t-' + tab)?.classList.add('active');
+};
+
+window._gNav = (tab) => {
+  document.querySelectorAll('#gym-top-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#gym-portal .tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('gtab-' + tab)?.classList.add('active');
+  document.getElementById('g-' + tab)?.classList.add('active');
+};
+
+window._copyCode = () => {
+  const el = document.querySelector('.code-badge');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    const orig = el.textContent;
+    el.textContent = 'COPIED!';
+    setTimeout(() => el.textContent = orig, 1400);
+  });
+};
+
+// ── Screen helpers ─────────────────────────────────────
+function _showScreen(which) {
+  document.getElementById('sign-in-screen').style.display = which === 'sign-in' ? 'flex' : 'none';
+  document.getElementById('portal-app').style.display     = which !== 'sign-in'  ? ''     : 'none';
+  document.getElementById('loading-screen').style.display = which === 'loading'  ? 'flex' : 'none';
+  document.getElementById('no-portal-screen').style.display    = 'none';
+  document.getElementById('coming-soon-screen').style.display  = 'none';
+  document.querySelectorAll('.portal-panel').forEach(p => p.classList.remove('active'));
+}
+
+function _showPortal(which) {
+  _showScreen('app');
+  document.getElementById(which + '-portal')?.classList.add('active');
+}
+
+function _showNoPortal(tier) {
+  _showScreen('app');
+  document.getElementById('no-portal-screen').style.display = 'flex';
+  if (tier) {
+    document.getElementById('no-portal-desc').textContent =
+      `Your account is on the "${tier}" tier — no portal subscription is linked. Upgrade in the KritFit app to access your professional tools here.`;
+  }
+}
+
+function _showComingSoon(name) {
+  _showScreen('app');
+  document.getElementById('cs-portal-name').textContent = name;
+  document.getElementById('coming-soon-screen').style.display = 'flex';
+  document.getElementById('portal-badge').textContent = name;
+}
+</script>
+</body>
+</html>

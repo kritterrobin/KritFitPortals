@@ -1,0 +1,27 @@
+{
+  "hosting": {
+    "target": "portals-site",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".gitignore"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "Cache-Control",          "value": "no-cache, no-store, must-revalidate" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
+        ]
+      }
+    ]
+  }
+}

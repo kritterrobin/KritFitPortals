@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "kritfit-afe3f"
+  },
+  "targets": {
+    "kritfit-afe3f": {
+      "hosting": {
+        "portals-site": [
+          "kritfit-portals"
+        ]
+      }
+    }
+  }
+}
