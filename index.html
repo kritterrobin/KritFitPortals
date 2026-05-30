@@ -257,6 +257,18 @@
     <button class="np-cta" onclick="window.open('https://kritfit.com','_blank')">GET A PORTAL SUBSCRIPTION →</button>
   </div>
 
+  <!-- Owner portal selector -->
+  <div id="owner-selector-screen" style="display:none;min-height:calc(100vh - 60px);align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:40px 20px;text-align:center">
+    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:3px;color:#999;text-transform:uppercase">Owner Mode</div>
+    <div style="font-family:var(--font-display);font-size:36px;letter-spacing:4px;color:var(--accent)">SELECT PORTAL</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px">
+      <button onclick="_ownerEnter('trainer')"  style="background:var(--accent);color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🎽 TRAINER</button>
+      <button onclick="_ownerEnter('gym')"      style="background:#c62828;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🏟️ GYM</button>
+      <button onclick="_ownerEnter('nutrition')" style="background:#e65100;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🥗 NUTRITIONIST</button>
+      <button onclick="_ownerEnter('sports')"   style="background:#1565c0;color:#fff;border:none;font-family:var(--font-mono);font-size:13px;font-weight:700;padding:14px 28px;cursor:pointer;letter-spacing:1px">🏆 SPORTS</button>
+    </div>
+  </div>
+
   <!-- Coming soon (nutritionist / therapist / sports) -->
   <div id="coming-soon-screen">
     <span class="cs-badge">Coming Soon</span>
@@ -468,6 +480,14 @@ window._doSignOut = async () => {
   await signOut(auth);
 };
 
+// ── Owner hash (SHA-256 of richardson.christopher@gmail.com) ──
+const OWNER_HASH = '71fd4838a07de72d9716c02b53595250f4ee4e84eb47171b49d7cd6a7550794a';
+
+async function _hashEmail(email) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.toLowerCase().trim()));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
 // ── Auth state ─────────────────────────────────────────
 onAuthStateChanged(auth, async user => {
   if (!user) {
@@ -476,6 +496,14 @@ onAuthStateChanged(auth, async user => {
   }
   _showScreen('loading');
   document.getElementById('user-name').textContent = user.displayName || user.email;
+
+  // Owner bypass — skip tier detection, show portal selector
+  const h = await _hashEmail(user.email);
+  if (h === OWNER_HASH) {
+    _showOwnerSelector();
+    return;
+  }
+
   await _detectAndRoute(user.uid);
 });
 
@@ -642,6 +670,25 @@ function _showNoPortal(tier) {
       `Your account is on the "${tier}" tier — no portal subscription is linked. Upgrade in the KritFit app to access your professional tools here.`;
   }
 }
+
+function _showOwnerSelector() {
+  _showScreen('app');
+  document.getElementById('portal-badge').textContent = 'OWNER MODE';
+  document.getElementById('owner-selector-screen').style.display = 'flex';
+}
+
+window._ownerEnter = async (which) => {
+  document.getElementById('owner-selector-screen').style.display = 'none';
+  if (which === 'trainer') {
+    await _loadTrainerPortal(auth.currentUser.uid);
+  } else if (which === 'gym') {
+    _showComingSoon('GYM PORTAL');
+  } else if (which === 'nutrition') {
+    _showComingSoon('NUTRITIONIST PORTAL');
+  } else if (which === 'sports') {
+    _showComingSoon('SPORTS HUB');
+  }
+};
 
 function _showComingSoon(name) {
   _showScreen('app');
