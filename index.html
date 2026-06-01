@@ -1040,7 +1040,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.06';
+const PORTALS_VERSION = '1.07';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2280,7 +2280,7 @@ const _SUBS_CATALOG = {
     desc: 'Add designated trainer accounts to your gym so members can connect and book sessions.',
     features: ['Designated trainer roles', 'Flexible fee structures (flat or %)', 'Client assignment', 'Trainer Portal access for each trainer'],
     stripeUrl: '#',
-    isActive: () => !!_gymData?.enabledModules?.includes('trainers'),
+    isActive: () => !!_gymData?.trainersModActive,  // set by Stripe webhook, not UI toggle
   },
   gym_store_mod: {
     badge: 'GYM ADD-ON', badgeColor: '#6a1b9a', icon: '🛍️',
@@ -2288,7 +2288,7 @@ const _SUBS_CATALOG = {
     desc: 'Sell supplements, merchandise and personal training packages directly to your gym members.',
     features: ['Product inventory management', 'In-app member storefront', 'Sales tracking & history', 'Digital & physical products'],
     stripeUrl: '#',
-    isActive: () => !!_gymData?.enabledModules?.includes('store'),
+    isActive: () => !!_gymData?.storeModActive,  // set by Stripe webhook, not UI toggle
   },
   nutritionist_portal: {
     badge: 'PROFESSIONAL', badgeColor: '#e65100', icon: '🥗',
