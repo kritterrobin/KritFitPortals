@@ -456,7 +456,7 @@
     <div id="top-bar-inner">
       <a class="brand" href="#">
         <div class="brand-name">KRIT<span>FIT</span></div>
-        <div class="brand-sub">Portals</div>
+        <div class="brand-sub" id="portals-version-sub">Portals</div>
       </a>
       <div id="top-bar-center" style="display:flex;align-items:center;gap:10px;justify-content:center">
         <span id="portal-type-pill"></span>
@@ -961,6 +961,9 @@ const app  = initializeApp({
 });
 const auth = getAuth(app);
 const db   = getFirestore(app);
+
+const PORTALS_VERSION = '1.00';
+document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym'
 let _currentUid       = null;
