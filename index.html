@@ -363,6 +363,47 @@
     .sb-msg-bubble.in  { background:var(--s1);color:var(--text);border-radius:12px 12px 12px 2px; }
     .sb-msg-time { font-family:var(--font-mono);font-size:9px;color:#bbb;padding:2px 4px 10px; }
 
+    /* ── Check-in list ── */
+    .ci-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:12px; }
+    .ci-item:hover { background:var(--s1); }
+    .ci-time { color:#999; font-size:10px; min-width:60px; }
+    .ci-name { font-weight:700; flex:1; }
+    .ci-code { color:#bbb; font-size:10px; min-width:70px; text-align:right; }
+    .ci-status-valid   { font-size:10px; font-weight:700; color:#2e7d32; padding:2px 6px; background:#e8f5e9; border-radius:3px; }
+    .ci-status-manual  { font-size:10px; font-weight:700; color:#e65100; padding:2px 6px; background:#fff3e0; border-radius:3px; }
+    .ci-status-expired { font-size:10px; font-weight:700; color:#c62828; padding:2px 6px; background:#ffebee; border-radius:3px; }
+
+    /* ── Trainer card ── */
+    .trainer-card { border:1px solid var(--border); border-radius:6px; padding:14px; margin-bottom:10px; background:var(--s1); display:flex; align-items:center; gap:12px; }
+    .trainer-avatar { width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:var(--font-display); letter-spacing:1px; flex-shrink:0; }
+    .trainer-info { flex:1; min-width:0; }
+    .trainer-name { font-family:var(--font-mono); font-size:13px; font-weight:700; }
+    .trainer-fee  { font-family:var(--font-mono); font-size:10px; color:#999; margin-top:2px; }
+
+    /* ── Class items ── */
+    .class-item { border:1px solid var(--border); border-radius:6px; padding:12px 14px; margin-bottom:8px; background:var(--s1); display:flex; align-items:center; gap:12px; }
+    .class-day  { font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--accent); min-width:36px; text-transform:uppercase; }
+    .class-info { flex:1; min-width:0; }
+    .class-name { font-family:var(--font-mono); font-size:12px; font-weight:700; }
+    .class-meta { font-family:var(--font-mono); font-size:10px; color:#999; margin-top:2px; }
+
+    /* ── QR section ── */
+    .qr-card { background:var(--s1); border:2px dashed #ddd; border-radius:8px; padding:28px 20px; text-align:center; margin-bottom:20px; }
+    .qr-card-title { font-family:var(--font-mono); font-size:11px; font-weight:700; color:#aaa; letter-spacing:3px; text-transform:uppercase; margin-bottom:16px; }
+    .qr-box { display:inline-block; background:#fff; padding:12px; border-radius:4px; margin-bottom:12px; }
+    .qr-url  { font-family:var(--font-mono); font-size:9px; color:var(--accent); word-break:break-all; margin-top:4px; opacity:.7; }
+    .qr-hint { font-family:var(--font-mono); font-size:10px; color:#bbb; letter-spacing:1px; }
+
+    /* ── Modal ── */
+    #g-modal { position:fixed; inset:0; z-index:400; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:20px; }
+    #g-modal-box { background:#fff; border-radius:10px; padding:28px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.22); }
+    .modal-title { font-family:var(--font-display); font-size:24px; letter-spacing:3px; color:var(--accent); margin-bottom:20px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+
+    /* Compact padding for ALL gym nav bars */
+    #gym-top-nav .nav-btn { padding:5px 8px; }
+    #gym-top-nav .nav-btn .icon { font-size:14px; }
+
     /* Mobile: sidebar hidden by default, toggle floats */
     @media(max-width:767px) {
       #sidebar { position:fixed; top:57px; left:0; z-index:180; width:268px; transform:translateX(-240px); transition:transform .22s ease; }
@@ -610,8 +651,10 @@
     <!-- NAV-1 -->
     <nav class="nav" id="gym-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
       <button class="nav-btn active" id="gtab-members"  onclick="_gNav('members')"> <span class="icon">👥</span>MEMBERS</button>
-      <button class="nav-btn"        id="gtab-payments" onclick="_gNav('payments')"><span class="icon">💳</span>PAYMENTS</button>
+      <button class="nav-btn"        id="gtab-checkins" onclick="_gNav('checkins')"><span class="icon">✅</span>CHECK-INS</button>
+      <button class="nav-btn"        id="gtab-entryqr"  onclick="_gNav('entryqr')"> <span class="icon">📷</span>ENTRY QR</button>
       <button class="nav-btn"        id="gtab-trainers" onclick="_gNav('trainers')"><span class="icon">🏋️</span>TRAINERS</button>
+      <button class="nav-btn"        id="gtab-payments" onclick="_gNav('payments')"><span class="icon">💳</span>PAYMENTS</button>
       <button class="nav-btn"        id="gtab-store"    onclick="_gNav('store')">   <span class="icon">🛍️</span>STORE</button>
       <button class="nav-btn"        id="gtab-setup"    onclick="_gNav('setup')">   <span class="icon">⚙️</span>SETUP</button>
     </nav>
@@ -670,12 +713,7 @@
 
       <!-- ANALYTICS sub-panel -->
       <div id="gm-analytics" style="display:none">
-        <div class="section-title">Check-ins Today</div>
-        <div id="g-checkins-today" class="ph-card">
-          <div class="ph-icon">✓</div>
-          <div class="ph-title">No check-ins yet today</div>
-        </div>
-        <div class="section-title" style="margin-top:20px">Date Range Report</div>
+        <div class="section-title">Date Range Report</div>
         <div class="toolbar">
           <input type="date" id="g-ci-from" class="form-input" style="width:150px">
           <input type="date" id="g-ci-to"   class="form-input" style="width:150px">
@@ -685,6 +723,28 @@
           <div class="ph-icon">📅</div>
           <div class="ph-title">Select a date range above</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ══ CHECK-INS TAB ══ -->
+    <div class="tab-panel" id="g-checkins">
+      <div class="section-title">Today's Check-Ins</div>
+      <div id="g-ci-today-list">
+        <div class="ph-card"><div class="ph-icon">✅</div><div class="ph-title">Loading…</div></div>
+      </div>
+      <div class="section-title" style="margin-top:24px">Manual Check-In</div>
+      <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Enter a member name or code to log a check-in at the door.</p>
+      <div class="toolbar">
+        <input type="text" id="g-ci-manual-input" placeholder="Member name or code…" style="flex:1" onkeydown="if(event.key==='Enter')_gManualCheckin()">
+        <button class="btn" id="g-ci-manual-btn" onclick="_gManualCheckin()">CHECK IN</button>
+      </div>
+      <div id="g-ci-manual-result"></div>
+    </div>
+
+    <!-- ══ ENTRY QR TAB ══ -->
+    <div class="tab-panel" id="g-entryqr">
+      <div id="g-entryqr-content">
+        <div class="ph-card"><div class="ph-icon">📷</div><div class="ph-title">Loading QR codes…</div></div>
       </div>
     </div>
 
@@ -705,14 +765,13 @@
 
     <!-- ══ TRAINERS TAB ══ -->
     <div class="tab-panel" id="g-trainers">
-      <div class="section-title">Gym Trainers</div>
       <div class="toolbar">
-        <button class="btn" onclick="_gAddTrainer()">+ ADD TRAINER</button>
+        <button class="btn" onclick="_gAddTrainer()">+ DESIGNATE TRAINER</button>
       </div>
       <div id="g-trainers-list" class="ph-card">
         <div class="ph-icon">🏋️</div>
         <div class="ph-title">No trainers yet</div>
-        Add a trainer from your member roster to give them trainer tools within your gym.
+        Designate any active member as a trainer to give them trainer access.
       </div>
     </div>
 
@@ -770,7 +829,7 @@
         <div id="gs-classes-list" class="ph-card">
           <div class="ph-icon">📅</div>
           <div class="ph-title">No classes yet</div>
-          Add group classes to display your schedule to members.
+          Add group classes to show your schedule to members.
         </div>
       </div>
 
@@ -817,6 +876,18 @@
 
   </div><!-- /gym-portal -->
 
+  <!-- ══ GYM MODAL ══ -->
+  <div id="g-modal" style="display:none;align-items:center;justify-content:center;padding:20px">
+    <div id="g-modal-box">
+      <div class="modal-title" id="g-modal-title">ADD</div>
+      <div id="g-modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="_gModalClose()">CANCEL</button>
+        <button class="btn" id="g-modal-save" onclick="_gModalSave()">SAVE</button>
+      </div>
+    </div>
+  </div>
+
     </div><!-- /portal-main -->
   </div><!-- /portal-workspace -->
 
@@ -853,8 +924,9 @@
   // Stub onclick handlers until module loads
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
-   '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gAddProduct',
-   '_gAddClass','_gLoadPeriod','_copyCode','_sidebarToggle','_sbOpen',
+   '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer',
+   '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin',
+   '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
@@ -1054,9 +1126,26 @@ async function _loadTrainerPortal(uid) {
 }
 
 // ── Gym portal ─────────────────────────────────────────
-let _gymId = null;
-let _gymData = null;
+let _gymId      = null;
+let _gymData    = null;
 let _gymMembers = [];
+let _gymClasses = [];
+let _qrLibLoaded = false;
+let _gModalSubmit = null;
+
+// ── Modal helpers ───────────────────────────────────────
+function _gOpenModal(title, bodyHtml, onSave) {
+  document.getElementById('g-modal-title').textContent = title;
+  document.getElementById('g-modal-body').innerHTML = bodyHtml;
+  const saveBtn = document.getElementById('g-modal-save');
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'SAVE';
+  _gModalSubmit = onSave;
+  const m = document.getElementById('g-modal');
+  m.style.display = 'flex';
+}
+window._gModalClose = () => { document.getElementById('g-modal').style.display = 'none'; };
+window._gModalSave  = () => _gModalSubmit?.();
 
 async function _loadGymPortal(gymDoc) {
   _portalType = 'gym';
@@ -1066,6 +1155,7 @@ async function _loadGymPortal(gymDoc) {
   document.getElementById('portal-badge').textContent = (_gymData.name || 'GYM') + ' PORTAL';
   _showPortal('gym');
   await _gdLoadMembers();
+  _gRenderTrainers();
   _gdPopulateSetup();
 }
 
@@ -1158,15 +1248,45 @@ window._gdCyclePay = async (el, memberId, current) => {
   await _gdSave(memberId, 'payStatus', next);
 };
 
-window._gAddMember = async () => {
-  const name = prompt('Member name:');
-  if (!name?.trim()) return;
-  const code = name.trim().toUpperCase().replace(/\s+/g,'-') + '-' + Math.random().toString(36).slice(2,5).toUpperCase();
-  try {
-    const {addDoc,collection:col,serverTimestamp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    await addDoc(col(db,'gyms',_gymId,'members'), { name:name.trim(), code, status:'active', payStatus:'unpaid', isTrainer:false, createdAt:serverTimestamp() });
-    await _gdLoadMembers();
-  } catch(e) { console.error('[Gym] add member:', e); }
+window._gAddMember = () => {
+  const tiers = _gymData?.membershipTiers || [];
+  const tierOpts = tiers.map(t => `<option value="${t.name}">${t.name} — ${_gymData.currency||'$'}${t.price}/${t.interval}</option>`).join('');
+  _gOpenModal('ADD MEMBER', `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Name *</label><input type="text" id="gm-nm" class="form-input" placeholder="Full name" autofocus></div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select id="gm-st" class="form-input"><option value="active">Active</option><option value="pending">Pending</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="gm-em" class="form-input" placeholder="optional"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input type="text" id="gm-ph" class="form-input" placeholder="optional"></div>
+    </div>
+    <div class="form-row">
+      ${tiers.length ? `<div class="form-group"><label class="form-label">Membership Tier</label><select id="gm-tr" class="form-input"><option value="">— No tier —</option>${tierOpts}</select></div>` : '<div class="form-group"></div>'}
+      <div class="form-group"><label class="form-label">Valid To</label><input type="date" id="gm-vt" class="form-input"></div>
+    </div>
+  `, async () => {
+    const name = document.getElementById('gm-nm').value.trim();
+    if (!name) { alert('Name is required.'); return; }
+    const code = name.toUpperCase().replace(/\s+/g,'-') + '-' + Math.random().toString(36).slice(2,5).toUpperCase();
+    const data = { name, code, status: document.getElementById('gm-st').value || 'active', payStatus: 'unpaid', isTrainer: false, addedAt: serverTimestamp() };
+    const email = document.getElementById('gm-em')?.value.trim();
+    const phone = document.getElementById('gm-ph')?.value.trim();
+    const tier  = document.getElementById('gm-tr')?.value;
+    const validTo = document.getElementById('gm-vt')?.value;
+    if (email)   data.email   = email;
+    if (phone)   data.phone   = phone;
+    if (tier)    data.membershipTier = tier;
+    if (validTo) data.validTo = validTo;
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      await addDoc(collection(db,'gyms',_gymId,'members'), data);
+      _gModalClose();
+      await _gdLoadMembers();
+    } catch(e) { console.error('[Gym] add member:', e); btn.disabled = false; btn.textContent = 'SAVE'; }
+  });
 };
 
 window._gdRemoveMember = async (memberId, name) => {
@@ -1306,19 +1426,41 @@ function _gdRenderTiers(tiers) {
     </div>`).join('');
 }
 
-window._gAddTier = async () => {
-  const name     = prompt('Tier name (e.g. Standard, Premium):');
-  if (!name?.trim()) return;
-  const price    = parseFloat(prompt('Price:') || '0');
-  const interval = prompt('Interval (month/year/week/session/term):') || 'month';
-  const terms    = prompt('Terms text (optional):') || '';
-  const tiers    = [...(_gymData?.membershipTiers || []), { name:name.trim(), price, interval, terms }];
-  try {
-    const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    await updateDoc(d2(db,'gyms',_gymId), { membershipTiers: tiers });
-    _gymData.membershipTiers = tiers;
-    _gdRenderTiers(tiers);
-  } catch(e) { alert('Save failed.'); }
+window._gAddTier = () => {
+  _gOpenModal('ADD TIER', `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Tier Name *</label><input type="text" id="gt-nm" class="form-input" placeholder="e.g. Standard, Premium, Student" autofocus></div>
+      <div class="form-group"><label class="form-label">Price *</label><input type="number" id="gt-pr" class="form-input" min="0" step="0.01" placeholder="0.00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Billing Interval</label>
+        <select id="gt-iv" class="form-input">
+          <option value="month">Monthly</option>
+          <option value="year">Yearly</option>
+          <option value="week">Weekly</option>
+          <option value="session">Per Session</option>
+          <option value="term">Per Term</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Terms Text</label><input type="text" id="gt-tx" class="form-input" placeholder="optional"></div>
+    </div>
+  `, async () => {
+    const name = document.getElementById('gt-nm').value.trim();
+    const price = parseFloat(document.getElementById('gt-pr').value) || 0;
+    const interval = document.getElementById('gt-iv').value || 'month';
+    const terms = document.getElementById('gt-tx').value.trim();
+    if (!name) { alert('Tier name is required.'); return; }
+    const tiers = [...(_gymData?.membershipTiers || []), { name, price, interval, terms }];
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(d2(db,'gyms',_gymId), { membershipTiers: tiers });
+      _gymData.membershipTiers = tiers;
+      _gdRenderTiers(tiers);
+      _gModalClose();
+    } catch(e) { console.error('[Gym] add tier:', e); btn.disabled = false; btn.textContent = 'SAVE'; }
+  });
 };
 
 window._gdDeleteTier = async (index) => {
@@ -1333,9 +1475,311 @@ window._gdDeleteTier = async (index) => {
   } catch(e) { alert('Save failed.'); }
 };
 
-window._gAddTrainer  = () => alert('Select a member and mark isTrainer — coming soon.');
-window._gAddProduct  = () => alert('Store product editor — coming soon.');
-window._gAddClass    = () => alert('Class editor — coming soon.');
+// ── Trainers ────────────────────────────────────────────
+window._gAddTrainer = () => {
+  const nonTrainers = _gymMembers.filter(m => !m.isTrainer && m.status !== 'inactive');
+  if (!nonTrainers.length) {
+    alert('No eligible members to designate. Add active members first.');
+    return;
+  }
+  const opts = nonTrainers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  _gOpenModal('DESIGNATE TRAINER', `
+    <div class="form-row full">
+      <div class="form-group"><label class="form-label">Member *</label>
+        <select id="gtr-mb" class="form-input">${opts}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Fee Type</label>
+        <select id="gtr-ft" class="form-input">
+          <option value="none">None / Volunteer</option>
+          <option value="flat">Flat Rate (per session)</option>
+          <option value="commission">Commission (%)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Fee Amount</label>
+        <input type="number" id="gtr-fv" class="form-input" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+  `, async () => {
+    const memberId = document.getElementById('gtr-mb').value;
+    const feeType  = document.getElementById('gtr-ft').value;
+    const feeValue = parseFloat(document.getElementById('gtr-fv').value) || 0;
+    if (!memberId) return;
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(d2(db,'gyms',_gymId,'members',memberId), { isTrainer: true, trainerFeeType: feeType, trainerFeeValue: feeValue });
+      const m = _gymMembers.find(x => x.id === memberId);
+      if (m) { m.isTrainer = true; m.trainerFeeType = feeType; m.trainerFeeValue = feeValue; }
+      _gRenderTrainers();
+      document.getElementById('g-stat-trainers').textContent = _gymMembers.filter(x => x.isTrainer).length;
+      _gModalClose();
+    } catch(e) { console.error('[Gym] designate trainer:', e); btn.disabled = false; btn.textContent = 'SAVE'; }
+  });
+};
+
+window._gdRemoveTrainer = async (memberId, name) => {
+  if (!confirm(`Remove ${name} as trainer?`)) return;
+  try {
+    const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db,'gyms',_gymId,'members',memberId), { isTrainer: false });
+    const m = _gymMembers.find(x => x.id === memberId);
+    if (m) m.isTrainer = false;
+    _gRenderTrainers();
+    document.getElementById('g-stat-trainers').textContent = _gymMembers.filter(x => x.isTrainer).length;
+  } catch(e) { console.error('[Gym] remove trainer:', e); }
+};
+
+function _gRenderTrainers() {
+  const trainers = _gymMembers.filter(m => m.isTrainer === true);
+  const el = document.getElementById('g-trainers-list');
+  if (!el) return;
+  if (!trainers.length) {
+    el.innerHTML = '<div class="ph-card"><div class="ph-icon">🏋️</div><div class="ph-title">No trainers yet</div>Designate any active member as a trainer to give them trainer access.</div>';
+    return;
+  }
+  const cur = _gymData?.currency || '$';
+  el.innerHTML = trainers.map(m => {
+    const feeLabel = m.trainerFeeType === 'commission' ? `${m.trainerFeeValue || 0}% commission`
+                   : m.trainerFeeType === 'flat'       ? `${cur}${m.trainerFeeValue || 0} / session`
+                   : 'No fee';
+    return `<div class="trainer-card">
+      <div class="trainer-avatar">${(m.name || '?')[0].toUpperCase()}</div>
+      <div class="trainer-info">
+        <div class="trainer-name">${m.name || 'Unnamed'}</div>
+        <div class="trainer-fee">${feeLabel}</div>
+        ${m.code ? `<div class="trainer-fee" style="color:#bbb">${m.code}</div>` : ''}
+      </div>
+      <button class="btn-outline" onclick="_gdRemoveTrainer('${m.id}','${(m.name||'').replace(/'/g,'\\\'')}')"
+        style="font-size:10px;padding:4px 12px;color:#c62828;border-color:#c62828">REMOVE</button>
+    </div>`;
+  }).join('');
+}
+
+// ── Check-ins ───────────────────────────────────────────
+window._gManualCheckin = async () => {
+  const q = (document.getElementById('g-ci-manual-input').value || '').trim();
+  if (!q) return;
+  const member = _gymMembers.find(m =>
+    (m.code || '').toLowerCase() === q.toLowerCase() ||
+    (m.name || '').toLowerCase() === q.toLowerCase()
+  );
+  const today = new Date().toISOString().slice(0, 10);
+  const btn   = document.getElementById('g-ci-manual-btn');
+  const orig  = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Checking in…';
+  try {
+    const data = {
+      name:        member?.name || q,
+      date:        today,
+      timestamp:   serverTimestamp(),
+      status:      'manual',
+      memberCode:  member?.code || '',
+      memberDocId: member?.id   || null,
+      uid:         null
+    };
+    await addDoc(collection(db, 'gyms', _gymId, 'checkins'), data);
+    document.getElementById('g-ci-manual-input').value = '';
+    const res = document.getElementById('g-ci-manual-result');
+    res.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--accent);padding:8px 0">✓ ${data.name} checked in.</div>`;
+    setTimeout(() => { res.innerHTML = ''; }, 3000);
+    await _gLoadCheckins();
+    document.getElementById('g-stat-checkins').textContent =
+      (parseInt(document.getElementById('g-stat-checkins').textContent) || 0) + 1;
+  } catch(e) {
+    console.error('[Gym] manual check-in:', e);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+};
+
+async function _gLoadCheckins() {
+  const today = new Date().toISOString().slice(0, 10);
+  const el = document.getElementById('g-ci-today-list');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-family:var(--font-mono);font-size:11px">Loading…</div>';
+  try {
+    const ciQ  = query(collection(db, 'gyms', _gymId, 'checkins'),
+                       where('date', '==', today), orderBy('timestamp', 'desc'));
+    const snap = await getDocs(ciQ);
+    const cis  = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!cis.length) {
+      el.innerHTML = '<div class="ph-card"><div class="ph-icon">✅</div><div class="ph-title">No check-ins yet today</div></div>';
+      return;
+    }
+    el.innerHTML = cis.map(c => {
+      const t = c.timestamp?.toDate?.();
+      const timeStr = t ? t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+      const st = c.status || 'valid';
+      const stCls = st === 'valid' ? 'ci-status-valid' : st === 'manual' ? 'ci-status-manual' : 'ci-status-expired';
+      return `<div class="ci-item">
+        <span class="ci-time">${timeStr}</span>
+        <span class="ci-name">${c.name || c.memberName || '—'}</span>
+        <span class="ci-code">${c.memberCode || ''}</span>
+        <span class="${stCls}">${st.toUpperCase()}</span>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error('[Gym] load checkins:', e); }
+}
+
+// ── Entry QR ────────────────────────────────────────────
+async function _loadQRLib() {
+  if (_qrLibLoaded) return;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload  = () => { _qrLibLoaded = true; resolve(); };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function _gRenderEntryQR() {
+  const container = document.getElementById('g-entryqr-content');
+  if (!container || !_gymId) return;
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-family:var(--font-mono);font-size:11px">Loading QR codes…</div>';
+  try {
+    await _loadQRLib();
+    const gymJoinUrl = `https://app.kritfit.com/?gym=${_gymId}`;
+    const tiers = _gymData?.membershipTiers || [];
+    const gymName = (_gymData?.name || 'GYM').toUpperCase();
+    let html = `
+      <div class="section-title">Gym Join QR</div>
+      <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:16px">Display at your front desk. Members scan to join in the KritFit app.</p>
+      <div class="qr-card">
+        <div class="qr-card-title">JOIN ${gymName}</div>
+        <div class="qr-box" id="qr-gym-main"></div>
+        <div class="qr-url">${gymJoinUrl}</div>
+        <div class="qr-hint">Members choose their tier after scanning</div>
+      </div>`;
+    if (tiers.length) {
+      html += `<div class="section-title">Per-Tier Invite QRs</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:16px">Share a tier-specific QR to send members directly to that pricing option.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px">`;
+      tiers.forEach((t, i) => {
+        html += `<div class="qr-card" style="padding:16px">
+          <div class="qr-card-title">${t.name.toUpperCase()}</div>
+          <div class="qr-box" id="qr-tier-${i}" style="margin:0 auto"></div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent);margin-top:8px;font-weight:700">${_gymData.currency||'$'}${t.price} / ${t.interval}</div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    container.innerHTML = html;
+    new QRCode(document.getElementById('qr-gym-main'), {
+      text: gymJoinUrl, width: 160, height: 160, colorDark: '#2d7d32', colorLight: '#ffffff'
+    });
+    tiers.forEach((t, i) => {
+      const url = `https://app.kritfit.com/?gym=${_gymId}&tier=${encodeURIComponent(t.name)}`;
+      new QRCode(document.getElementById('qr-tier-' + i), {
+        text: url, width: 120, height: 120, colorDark: '#2d7d32', colorLight: '#ffffff'
+      });
+    });
+  } catch(e) {
+    container.innerHTML = `<div class="ph-card"><div class="ph-icon">📷</div><div class="ph-title">QR generation failed</div>${e.message}</div>`;
+    console.error('[Gym] entry QR:', e);
+  }
+}
+
+// ── Classes ─────────────────────────────────────────────
+window._gAddClass = () => {
+  _gOpenModal('ADD CLASS', `
+    <div class="form-row full">
+      <div class="form-group"><label class="form-label">Class Name *</label><input type="text" id="gcl-nm" class="form-input" placeholder="e.g. Morning Yoga, HIIT, Spin" autofocus></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Day *</label>
+        <select id="gcl-dy" class="form-input">
+          <option value="mon">Monday</option><option value="tue">Tuesday</option>
+          <option value="wed">Wednesday</option><option value="thu">Thursday</option>
+          <option value="fri">Friday</option><option value="sat">Saturday</option>
+          <option value="sun">Sunday</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Start Time</label><input type="time" id="gcl-tm" class="form-input" value="09:00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Duration (minutes)</label><input type="number" id="gcl-du" class="form-input" value="60" min="5" max="480"></div>
+      <div class="form-group"><label class="form-label">Instructor</label><input type="text" id="gcl-in" class="form-input" placeholder="optional"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Max Capacity</label><input type="number" id="gcl-mc" class="form-input" placeholder="leave blank = unlimited" min="1"></div>
+      <div class="form-group"></div>
+    </div>
+  `, async () => {
+    const title = document.getElementById('gcl-nm').value.trim();
+    if (!title) { alert('Class name is required.'); return; }
+    const day      = document.getElementById('gcl-dy').value;
+    const time     = document.getElementById('gcl-tm').value || '09:00';
+    const duration = parseInt(document.getElementById('gcl-du').value) || 60;
+    const instructor = document.getElementById('gcl-in').value.trim();
+    const maxCapacity = parseInt(document.getElementById('gcl-mc').value) || null;
+    const data = { title, days: [day], sessions: [{ time, duration, instructor }], createdAt: serverTimestamp() };
+    if (maxCapacity) data.maxCapacity = maxCapacity;
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const {addDoc:add2,collection:col2,serverTimestamp:st2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const ref = await add2(col2(db, 'gyms', _gymId, 'classes'), { ...data, createdAt: st2() });
+      _gymClasses = [..._gymClasses, { id: ref.id, ...data, createdAt: null }];
+      _gdRenderClasses();
+      _gModalClose();
+    } catch(e) { console.error('[Gym] add class:', e); btn.disabled = false; btn.textContent = 'SAVE'; }
+  });
+};
+
+window._gdDeleteClass = async (classId) => {
+  if (!confirm('Delete this class?')) return;
+  try {
+    const {deleteDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(d2(db, 'gyms', _gymId, 'classes', classId));
+    _gymClasses = _gymClasses.filter(c => c.id !== classId);
+    _gdRenderClasses();
+  } catch(e) { console.error('[Gym] delete class:', e); }
+};
+
+const _DAY_ORDER = ['mon','tue','wed','thu','fri','sat','sun'];
+const _DAY_LABEL = { mon:'Mon', tue:'Tue', wed:'Wed', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun' };
+
+function _gdRenderClasses() {
+  const el = document.getElementById('gs-classes-list');
+  if (!el) return;
+  if (!_gymClasses.length) {
+    el.innerHTML = '<div class="ph-card"><div class="ph-icon">📅</div><div class="ph-title">No classes yet</div>Add group classes to show your schedule to members.</div>';
+    return;
+  }
+  const sorted = [..._gymClasses].sort((a, b) => {
+    const da = _DAY_ORDER.indexOf((a.days || ['mon'])[0]);
+    const db2 = _DAY_ORDER.indexOf((b.days || ['mon'])[0]);
+    if (da !== db2) return da - db2;
+    return ((a.sessions || [])[0]?.time || '').localeCompare((b.sessions || [])[0]?.time || '');
+  });
+  el.innerHTML = sorted.map(c => {
+    const day  = (c.days || ['mon'])[0];
+    const sess = (c.sessions || [])[0] || {};
+    const parts = [sess.time || '—', sess.duration ? `${sess.duration}min` : null, sess.instructor || null, c.maxCapacity ? `max ${c.maxCapacity}` : null].filter(Boolean);
+    return `<div class="class-item">
+      <span class="class-day">${_DAY_LABEL[day] || day}</span>
+      <div class="class-info">
+        <div class="class-name">${c.title || 'Unnamed'}</div>
+        <div class="class-meta">${parts.join(' · ')}</div>
+      </div>
+      <button class="tbl-action" onclick="_gdDeleteClass('${c.id}')" title="Delete">🗑️</button>
+    </div>`;
+  }).join('');
+}
+
+async function _gdLoadClasses() {
+  try {
+    const snap = await getDocs(collection(db, 'gyms', _gymId, 'classes'));
+    _gymClasses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _gdRenderClasses();
+  } catch(e) { console.error('[Gym] load classes:', e); }
+}
+
+window._gAddProduct = () => alert('Store product editor — coming soon.');
 
 // ── Nav handlers ───────────────────────────────────────
 window._tNav = (tab) => {
@@ -1350,9 +1794,11 @@ window._gNav = (tab) => {
   document.querySelectorAll('#gym-portal .tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('gtab-' + tab)?.classList.add('active');
   document.getElementById('g-' + tab)?.classList.add('active');
-  // Show/hide sub-navs
   document.getElementById('gym-members-subnav').style.display = tab === 'members' ? '' : 'none';
   document.getElementById('gym-setup-subnav').style.display   = tab === 'setup'   ? '' : 'none';
+  if (tab === 'checkins') _gLoadCheckins();
+  if (tab === 'entryqr')  _gRenderEntryQR();
+  if (tab === 'trainers') _gRenderTrainers();
 };
 
 window._gMembersTab = (tab) => {
@@ -1368,6 +1814,7 @@ window._gSetupTab = (tab) => {
   ['gym','classes','modules','tiers','stripe','archive'].forEach(t =>
     document.getElementById('gs-' + t).style.display = t === tab ? '' : 'none'
   );
+  if (tab === 'classes' && !_gymClasses.length) _gdLoadClasses();
 };
 
 window._copyCode = () => {
