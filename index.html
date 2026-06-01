@@ -2290,12 +2290,12 @@ const _SUBS_CATALOG = {
 };
 
 const _PORTAL_SUBS = {
-  gym:          ['kf_user', 'kf_trainer_personal', 'gym_portal', 'gym_trainers_mod', 'gym_store_mod'],
-  trainer:      ['kf_user', 'kf_trainer_personal', 'gym_portal'],
-  nutritionist: ['kf_user'],
-  therapist:    ['kf_user'],
-  sports:       ['kf_user'],
-  store:        ['kf_user', 'gym_store_mod'],
+  gym:          ['kf_trainer_personal', 'gym_portal', 'gym_trainers_mod', 'gym_store_mod'],
+  trainer:      ['kf_trainer_personal', 'gym_portal'],
+  nutritionist: [],
+  therapist:    [],
+  sports:       [],
+  store:        ['gym_store_mod'],
 };
 
 window._showSubscriptions = () => {
@@ -2312,7 +2312,11 @@ window._subsClose = () => {
 
 function _renderSubsCards() {
   const grid = document.getElementById('subs-grid');
-  const keys = _PORTAL_SUBS[_portalType] || ['kf_user'];
+  const keys = _PORTAL_SUBS[_portalType] || [];
+  if (!keys.length) {
+    grid.innerHTML = '<div class="ph-card" style="grid-column:1/-1"><div class="ph-icon">✅</div><div class="ph-title">All included</div>Your current subscription covers everything available for this portal.</div>';
+    return;
+  }
   grid.innerHTML = keys.map(key => {
     const s = _SUBS_CATALOG[key];
     if (!s) return '';
