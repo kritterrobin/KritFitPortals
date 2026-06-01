@@ -428,7 +428,8 @@
 
     /* ── Subscriptions screen ── */
     #subs-screen {
-      flex:1; min-height:calc(100vh - 57px); background:var(--s1);
+      position:fixed; top:57px; left:0; right:0; bottom:0;
+      z-index:190; background:var(--s1); overflow-y:auto;
       flex-direction:column;
     }
     .subs-topbar {
@@ -1039,7 +1040,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.01';
+const PORTALS_VERSION = '1.06';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1950,7 +1951,7 @@ function _showScreen(which) {
   document.getElementById('no-portal-screen').style.display      = 'none';
   document.getElementById('coming-soon-screen').style.display    = 'none';
   document.getElementById('portal-workspace').style.display      = 'none';
-  document.getElementById('subs-screen').style.display           = 'none';
+  document.getElementById('subs-screen').style.display           = 'none';  // fixed overlay — always close on nav
   document.querySelectorAll('.portal-panel').forEach(p => p.classList.remove('active'));
 }
 
@@ -2341,21 +2342,12 @@ const _PORTAL_SUBS = {
 };
 
 window._showSubscriptions = () => {
-  // On mobile the sidebar is position:fixed — collapse it so it doesn't cover the subs screen
-  const sb = document.getElementById('sidebar');
-  sb.classList.remove('open');
-  document.getElementById('sb-arrow').textContent = '▶';
-  document.getElementById('portal-workspace').style.display = 'none';
-  const sc = document.getElementById('subs-screen');
-  sc.style.display = 'flex';
+  document.getElementById('subs-screen').style.display = 'flex';
   _renderSubsCards();
 };
 
 window._subsClose = () => {
   document.getElementById('subs-screen').style.display = 'none';
-  document.getElementById('portal-workspace').style.display = 'flex';
-  // Re-show sidebar arrow correctly (collapsed state)
-  document.getElementById('sb-arrow').textContent = '▶';
 };
 
 function _renderSubsCards() {
