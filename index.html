@@ -2313,19 +2313,18 @@ window._subsClose = () => {
 function _renderSubsCards() {
   const grid = document.getElementById('subs-grid');
   const keys = _PORTAL_SUBS[_portalType] || [];
-  if (!keys.length) {
-    grid.innerHTML = '<div class="ph-card" style="grid-column:1/-1"><div class="ph-icon">✅</div><div class="ph-title">All included</div>Your current subscription covers everything available for this portal.</div>';
+  const available = keys.filter(key => {
+    const s = _SUBS_CATALOG[key];
+    return s && !(s.isActive ? s.isActive() : false);
+  });
+  if (!available.length) {
+    grid.innerHTML = '<div class="ph-card" style="grid-column:1/-1"><div class="ph-icon">✅</div><div class="ph-title">All included</div>Your current subscriptions cover everything available for this portal.</div>';
     return;
   }
-  grid.innerHTML = keys.map(key => {
+  grid.innerHTML = available.map(key => {
     const s = _SUBS_CATALOG[key];
-    if (!s) return '';
-    const active = s.isActive ? s.isActive() : false;
-    const ctaHtml = active
-      ? `<div class="sub-active-flag">✓ ACTIVE</div>
-         <a href="#" onclick="event.preventDefault();_subsClose();_sbOpen('billing')" class="sub-cta-btn sub-manage">MANAGE BILLING →</a>`
-      : `<a href="${s.stripeUrl}" class="sub-cta-btn" ${s.stripeUrl === '#' ? 'onclick="event.preventDefault();alert(\'Stripe checkout coming soon\')"' : 'target="_blank"'}>SUBSCRIBE →</a>`;
-    return `<div class="sub-card${active ? ' sub-active' : ''}">
+    const ctaHtml = `<a href="${s.stripeUrl}" class="sub-cta-btn" ${s.stripeUrl === '#' ? 'onclick="event.preventDefault();alert(\'Stripe checkout coming soon\')"' : 'target="_blank"'}>SUBSCRIBE →</a>`;
+    return `<div class="sub-card">
       <span class="sub-badge" style="background:${s.badgeColor}">${s.badge}</span>
       <div class="sub-icon">${s.icon}</div>
       <div class="sub-name">${s.name}</div>
