@@ -336,6 +336,28 @@
     /* Portal main */
     #portal-main { flex:1; min-width:0; display:flex; flex-direction:column; }
 
+    /* ── Sidebar overlay panel ── */
+    #sb-overlay { position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.35); }
+    #sb-panel {
+      position:absolute;right:0;top:0;bottom:0;width:min(480px,100vw);
+      background:#fff;display:flex;flex-direction:column;
+      box-shadow:-4px 0 32px rgba(0,0,0,.15);
+      transform:translateX(100%);transition:transform .25s ease;
+    }
+    #sb-overlay.open #sb-panel { transform:translateX(0); }
+    #sb-panel-body::-webkit-scrollbar { width:4px; }
+    #sb-panel-body::-webkit-scrollbar-thumb { background:#ddd;border-radius:2px; }
+    .sb-thread-item { display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s; }
+    .sb-thread-item:hover { background:var(--s1); }
+    .sb-thread-avatar { width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-family:var(--font-display);letter-spacing:1px;flex-shrink:0; }
+    .sb-msg-row { display:flex;padding:4px 14px; }
+    .sb-msg-row.out { justify-content:flex-end; }
+    .sb-msg-row.in  { justify-content:flex-start; }
+    .sb-msg-bubble { max-width:72%;padding:9px 13px;font-family:var(--font-mono);font-size:12px;line-height:1.5;word-break:break-word; }
+    .sb-msg-bubble.out { background:var(--accent);color:#fff;border-radius:12px 12px 2px 12px; }
+    .sb-msg-bubble.in  { background:var(--s1);color:var(--text);border-radius:12px 12px 12px 2px; }
+    .sb-msg-time { font-family:var(--font-mono);font-size:9px;color:#bbb;padding:2px 4px 10px; }
+
     /* Mobile: sidebar hidden by default, toggle floats */
     @media(max-width:767px) {
       #sidebar { position:fixed; top:57px; left:0; z-index:180; width:268px; transform:translateX(-240px); transition:transform .22s ease; }
@@ -788,6 +810,29 @@
     </div><!-- /portal-main -->
   </div><!-- /portal-workspace -->
 
+  <!-- SIDEBAR OVERLAY PANEL -->
+  <div id="sb-overlay" style="display:none" onclick="_sbOverlayClick(event)">
+    <div id="sb-panel">
+      <!-- Panel header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:2px solid var(--border);flex-shrink:0;background:var(--s1)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="sb-panel-back" onclick="_sbInboxBack()" style="display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--accent);padding:0 8px 0 0;line-height:1">‹</button>
+          <span id="sb-panel-title" style="font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text)">INBOX</span>
+        </div>
+        <button onclick="_sbClose()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#bbb;padding:2px 8px;line-height:1">✕</button>
+      </div>
+      <!-- Panel body -->
+      <div id="sb-panel-body" style="flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin"></div>
+      <!-- Compose footer (thread view only) -->
+      <div id="sb-compose" style="display:none;padding:12px 14px;border-top:1px solid var(--border);background:#fff;flex-shrink:0">
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <textarea id="sb-compose-input" rows="2" placeholder="Type a message…" style="flex:1;padding:9px 12px;border:2px solid #ddd;border-radius:6px;font-family:var(--font-mono);font-size:12px;color:var(--text);resize:none;line-height:1.4" onkeydown="_sbComposeKeydown(event)"></textarea>
+          <button onclick="_sbSendMessage()" style="background:var(--accent);color:#fff;border:none;font-family:var(--font-mono);font-size:11px;font-weight:700;padding:9px 16px;cursor:pointer;border-radius:6px;align-self:flex-end;letter-spacing:.5px">SEND</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /portal-app -->
 
 
@@ -799,13 +844,15 @@
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gAddProduct',
-   '_gAddClass','_gLoadPeriod','_copyCode','_sidebarToggle','_sbOpen'].forEach(fn => window[fn] = () => {});
+   '_gAddClass','_gLoadPeriod','_copyCode','_sidebarToggle','_sbOpen',
+   '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs }
+import { getFirestore, doc, getDoc, collection, query, where, getDocs,
+          onSnapshot, addDoc, serverTimestamp, orderBy, limit }
                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const app  = initializeApp({
@@ -818,6 +865,11 @@ const app  = initializeApp({
 });
 const auth = getAuth(app);
 const db   = getFirestore(app);
+
+let _portalType       = null;   // 'trainer' | 'gym'
+let _currentUid       = null;
+const _sbMsgListeners = {};     // key -> unsubscribe fn  (watcher_*, list_*, thread)
+let _sbActiveThread   = null;   // { id, clientName } currently open in thread view
 
 // ── Auth handlers ──────────────────────────────────────
 window._doSignIn = async () => {
@@ -897,6 +949,8 @@ async function _detectAndRoute(uid) {
 
 // ── Trainer portal ─────────────────────────────────────
 async function _loadTrainerPortal(uid) {
+  _portalType = 'trainer';
+  _currentUid = uid;
   document.getElementById('portal-badge').textContent = 'TRAINER PORTAL';
 
   // Connection code
@@ -933,6 +987,7 @@ async function _loadTrainerPortal(uid) {
   } catch(_) {}
 
   _showPortal('trainer');
+  _sbStartInboxWatcher();
 }
 
 // ── Gym portal ─────────────────────────────────────────
@@ -941,6 +996,8 @@ let _gymData = null;
 let _gymMembers = [];
 
 async function _loadGymPortal(gymDoc) {
+  _portalType = 'gym';
+  _currentUid = gymDoc.data().ownerId;
   _gymId   = gymDoc.id;
   _gymData = gymDoc.data();
   document.getElementById('portal-badge').textContent = (_gymData.name || 'GYM') + ' PORTAL';
@@ -1296,9 +1353,7 @@ function _showComingSoon(name) {
   document.getElementById('portal-badge').textContent = name;
 }
 
-// ── Sidebar ────────────────────────────────────────────
-let _sbOpen_fn = null;
-
+// ── Sidebar toggle ─────────────────────────────────────
 window._sidebarToggle = () => {
   const sb   = document.getElementById('sidebar');
   const open = sb.classList.toggle('collapsed');
@@ -1309,10 +1364,261 @@ window._sidebarToggle = () => {
   document.getElementById('sb-arrow').textContent = sb.classList.contains('collapsed') ? '▶' : '◀';
 };
 
-window._sbOpen = (section) => {
-  // Overlays built in subsequent passes — stubs for now
-  console.log('_sbOpen', section);
+// ── Sidebar overlay ────────────────────────────────────
+window._sbOpen = async (section) => {
+  const overlay = document.getElementById('sb-overlay');
+  overlay.style.display = '';
+  requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('open')));
+
+  _sbActiveThread = null;
+  document.getElementById('sb-panel-back').style.display = 'none';
+  document.getElementById('sb-compose').style.display    = 'none';
+  document.getElementById('sb-panel-title').textContent  =
+    ({inbox:'INBOX',calendar:'CALENDAR',revenue:'REVENUE',notifications:'NOTIFICATIONS',billing:'MANAGE BILLING','add-store':'ADD STORE'})[section] || section.toUpperCase();
+
+  const body = document.getElementById('sb-panel-body');
+  if      (section === 'inbox')         await _sbRenderInboxList(body);
+  else if (section === 'revenue')       await _sbRenderRevenue(body);
+  else if (section === 'calendar')      body.innerHTML = _sbPh('📅','CALENDAR','Session scheduling and availability — coming soon.');
+  else if (section === 'notifications') body.innerHTML = _sbPh('🔔','NOTIFICATIONS','System alerts and activity notifications — coming soon.');
+  else if (section === 'billing')       body.innerHTML = _sbPh('💳','MANAGE BILLING','Portal subscription billing is managed via the KritFit app.<br><br>Stripe Customer Portal integration coming soon.');
+  else if (section === 'add-store')     body.innerHTML = _sbPh('🛍️','ADD STORE','Add the Store module for <strong>$3.45/mo</strong>.<br><br>Manage product inventory and sell directly to your clients. Coming soon.');
 };
+
+window._sbClose = () => {
+  const overlay = document.getElementById('sb-overlay');
+  overlay.classList.remove('open');
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    // Clean up list + thread listeners; keep watcher_ listeners for badge
+    Object.keys(_sbMsgListeners).filter(k => !k.startsWith('watcher_')).forEach(k => {
+      _sbMsgListeners[k](); delete _sbMsgListeners[k];
+    });
+    _sbActiveThread = null;
+  }, 260);
+};
+
+window._sbOverlayClick = (e) => {
+  if (e.target === document.getElementById('sb-overlay')) _sbClose();
+};
+
+function _sbPh(icon, title, text) {
+  return `<div style="padding:40px 24px;text-align:center;font-family:var(--font-mono)">
+    <div style="font-size:40px;margin-bottom:14px;opacity:.4">${icon}</div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#ccc;margin-bottom:10px">${title}</div>
+    <div style="font-size:11px;color:#bbb;line-height:1.8">${text}</div>
+  </div>`;
+}
+
+// ── Inbox — thread list ────────────────────────────────
+async function _sbRenderInboxList(body) {
+  body.innerHTML = `<div style="padding:24px;display:flex;justify-content:center"><div class="spinner"></div></div>`;
+
+  if (_portalType !== 'trainer') {
+    body.innerHTML = _sbPh('💬','GYM INBOX','Member messaging and announcements coming soon.');
+    return;
+  }
+  if (!_currentUid) {
+    body.innerHTML = _sbPh('⚠️','NOT LOADED','Portal not fully loaded. Please refresh.');
+    return;
+  }
+  try {
+    const connsSnap = await getDocs(query(collection(db,'trainer_connections'), where('trainerId','==',_currentUid)));
+    const conns     = connsSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+    if (!conns.length) {
+      body.innerHTML = _sbPh('💬','NO CLIENTS YET','Messages from your clients will appear here once they connect via the KritFit app.');
+      return;
+    }
+
+    body.innerHTML = '';
+    conns.forEach(conn => {
+      const item    = document.createElement('div');
+      item.className = 'sb-thread-item';
+      item.onclick   = () => _sbOpenThread(conn);
+      item.innerHTML = `
+        <div class="sb-thread-avatar">${_sbEsc((conn.clientName||'?')[0]).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">${_sbEsc(conn.clientName||conn.clientId||'—')}</div>
+          <div id="sb-tl-${conn.id}" style="font-family:var(--font-mono);font-size:10px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Loading…</div>
+        </div>
+        <span id="sb-tb-${conn.id}" style="display:none;background:#c62828;color:#fff;font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0">●</span>`;
+      body.appendChild(item);
+
+      const unsub = onSnapshot(
+        query(collection(db,'trainer_connections',conn.id,'messages'), orderBy('timestamp','desc'), limit(1)),
+        snap => {
+          const lastEl  = document.getElementById('sb-tl-' + conn.id);
+          const badgeEl = document.getElementById('sb-tb-' + conn.id);
+          if (!lastEl) return;
+          if (snap.empty) {
+            lastEl.textContent = 'No messages yet';
+          } else {
+            const msg = snap.docs[0].data();
+            lastEl.textContent = (msg.senderId === _currentUid ? 'You: ' : '') + (msg.text || '');
+            if (badgeEl) badgeEl.style.display = (msg.senderId !== _currentUid && !msg.read) ? '' : 'none';
+          }
+          _sbRecalcBadge();
+        }
+      );
+      _sbMsgListeners['list_' + conn.id] = unsub;
+    });
+  } catch(e) {
+    console.error('[Inbox list]', e);
+    body.innerHTML = _sbPh('⚠️','ERROR','Could not load messages. Please try again.');
+  }
+}
+
+// ── Inbox — thread view ────────────────────────────────
+async function _sbOpenThread(conn) {
+  _sbActiveThread = conn;
+  document.getElementById('sb-panel-title').textContent  = _sbEsc(conn.clientName || 'MESSAGES');
+  document.getElementById('sb-panel-back').style.display = '';
+  document.getElementById('sb-compose').style.display    = '';
+
+  const body = document.getElementById('sb-panel-body');
+  body.innerHTML = `<div style="padding:24px;display:flex;justify-content:center"><div class="spinner"></div></div>`;
+
+  if (_sbMsgListeners['thread']) { _sbMsgListeners['thread'](); delete _sbMsgListeners['thread']; }
+
+  _sbMsgListeners['thread'] = onSnapshot(
+    query(collection(db,'trainer_connections',conn.id,'messages'), orderBy('timestamp','asc'), limit(100)),
+    snap => {
+      if (!_sbActiveThread || _sbActiveThread.id !== conn.id) return;
+      _sbRenderMessages(body, snap.docs);
+    }
+  );
+}
+
+function _sbRenderMessages(body, docs) {
+  if (!docs.length) {
+    body.innerHTML = `<div style="padding:40px 24px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#bbb">No messages yet. Say hi! 👋</div>`;
+    return;
+  }
+  body.innerHTML = docs.map(d => {
+    const msg = d.data();
+    const out = msg.senderId === _currentUid;
+    const ts  = msg.timestamp?.toDate?.();
+    const t   = ts ? ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ' · ' + ts.toLocaleDateString([],{month:'short',day:'numeric'}) : '';
+    return `<div class="sb-msg-row ${out?'out':'in'}">
+      <div>
+        <div class="sb-msg-bubble ${out?'out':'in'}">${_sbEsc(msg.text||'')}</div>
+        <div class="sb-msg-time" style="text-align:${out?'right':'left'}">${t}</div>
+      </div>
+    </div>`;
+  }).join('');
+  body.scrollTop = body.scrollHeight;
+}
+
+window._sbInboxBack = () => {
+  if (_sbMsgListeners['thread']) { _sbMsgListeners['thread'](); delete _sbMsgListeners['thread']; }
+  Object.keys(_sbMsgListeners).filter(k => k.startsWith('list_')).forEach(k => { _sbMsgListeners[k](); delete _sbMsgListeners[k]; });
+  _sbActiveThread = null;
+  document.getElementById('sb-panel-back').style.display = 'none';
+  document.getElementById('sb-compose').style.display    = 'none';
+  document.getElementById('sb-panel-title').textContent  = 'INBOX';
+  _sbRenderInboxList(document.getElementById('sb-panel-body'));
+};
+
+window._sbSendMessage = async () => {
+  if (!_sbActiveThread || !_currentUid) return;
+  const input = document.getElementById('sb-compose-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = ''; input.disabled = true;
+  try {
+    await addDoc(collection(db,'trainer_connections',_sbActiveThread.id,'messages'), {
+      text,
+      senderId:   _currentUid,
+      senderName: auth.currentUser?.displayName || 'Trainer',
+      timestamp:  serverTimestamp(),
+      read:       false
+    });
+  } catch(e) {
+    console.error('[Send msg]', e);
+    input.value = text;
+  } finally {
+    input.disabled = false;
+    input.focus();
+  }
+};
+
+window._sbComposeKeydown = (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _sbSendMessage(); }
+};
+
+function _sbEsc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function _sbRecalcBadge() {
+  const unread = document.querySelectorAll('[id^="sb-tb-"]').filter
+    ? [...document.querySelectorAll('[id^="sb-tb-"]')].filter(el => el.style.display !== 'none').length
+    : 0;
+  const badge = document.getElementById('sb-inbox-badge');
+  const val   = document.getElementById('sb-inbox-value');
+  if (unread > 0) { badge.textContent = unread; badge.style.display = ''; val.textContent = `${unread} unread`; }
+  else            { badge.style.display = 'none'; val.textContent = 'No new messages'; }
+  _updateSidebarIndicator();
+}
+
+// ── Revenue panel ──────────────────────────────────────
+async function _sbRenderRevenue(body) {
+  body.innerHTML = `<div style="padding:24px;display:flex;justify-content:center"><div class="spinner"></div></div>`;
+  if (_portalType === 'gym' && _gymMembers?.length) {
+    const paid    = _gymMembers.filter(m => m.payStatus === 'paid').length;
+    const unpaid  = _gymMembers.filter(m => m.payStatus === 'unpaid').length;
+    const overdue = _gymMembers.filter(m => m.payStatus === 'overdue').length;
+    body.innerHTML = `<div style="padding:20px">
+      <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:3px;color:#bbb;margin-bottom:16px">MEMBER PAYMENT STATUS</div>
+      ${_sbRevRow('✅','Paid',paid,'#2e7d32')}
+      ${_sbRevRow('⏳','Unpaid',unpaid,'#e65100')}
+      ${_sbRevRow('🔴','Overdue',overdue,'#c62828')}
+    </div>${_sbPh('💰','FULL REPORTS','Stripe income tracking and detailed revenue analytics — coming soon.')}`;
+  } else {
+    body.innerHTML = _sbPh('💰','REVENUE','Earnings summary, session billing and payment history — coming soon.');
+  }
+}
+
+function _sbRevRow(icon, label, count, color) {
+  return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-family:var(--font-mono)">
+    <span style="font-size:12px">${icon} ${label}</span>
+    <span style="font-size:18px;font-weight:700;color:${color||'var(--accent)'}">${count}</span>
+  </div>`;
+}
+
+// ── Inbox watcher — keeps sidebar badge live ───────────
+async function _sbStartInboxWatcher() {
+  if (_portalType !== 'trainer' || !_currentUid) return;
+  try {
+    const connsSnap = await getDocs(query(collection(db,'trainer_connections'), where('trainerId','==',_currentUid)));
+    if (!connsSnap.docs.length) return;
+    const unreadMap = {};
+    const _recalc = () => {
+      const n     = Object.values(unreadMap).filter(Boolean).length;
+      const badge = document.getElementById('sb-inbox-badge');
+      const val   = document.getElementById('sb-inbox-value');
+      if (n > 0) { badge.textContent = n; badge.style.display = ''; val.textContent = `${n} unread`; }
+      else       { badge.style.display = 'none'; val.textContent = 'No new messages'; }
+      _updateSidebarIndicator();
+    };
+    connsSnap.docs.forEach(connDoc => {
+      const cid   = connDoc.id;
+      const unsub = onSnapshot(
+        query(collection(db,'trainer_connections',cid,'messages'), orderBy('timestamp','desc'), limit(1)),
+        snap => {
+          if (snap.empty) { unreadMap[cid] = false; }
+          else {
+            const msg = snap.docs[0].data();
+            unreadMap[cid] = (msg.senderId !== _currentUid && msg.read === false);
+          }
+          _recalc();
+        }
+      );
+      _sbMsgListeners['watcher_' + cid] = unsub;
+    });
+  } catch(e) { console.error('[Inbox watcher]', e); }
+}
 
 // Call after loading sidebar data to update indicator colour
 function _updateSidebarIndicator() {
