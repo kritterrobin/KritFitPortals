@@ -1042,7 +1042,8 @@ const db   = getFirestore(app);
 const PORTALS_VERSION = '1.01';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
-let _portalType       = null;   // 'trainer' | 'gym'
+let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
+let _currentTier      = null;   // raw subscriptionTier from user_registry
 let _currentUid       = null;
 let _authUid          = null;   // signed-in user's uid (never changes; _currentUid may differ for client views)
 let _detectedPortals  = [];     // all portals found for this user — drives the switcher tabs
@@ -1112,6 +1113,7 @@ async function _detectAndRoute(uid) {
 
     // 2. Tier-based portals
     const tier = reg.subscriptionTier || null;
+    _currentTier = tier;
     if (tier === 'trainer')      portals.push({ type: 'trainer' });
     if (tier === 'nutritionist') portals.push({ type: 'nutritionist' });
     if (tier === 'therapist')    portals.push({ type: 'therapist' });
@@ -2287,14 +2289,54 @@ const _SUBS_CATALOG = {
     stripeUrl: '#',
     isActive: () => !!_gymData?.enabledModules?.includes('store'),
   },
+  nutritionist_portal: {
+    badge: 'PROFESSIONAL', badgeColor: '#e65100', icon: '🥗',
+    name: 'Nutritionist', price: '$5.67', interval: '/mo', note: 'professional portal',
+    desc: 'Your own Nutritionist Portal — manage clients, create meal plans, track compliance and share nutrition reports.',
+    features: ['Client nutrition profiles', 'Meal plan builder', 'Compliance tracking', 'Progress & body comp reports', 'Secure client messaging', 'Export & print plans'],
+    stripeUrl: '#',
+    isActive: () => _currentTier === 'nutritionist',
+  },
+  therapist_portal: {
+    badge: 'PROFESSIONAL', badgeColor: '#6a1b9a', icon: '🧠',
+    name: 'Therapist', price: '$5.67', interval: '/mo', note: 'professional portal',
+    desc: 'Your own Therapist Portal — manage sessions, notes, progress tracking and secure client communication.',
+    features: ['Client session notes', 'Progress & outcome tracking', 'Appointment scheduling', 'Secure client messaging', 'Goal setting & monitoring', 'Confidential record keeping'],
+    stripeUrl: '#',
+    isActive: () => _currentTier === 'therapist',
+  },
+  sports_team: {
+    badge: 'SPORTS', badgeColor: '#b71c1c', icon: '🏅',
+    name: 'Team', price: '$12.34', interval: '/mo', note: 'sports portal — team tier',
+    desc: 'Manage a single sports team — rosters, fitness tracking, schedules, results and team communications.',
+    features: ['Full team roster management', 'Player fitness & performance data', 'Match schedule & results', 'Team communications', 'Injury & availability tracking', 'Coaching tools'],
+    stripeUrl: '#',
+    isActive: () => ['team', 'sports_team'].includes(_currentTier),
+  },
+  sports_league: {
+    badge: 'SPORTS', badgeColor: '#b71c1c', icon: '🏆',
+    name: 'League', price: '$23.45', interval: '/mo', note: 'sports portal — league tier',
+    desc: 'Run a full league — multiple teams, fixtures, standings, statistics and league-wide communications.',
+    features: ['Everything in Team', 'Multiple team management', 'Fixture & standings tables', 'League-wide statistics', 'Team admin sub-accounts', 'Season archives'],
+    stripeUrl: '#',
+    isActive: () => ['league', 'sports_league'].includes(_currentTier),
+  },
+  sports_federation: {
+    badge: 'SPORTS', badgeColor: '#b71c1c', icon: '🎖️',
+    name: 'Federation', price: '$45.67', interval: '/mo', note: 'sports portal — federation tier',
+    desc: 'Govern at the highest level — multiple leagues, national rankings, compliance, licensing and federation-wide reporting.',
+    features: ['Everything in League', 'Multiple league management', 'National / regional rankings', 'Club licensing & compliance', 'Federation-wide reporting', 'Priority support'],
+    stripeUrl: '#',
+    isActive: () => ['association', 'sports_association', 'federation', 'sports_federation', 'champion'].includes(_currentTier),
+  },
 };
 
 const _PORTAL_SUBS = {
   gym:          ['kf_trainer_personal', 'gym_portal', 'gym_trainers_mod', 'gym_store_mod'],
   trainer:      ['kf_trainer_personal', 'gym_portal'],
-  nutritionist: [],
-  therapist:    [],
-  sports:       [],
+  nutritionist: ['nutritionist_portal'],
+  therapist:    ['therapist_portal'],
+  sports:       ['sports_team', 'sports_league', 'sports_federation'],
   store:        ['gym_store_mod'],
 };
 
