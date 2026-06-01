@@ -55,7 +55,20 @@
       padding:5px 12px; cursor:pointer; letter-spacing:.5px;
     }
     #sign-out-btn:hover { border-color:#c62828; color:#c62828; }
-    @media(max-width:600px) { #top-bar-center { display:none; } }
+    /* ── Portal type pill ── */
+    #portal-type-pill {
+      display:none; font-family:var(--font-mono); font-size:11px; font-weight:700;
+      letter-spacing:2px; text-transform:uppercase; padding:4px 12px;
+      border-radius:3px; white-space:nowrap; flex-shrink:0;
+    }
+    #portal-type-pill[data-type="gym"]          { background:#1b5e20; color:#fff; }
+    #portal-type-pill[data-type="trainer"]      { background:#1565c0; color:#fff; }
+    #portal-type-pill[data-type="nutritionist"] { background:#e65100; color:#fff; }
+    #portal-type-pill[data-type="therapist"]    { background:#6a1b9a; color:#fff; }
+    #portal-type-pill[data-type="sports"]       { background:#b71c1c; color:#fff; }
+    #portal-type-pill[data-type="store"]        { background:#006064; color:#fff; }
+    /* On small screens, hide the name badge but keep the type pill */
+    @media(max-width:600px) { #portal-badge { display:none; } }
 
     /* ── Nav standard (from CLAUDE.md) ── */
     .nav {
@@ -445,7 +458,8 @@
         <div class="brand-name">KRIT<span>FIT</span></div>
         <div class="brand-sub">Portals</div>
       </a>
-      <div id="top-bar-center">
+      <div id="top-bar-center" style="display:flex;align-items:center;gap:10px;justify-content:center">
+        <span id="portal-type-pill"></span>
         <span id="portal-badge">—</span>
       </div>
       <div id="top-bar-right">
@@ -1070,14 +1084,30 @@ window._switchPortal = async (type) => {
   if (portal) await _loadPortalByType(portal);
 };
 
+// ── Portal type pill ────────────────────────────────────
+function _setPortalTypePill(type) {
+  const meta = _PORTAL_META[type] || { icon: '⚡', label: type.toUpperCase() };
+  const pill = document.getElementById('portal-type-pill');
+  if (!pill) return;
+  pill.textContent = meta.icon + ' ' + meta.label;
+  pill.setAttribute('data-type', type);
+  pill.style.display = '';
+}
+function _clearPortalTypePill() {
+  const pill = document.getElementById('portal-type-pill');
+  if (!pill) return;
+  pill.style.display = 'none';
+  pill.removeAttribute('data-type');
+}
+
 async function _loadPortalByType(portal) {
   switch (portal.type) {
     case 'gym':          await _loadGymPortal(portal.gymDoc); break;
     case 'trainer':      await _loadTrainerPortal(_authUid); break;
-    case 'nutritionist': _showComingSoon('NUTRITIONIST PORTAL'); break;
-    case 'therapist':    _showComingSoon('THERAPIST PORTAL'); break;
-    case 'sports':       _showComingSoon('SPORTS HUB'); break;
-    case 'store':        _showComingSoon('STORE PORTAL'); break;
+    case 'nutritionist': _setPortalTypePill('nutritionist'); _showComingSoon('NUTRITIONIST PORTAL'); break;
+    case 'therapist':    _setPortalTypePill('therapist');    _showComingSoon('THERAPIST PORTAL'); break;
+    case 'sports':       _setPortalTypePill('sports');       _showComingSoon('SPORTS HUB'); break;
+    case 'store':        _setPortalTypePill('store');        _showComingSoon('STORE PORTAL'); break;
     default:             _showNoPortal(null);
   }
 }
@@ -1086,6 +1116,7 @@ async function _loadPortalByType(portal) {
 async function _loadTrainerPortal(uid) {
   _portalType = 'trainer';
   _currentUid = uid;
+  _setPortalTypePill('trainer');
   document.getElementById('portal-badge').textContent = 'TRAINER PORTAL';
 
   // Connection code
@@ -1152,6 +1183,7 @@ async function _loadGymPortal(gymDoc) {
   _currentUid = gymDoc.data().ownerId;
   _gymId   = gymDoc.id;
   _gymData = gymDoc.data();
+  _setPortalTypePill('gym');
   document.getElementById('portal-badge').textContent = (_gymData.name || 'GYM') + ' PORTAL';
   _showPortal('gym');
   await _gdLoadMembers();
@@ -1849,6 +1881,7 @@ function _showPortal(which) {
 
 function _showNoPortal(tier) {
   _showScreen('app');
+  _clearPortalTypePill();
   document.getElementById('portal-switcher').style.display = 'none';
   document.getElementById('no-portal-screen').style.display = 'flex';
   if (tier) {
