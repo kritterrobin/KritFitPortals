@@ -484,6 +484,11 @@
     }
     .sub-cta-btn:hover { opacity:.88; }
     .sub-cta-btn.sub-manage { background:#fff; color:var(--accent); border:2px solid var(--accent); margin-top:8px; }
+    .subs-section-heading {
+      font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:2px;
+      color:#999; text-transform:uppercase; padding:4px 0 2px;
+    }
+    .subs-section-divider { height:1px; background:var(--border); margin:12px 0 4px; }
     .sub-active-flag {
       display:block; width:100%; padding:10px; text-align:center;
       background:#e8f5e9; color:#2e7d32; border:2px solid #a5d6a7; border-radius:4px;
@@ -1040,7 +1045,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.07';
+const PORTALS_VERSION = '1.08';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2249,15 +2254,9 @@ async function _sbStartInboxWatcher() {
 }
 
 // ── Subscriptions screen ───────────────────────────────
+// forPortal: if set, this entry is an add-on for that portal type only (shown in "upgrades" section,
+//            hidden entirely when a different portal type is active)
 const _SUBS_CATALOG = {
-  kf_user: {
-    badge: 'PERSONAL', badgeColor: '#1565c0', icon: '⚡',
-    name: 'KritFit Advanced', price: '$2.34', interval: '/mo', note: 'personal subscription',
-    desc: 'The full KritFit experience — advanced workouts, nutrition tracking, progress analytics and AI coaching.',
-    features: ['Unlimited workout logging', 'Full nutrition & macro tracking', 'Progress analytics', 'AI coaching (Tiny Talker)', 'Trainer connection', 'Offline access'],
-    stripeUrl: '#',
-    isActive: () => false, // personal tier not checked from portal (portal implies higher tier already)
-  },
   kf_trainer_personal: {
     badge: 'PERSONAL', badgeColor: '#1565c0', icon: '🏃',
     name: 'KritFit Trainer', price: '$5.67', interval: '/mo', note: 'personal subscription',
@@ -2272,23 +2271,25 @@ const _SUBS_CATALOG = {
     desc: 'Full gym management — members, QR check-ins, membership tiers, trainers, class schedules and payment tracking.',
     features: ['Unlimited members', 'QR code check-in system', 'Membership tiers & pricing', 'Trainer management', 'Class schedule editor', 'Payment status tracking'],
     stripeUrl: '#',
-    isActive: () => _portalType === 'gym' && !!_gymData,
+    isActive: () => _portalType === 'gym',
   },
   gym_trainers_mod: {
     badge: 'GYM ADD-ON', badgeColor: '#6a1b9a', icon: '🏋️',
-    name: 'Trainers Module', price: '$5.67', interval: '/mo per trainer', note: 'gym add-on',
+    name: 'Trainers Module', price: '$5.67', interval: '/mo per trainer', note: 'upgrade for your gym',
     desc: 'Add designated trainer accounts to your gym so members can connect and book sessions.',
     features: ['Designated trainer roles', 'Flexible fee structures (flat or %)', 'Client assignment', 'Trainer Portal access for each trainer'],
     stripeUrl: '#',
-    isActive: () => !!_gymData?.trainersModActive,  // set by Stripe webhook, not UI toggle
+    forPortal: 'gym',
+    isActive: () => !!_gymData?.trainersModActive,
   },
   gym_store_mod: {
     badge: 'GYM ADD-ON', badgeColor: '#6a1b9a', icon: '🛍️',
-    name: 'Gym Store', price: '$3.45', interval: '/mo', note: 'gym add-on',
+    name: 'Gym Store', price: '$3.45', interval: '/mo', note: 'upgrade for your gym',
     desc: 'Sell supplements, merchandise and personal training packages directly to your gym members.',
     features: ['Product inventory management', 'In-app member storefront', 'Sales tracking & history', 'Digital & physical products'],
     stripeUrl: '#',
-    isActive: () => !!_gymData?.storeModActive,  // set by Stripe webhook, not UI toggle
+    forPortal: 'gym',
+    isActive: () => !!_gymData?.storeModActive,
   },
   nutritionist_portal: {
     badge: 'PROFESSIONAL', badgeColor: '#e65100', icon: '🥗',
@@ -2332,14 +2333,6 @@ const _SUBS_CATALOG = {
   },
 };
 
-const _PORTAL_SUBS = {
-  gym:          ['kf_trainer_personal', 'gym_portal', 'gym_trainers_mod', 'gym_store_mod'],
-  trainer:      ['kf_trainer_personal', 'gym_portal'],
-  nutritionist: ['nutritionist_portal'],
-  therapist:    ['therapist_portal'],
-  sports:       ['sports_team', 'sports_league', 'sports_federation'],
-  store:        ['gym_store_mod'],
-};
 
 window._showSubscriptions = () => {
   document.getElementById('subs-screen').style.display = 'flex';
@@ -2352,16 +2345,7 @@ window._subsClose = () => {
 
 function _renderSubsCards() {
   const grid = document.getElementById('subs-grid');
-  const keys = _PORTAL_SUBS[_portalType] || [];
-  const available = keys.filter(key => {
-    const s = _SUBS_CATALOG[key];
-    return s && !(s.isActive ? s.isActive() : false);
-  });
-  if (!available.length) {
-    grid.innerHTML = '<div class="ph-card" style="grid-column:1/-1"><div class="ph-icon">✅</div><div class="ph-title">All included</div>Your current subscriptions cover everything available for this portal.</div>';
-    return;
-  }
-  grid.innerHTML = available.map(key => {
+  const _cardHtml = (key) => {
     const s = _SUBS_CATALOG[key];
     const ctaHtml = `<a href="${s.stripeUrl}" class="sub-cta-btn" ${s.stripeUrl === '#' ? 'onclick="event.preventDefault();alert(\'Stripe checkout coming soon\')"' : 'target="_blank"'}>SUBSCRIBE →</a>`;
     return `<div class="sub-card">
@@ -2375,7 +2359,41 @@ function _renderSubsCards() {
       <ul class="sub-features">${s.features.map(f => `<li>${f}</li>`).join('')}</ul>
       <div>${ctaHtml}</div>
     </div>`;
-  }).join('');
+  };
+
+  // Upgrades = add-ons specific to the current portal type, not yet active
+  const upgrades = Object.keys(_SUBS_CATALOG).filter(key => {
+    const s = _SUBS_CATALOG[key];
+    return s.forPortal === _portalType && !(s.isActive ? s.isActive() : false);
+  });
+
+  // Other portals = no forPortal restriction (or a different portal type), not active
+  const others = Object.keys(_SUBS_CATALOG).filter(key => {
+    const s = _SUBS_CATALOG[key];
+    return !s.forPortal && !(s.isActive ? s.isActive() : false);
+  });
+
+  if (!upgrades.length && !others.length) {
+    grid.innerHTML = '<div class="ph-card" style="grid-column:1/-1"><div class="ph-icon">✅</div><div class="ph-title">All included</div>Your current subscriptions cover everything available for this portal.</div>';
+    return;
+  }
+
+  let html = '';
+
+  if (upgrades.length) {
+    html += `<div class="subs-section-heading" style="grid-column:1/-1">UPGRADES FOR YOUR PORTAL</div>`;
+    html += upgrades.map(_cardHtml).join('');
+  }
+
+  if (others.length) {
+    if (upgrades.length) {
+      html += `<div class="subs-section-divider" style="grid-column:1/-1"></div>`;
+    }
+    html += `<div class="subs-section-heading" style="grid-column:1/-1">OTHER PORTALS &amp; SERVICES</div>`;
+    html += others.map(_cardHtml).join('');
+  }
+
+  grid.innerHTML = html;
 }
 
 // Call after loading sidebar data to update indicator colour
