@@ -1094,7 +1094,7 @@ function _setPortalTypePill(type) {
   if (!pill) return;
   pill.textContent = meta.icon + ' ' + meta.label;
   pill.setAttribute('data-type', type);
-  pill.style.display = '';
+  pill.style.display = 'inline-block';
 }
 function _clearPortalTypePill() {
   const pill = document.getElementById('portal-type-pill');
