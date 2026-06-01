@@ -2341,6 +2341,10 @@ const _PORTAL_SUBS = {
 };
 
 window._showSubscriptions = () => {
+  // On mobile the sidebar is position:fixed — collapse it so it doesn't cover the subs screen
+  const sb = document.getElementById('sidebar');
+  sb.classList.remove('open');
+  document.getElementById('sb-arrow').textContent = '▶';
   document.getElementById('portal-workspace').style.display = 'none';
   const sc = document.getElementById('subs-screen');
   sc.style.display = 'flex';
@@ -2350,6 +2354,8 @@ window._showSubscriptions = () => {
 window._subsClose = () => {
   document.getElementById('subs-screen').style.display = 'none';
   document.getElementById('portal-workspace').style.display = 'flex';
+  // Re-show sidebar arrow correctly (collapsed state)
+  document.getElementById('sb-arrow').textContent = '▶';
 };
 
 function _renderSubsCards() {
