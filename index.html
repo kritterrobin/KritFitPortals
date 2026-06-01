@@ -425,6 +425,70 @@
       #sidebar-toggle    { writing-mode:horizontal-tb; width:28px; height:48px; top:50%; bottom:auto; transform:translateY(-50%); border-radius:0 6px 6px 0; background:var(--s1); box-shadow:2px 0 6px rgba(0,0,0,.1); }
       #portal-main       { margin-left:0; }
     }
+
+    /* ── Subscriptions screen ── */
+    #subs-screen {
+      flex:1; min-height:calc(100vh - 57px); background:var(--s1);
+      flex-direction:column;
+    }
+    .subs-topbar {
+      background:#fff; padding:20px 28px 16px; border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .subs-back-btn {
+      background:none; border:none; cursor:pointer; font-family:var(--font-mono);
+      font-size:11px; font-weight:700; color:var(--accent); letter-spacing:1px;
+      padding:0; margin-bottom:10px; display:inline-block;
+    }
+    .subs-back-btn:hover { opacity:.7; }
+    .subs-topbar-title { font-family:var(--font-display); font-size:28px; letter-spacing:4px; color:var(--text); }
+    .subs-topbar-sub { font-family:var(--font-mono); font-size:10px; color:#999; letter-spacing:1px; margin-top:2px; text-transform:uppercase; }
+    .subs-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+      gap:18px; padding:24px 28px; max-width:1200px; width:100%;
+    }
+    @media(max-width:600px) { .subs-grid { padding:14px; gap:12px; } }
+    .sub-card {
+      background:#fff; border:2px solid var(--border); border-radius:10px;
+      padding:22px; display:flex; flex-direction:column;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .sub-card:hover { border-color:#bbb; box-shadow:0 4px 16px rgba(0,0,0,.08); }
+    .sub-card.sub-active { border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,125,50,.1); }
+    .sub-badge {
+      display:inline-block; font-family:var(--font-mono); font-size:9px; font-weight:700;
+      letter-spacing:2px; padding:3px 10px; border-radius:3px; color:#fff;
+      margin-bottom:12px; text-transform:uppercase;
+    }
+    .sub-icon { font-size:26px; margin-bottom:8px; }
+    .sub-name { font-family:var(--font-display); font-size:22px; letter-spacing:2px; color:var(--text); margin-bottom:4px; }
+    .sub-price { font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--accent); line-height:1.2; }
+    .sub-price span { font-size:12px; color:#999; font-weight:400; }
+    .sub-note { font-family:var(--font-mono); font-size:10px; color:#bbb; margin-top:2px; letter-spacing:1px; margin-bottom:12px; text-transform:uppercase; }
+    .sub-desc { font-family:var(--font-mono); font-size:11px; color:#666; line-height:1.7; margin-bottom:14px; }
+    .sub-divider { height:1px; background:var(--border); margin:0 0 14px; }
+    .sub-features { list-style:none; padding:0; margin:0 0 18px; flex:1; }
+    .sub-features li {
+      font-family:var(--font-mono); font-size:11px; color:#555;
+      padding:5px 0; border-bottom:1px solid var(--s3);
+      display:flex; align-items:center; gap:8px;
+    }
+    .sub-features li::before { content:'✓'; color:var(--accent); font-weight:700; flex-shrink:0; }
+    .sub-cta-btn {
+      display:block; width:100%; padding:11px; text-align:center;
+      background:var(--accent); color:#fff; border:none; border-radius:4px;
+      font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:1px;
+      cursor:pointer; text-decoration:none; transition:opacity .15s; box-sizing:border-box;
+    }
+    .sub-cta-btn:hover { opacity:.88; }
+    .sub-cta-btn.sub-manage { background:#fff; color:var(--accent); border:2px solid var(--accent); margin-top:8px; }
+    .sub-active-flag {
+      display:block; width:100%; padding:10px; text-align:center;
+      background:#e8f5e9; color:#2e7d32; border:2px solid #a5d6a7; border-radius:4px;
+      font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:1px;
+      box-sizing:border-box;
+    }
   </style>
 </head>
 <body>
@@ -563,9 +627,9 @@
           <span class="sb-icon">💳</span> Manage Billing
         </button>
 
-        <!-- ADD STORE (hidden if already subscribed) -->
-        <button class="sb-action" id="sb-store-btn" onclick="_sbOpen('add-store')">
-          <span class="sb-icon">🛍️</span> Add Store · $3.45/mo
+        <!-- SUBSCRIPTIONS / UPGRADE -->
+        <button class="sb-action" onclick="_showSubscriptions()">
+          <span class="sb-icon">🚀</span> Subscriptions &amp; Upgrades
         </button>
 
       </div><!-- /sidebar-content -->
@@ -905,6 +969,18 @@
     </div><!-- /portal-main -->
   </div><!-- /portal-workspace -->
 
+  <!-- ══════════════════════════════════════════
+       SUBSCRIPTIONS SCREEN
+  ══════════════════════════════════════════ -->
+  <div id="subs-screen" style="display:none;flex-direction:column">
+    <div class="subs-topbar">
+      <button class="subs-back-btn" onclick="_subsClose()">← BACK TO PORTAL</button>
+      <div class="subs-topbar-title">SUBSCRIPTIONS</div>
+      <div class="subs-topbar-sub">Manage your KritFit subscriptions and add-ons</div>
+    </div>
+    <div id="subs-grid" class="subs-grid"></div>
+  </div>
+
   <!-- SIDEBAR OVERLAY PANEL -->
   <div id="sb-overlay" style="display:none" onclick="_sbOverlayClick(event)">
     <div id="sb-panel">
@@ -941,7 +1017,8 @@
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer',
    '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
-   '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown'].forEach(fn => window[fn] = () => {});
+   '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
+   '_showSubscriptions','_subsClose'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -962,7 +1039,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.00';
+const PORTALS_VERSION = '1.01';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym'
@@ -1871,6 +1948,7 @@ function _showScreen(which) {
   document.getElementById('no-portal-screen').style.display      = 'none';
   document.getElementById('coming-soon-screen').style.display    = 'none';
   document.getElementById('portal-workspace').style.display      = 'none';
+  document.getElementById('subs-screen').style.display           = 'none';
   document.querySelectorAll('.portal-panel').forEach(p => p.classList.remove('active'));
 }
 
@@ -2165,6 +2243,96 @@ async function _sbStartInboxWatcher() {
       _sbMsgListeners['watcher_' + cid] = unsub;
     });
   } catch(e) { console.error('[Inbox watcher]', e); }
+}
+
+// ── Subscriptions screen ───────────────────────────────
+const _SUBS_CATALOG = {
+  kf_user: {
+    badge: 'PERSONAL', badgeColor: '#1565c0', icon: '⚡',
+    name: 'KritFit Advanced', price: '$2.34', interval: '/mo', note: 'personal subscription',
+    desc: 'The full KritFit experience — advanced workouts, nutrition tracking, progress analytics and AI coaching.',
+    features: ['Unlimited workout logging', 'Full nutrition & macro tracking', 'Progress analytics', 'AI coaching (Tiny Talker)', 'Trainer connection', 'Offline access'],
+    stripeUrl: '#',
+    isActive: () => false, // personal tier not checked from portal (portal implies higher tier already)
+  },
+  kf_trainer_personal: {
+    badge: 'PERSONAL', badgeColor: '#1565c0', icon: '🏃',
+    name: 'KritFit Trainer', price: '$5.67', interval: '/mo', note: 'personal subscription',
+    desc: 'Everything in Advanced, plus your own Trainer Portal with client management and session tools.',
+    features: ['Everything in KritFit Advanced', 'Trainer Portal access', 'Client management', 'Session scheduling', 'Client progress reports', 'Trainer connection code'],
+    stripeUrl: '#',
+    isActive: () => _portalType === 'trainer',
+  },
+  gym_portal: {
+    badge: 'GYM', badgeColor: '#1b5e20', icon: '🏢',
+    name: 'Gym Portal', price: '$89', interval: '/mo', note: 'flat rate · unlimited members',
+    desc: 'Full gym management — members, QR check-ins, membership tiers, trainers, class schedules and payment tracking.',
+    features: ['Unlimited members', 'QR code check-in system', 'Membership tiers & pricing', 'Trainer management', 'Class schedule editor', 'Payment status tracking'],
+    stripeUrl: '#',
+    isActive: () => _portalType === 'gym' && !!_gymData,
+  },
+  gym_trainers_mod: {
+    badge: 'GYM ADD-ON', badgeColor: '#6a1b9a', icon: '🏋️',
+    name: 'Trainers Module', price: '$5.67', interval: '/mo per trainer', note: 'gym add-on',
+    desc: 'Add designated trainer accounts to your gym so members can connect and book sessions.',
+    features: ['Designated trainer roles', 'Flexible fee structures (flat or %)', 'Client assignment', 'Trainer Portal access for each trainer'],
+    stripeUrl: '#',
+    isActive: () => !!_gymData?.enabledModules?.includes('trainers'),
+  },
+  gym_store_mod: {
+    badge: 'GYM ADD-ON', badgeColor: '#6a1b9a', icon: '🛍️',
+    name: 'Gym Store', price: '$3.45', interval: '/mo', note: 'gym add-on',
+    desc: 'Sell supplements, merchandise and personal training packages directly to your gym members.',
+    features: ['Product inventory management', 'In-app member storefront', 'Sales tracking & history', 'Digital & physical products'],
+    stripeUrl: '#',
+    isActive: () => !!_gymData?.enabledModules?.includes('store'),
+  },
+};
+
+const _PORTAL_SUBS = {
+  gym:          ['kf_user', 'kf_trainer_personal', 'gym_portal', 'gym_trainers_mod', 'gym_store_mod'],
+  trainer:      ['kf_user', 'kf_trainer_personal', 'gym_portal'],
+  nutritionist: ['kf_user'],
+  therapist:    ['kf_user'],
+  sports:       ['kf_user'],
+  store:        ['kf_user', 'gym_store_mod'],
+};
+
+window._showSubscriptions = () => {
+  document.getElementById('portal-workspace').style.display = 'none';
+  const sc = document.getElementById('subs-screen');
+  sc.style.display = 'flex';
+  _renderSubsCards();
+};
+
+window._subsClose = () => {
+  document.getElementById('subs-screen').style.display = 'none';
+  document.getElementById('portal-workspace').style.display = 'flex';
+};
+
+function _renderSubsCards() {
+  const grid = document.getElementById('subs-grid');
+  const keys = _PORTAL_SUBS[_portalType] || ['kf_user'];
+  grid.innerHTML = keys.map(key => {
+    const s = _SUBS_CATALOG[key];
+    if (!s) return '';
+    const active = s.isActive ? s.isActive() : false;
+    const ctaHtml = active
+      ? `<div class="sub-active-flag">✓ ACTIVE</div>
+         <a href="#" onclick="event.preventDefault();_subsClose();_sbOpen('billing')" class="sub-cta-btn sub-manage">MANAGE BILLING →</a>`
+      : `<a href="${s.stripeUrl}" class="sub-cta-btn" ${s.stripeUrl === '#' ? 'onclick="event.preventDefault();alert(\'Stripe checkout coming soon\')"' : 'target="_blank"'}>SUBSCRIBE →</a>`;
+    return `<div class="sub-card${active ? ' sub-active' : ''}">
+      <span class="sub-badge" style="background:${s.badgeColor}">${s.badge}</span>
+      <div class="sub-icon">${s.icon}</div>
+      <div class="sub-name">${s.name}</div>
+      <div class="sub-price">${s.price}<span>${s.interval}</span></div>
+      <div class="sub-note">${s.note}</div>
+      <div class="sub-desc">${s.desc}</div>
+      <div class="sub-divider"></div>
+      <ul class="sub-features">${s.features.map(f => `<li>${f}</li>`).join('')}</ul>
+      <div>${ctaHtml}</div>
+    </div>`;
+  }).join('');
 }
 
 // Call after loading sidebar data to update indicator colour
