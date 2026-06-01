@@ -83,6 +83,11 @@
     #trainer-top-nav .nav-btn .icon, #trainer-subnav .nav-btn .icon,
     #gym-top-nav .nav-btn .icon, #gym-members-nav .nav-btn .icon, #gym-setup-nav .nav-btn .icon { font-size:14px; }
 
+    /* Portal switcher tabs (multi-portal users) */
+    #portal-switcher { flex-shrink:0; background:var(--s2); border-bottom:2px solid var(--accent); }
+    #portal-switcher-nav .nav-btn { padding:6px 4px; }
+    #portal-switcher-nav .nav-btn .icon { font-size:14px; }
+
     /* ── Member table ── */
     .member-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:11px; }
     .member-table th { background:var(--s1); color:#999; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:8px 10px; text-align:left; border-bottom:2px solid var(--border); white-space:nowrap; }
@@ -407,6 +412,11 @@
         <button id="sign-out-btn" onclick="_doSignOut()">SIGN OUT</button>
       </div>
     </div>
+  </div>
+
+  <!-- Portal switcher — only rendered when user has multiple portals -->
+  <div id="portal-switcher" style="display:none">
+    <nav class="nav" id="portal-switcher-nav" style="overflow-x:auto;scrollbar-width:none"></nav>
   </div>
 
   <!-- Loading -->
@@ -868,6 +878,8 @@ const db   = getFirestore(app);
 
 let _portalType       = null;   // 'trainer' | 'gym'
 let _currentUid       = null;
+let _authUid          = null;   // signed-in user's uid (never changes; _currentUid may differ for client views)
+let _detectedPortals  = [];     // all portals found for this user — drives the switcher tabs
 const _sbMsgListeners = {};     // key -> unsubscribe fn  (watcher_*, list_*, thread)
 let _sbActiveThread   = null;   // { id, clientName } currently open in thread view
 
@@ -891,59 +903,110 @@ window._doSignOut = async () => {
 // ── Auth state ─────────────────────────────────────────
 onAuthStateChanged(auth, async user => {
   if (!user) {
+    _authUid = null;
+    _detectedPortals = [];
+    document.getElementById('portal-switcher').style.display = 'none';
     _showScreen('sign-in');
     return;
   }
+  _authUid = user.uid;
   _showScreen('loading');
   document.getElementById('user-name').textContent = user.displayName || user.email;
   await _detectAndRoute(user.uid);
 });
 
-// ── Tier detection ─────────────────────────────────────
+// ── Portal detection — collects ALL active portals then builds tabs ────────
+const _PORTAL_META = {
+  gym:          { icon: '🏢', label: 'GYM' },
+  trainer:      { icon: '🏃', label: 'TRAINER' },
+  nutritionist: { icon: '🥗', label: 'NUTRITIONIST' },
+  therapist:    { icon: '🧠', label: 'THERAPIST' },
+  sports:       { icon: '🏆', label: 'SPORTS' },
+  store:        { icon: '🛍️', label: 'STORE' },
+};
+
 async function _detectAndRoute(uid) {
   try {
-    // 1. Gym ownership takes priority — a gym owner always goes to the gym portal
-    //    regardless of what subscriptionTier is set on their user_registry doc
+    const portals = [];
+
+    // Fetch user_registry once — used for tier + gymOwnerId checks
+    const regSnap = await getDoc(doc(db, 'user_registry', uid));
+    const reg     = regSnap.exists() ? regSnap.data() : {};
+
+    // 1. Gym ownership — query gyms collection directly, then fall back to
+    //    user_registry.gymOwnerId (gym owners may not have subscriptionTier set)
     const gymQ    = query(collection(db, 'gyms'), where('ownerId', '==', uid));
     const gymSnap = await getDocs(gymQ);
     if (!gymSnap.empty) {
-      await _loadGymPortal(gymSnap.docs[0]);
-      return;
+      portals.push({ type: 'gym', gymDoc: gymSnap.docs[0] });
+    } else if (reg.gymOwnerId) {
+      const gymDocSnap = await getDoc(doc(db, 'gyms', reg.gymOwnerId));
+      if (gymDocSnap.exists()) portals.push({ type: 'gym', gymDoc: gymDocSnap });
     }
 
-    // 2. Check user_registry subscription tier
-    const regSnap = await getDoc(doc(db, 'user_registry', uid));
-    const tier    = regSnap.exists() ? regSnap.data().subscriptionTier : null;
+    // 2. Tier-based portals
+    const tier = reg.subscriptionTier || null;
+    if (tier === 'trainer')      portals.push({ type: 'trainer' });
+    if (tier === 'nutritionist') portals.push({ type: 'nutritionist' });
+    if (tier === 'therapist')    portals.push({ type: 'therapist' });
+    if (['champion','sports_team','sports_league','sports_association',
+         'team','league','association'].includes(tier)) portals.push({ type: 'sports' });
 
-    if (tier === 'trainer') {
-      await _loadTrainerPortal(uid);
-      return;
-    }
-    if (tier === 'nutritionist') {
-      _showComingSoon('NUTRITIONIST PORTAL');
-      return;
-    }
-    if (tier === 'therapist') {
-      _showComingSoon('THERAPIST PORTAL');
-      return;
-    }
-    if (['champion','sports_team','sports_league','sports_association','team','league','association'].includes(tier)) {
-      _showComingSoon('SPORTS HUB');
-      return;
+    // 3. Store add-on (separate subscription alongside any portal)
+    if (reg.kfStoreActive === true) portals.push({ type: 'store' });
+
+    // 4. cfg.isTrainer fallback — only if no trainer/gym already found
+    if (!portals.some(p => p.type === 'trainer') && !portals.some(p => p.type === 'gym')) {
+      const cfgSnap = await getDoc(doc(db, 'users', uid, 'settings', 'cfg'));
+      if (cfgSnap.exists() && cfgSnap.data().isTrainer === true) {
+        portals.push({ type: 'trainer' });
+      }
     }
 
-    // 3. Check cfg.isTrainer as fallback (some trainer accounts use this flag)
-    const cfgSnap = await getDoc(doc(db, 'users', uid, 'settings', 'cfg'));
-    if (cfgSnap.exists() && cfgSnap.data().isTrainer === true) {
-      await _loadTrainerPortal(uid);
-      return;
-    }
+    if (portals.length === 0) { _showNoPortal(tier); return; }
 
-    // No portal subscription found
-    _showNoPortal(tier);
+    _detectedPortals = portals;
+    _buildPortalSwitcher(portals);
+    await _loadPortalByType(portals[0]);
+
   } catch(e) {
     console.error('[Portal] detection error:', e);
     _showNoPortal(null);
+  }
+}
+
+function _buildPortalSwitcher(portals) {
+  const switcher = document.getElementById('portal-switcher');
+  if (portals.length <= 1) { switcher.style.display = 'none'; return; }
+  const nav = document.getElementById('portal-switcher-nav');
+  nav.innerHTML = portals.map((p, i) => {
+    const m = _PORTAL_META[p.type] || { icon: '🔷', label: p.type.toUpperCase() };
+    return `<button class="nav-btn${i === 0 ? ' active' : ''}" id="psw-${p.type}"
+      onclick="_switchPortal('${p.type}')"><span class="icon">${m.icon}</span>${m.label}</button>`;
+  }).join('');
+  switcher.style.display = '';
+}
+
+window._switchPortal = async (type) => {
+  document.querySelectorAll('#portal-switcher-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  const tab = document.getElementById('psw-' + type);
+  if (tab) tab.classList.add('active');
+  _showScreen('loading');
+  // Switcher must stay visible through the loading state
+  document.getElementById('portal-switcher').style.display = '';
+  const portal = _detectedPortals.find(p => p.type === type);
+  if (portal) await _loadPortalByType(portal);
+};
+
+async function _loadPortalByType(portal) {
+  switch (portal.type) {
+    case 'gym':          await _loadGymPortal(portal.gymDoc); break;
+    case 'trainer':      await _loadTrainerPortal(_authUid); break;
+    case 'nutritionist': _showComingSoon('NUTRITIONIST PORTAL'); break;
+    case 'therapist':    _showComingSoon('THERAPIST PORTAL'); break;
+    case 'sports':       _showComingSoon('SPORTS HUB'); break;
+    case 'store':        _showComingSoon('STORE PORTAL'); break;
+    default:             _showNoPortal(null);
   }
 }
 
@@ -1339,6 +1402,7 @@ function _showPortal(which) {
 
 function _showNoPortal(tier) {
   _showScreen('app');
+  document.getElementById('portal-switcher').style.display = 'none';
   document.getElementById('no-portal-screen').style.display = 'flex';
   if (tier) {
     document.getElementById('no-portal-desc').textContent =
