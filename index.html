@@ -490,6 +490,38 @@
     }
     .subs-section-divider { height:1px; background:var(--border); margin:12px 0 4px; }
 
+    /* ── Billing / Revenue ── */
+    .bl-filter-bar { display:flex; gap:6px; padding:14px 16px 10px; flex-shrink:0; overflow-x:auto; scrollbar-width:none; }
+    .bl-filter-btn { padding:5px 12px; border-radius:20px; font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:.5px; cursor:pointer; border:2px solid var(--border); background:var(--s2); color:var(--muted); white-space:nowrap; transition:all .12s; }
+    .bl-filter-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .bl-member-row { display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--border); }
+    .bl-member-name { font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--text); }
+    .bl-member-sub  { font-family:var(--font-mono); font-size:10px; color:#999; margin-top:1px; }
+    .bl-status { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:1px; padding:3px 8px; border-radius:10px; white-space:nowrap; }
+    .bl-status.paid    { background:#e8f5e9; color:#2e7d32; }
+    .bl-status.unpaid  { background:#fff3e0; color:#e65100; }
+    .bl-status.overdue { background:#ffebee; color:#c62828; }
+    .bl-status.none    { background:var(--s3); color:#999; }
+    .bl-action-row { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+    .bl-btn { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:.5px; padding:4px 10px; border-radius:4px; cursor:pointer; border:1px solid; white-space:nowrap; }
+    .bl-btn.cancel  { background:#fff; color:#c62828; border-color:#ffcdd2; }
+    .bl-btn.reward  { background:#fff; color:#2e7d32; border-color:#a5d6a7; }
+    .bl-btn.message { background:#fff; color:#1565c0; border-color:#bbdefb; }
+    /* Stats bar */
+    .bl-stats { display:flex; gap:1px; margin:0 16px 14px; border-radius:8px; overflow:hidden; }
+    .bl-stat-seg { flex:1; padding:10px 6px; text-align:center; }
+    .bl-stat-seg .v { font-family:var(--font-mono); font-size:18px; font-weight:700; }
+    .bl-stat-seg .l { font-family:var(--font-mono); font-size:9px; letter-spacing:1px; margin-top:2px; text-transform:uppercase; }
+    /* Confirm cancel modal */
+    .bl-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .bl-modal { background:#fff; border-radius:12px; padding:24px; max-width:360px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,.18); }
+    .bl-modal h3 { font-family:var(--font-display); font-size:18px; letter-spacing:1px; margin:0 0 8px; color:var(--text); }
+    .bl-modal p  { font-family:var(--font-mono); font-size:11px; color:#666; line-height:1.7; margin:0 0 16px; }
+    .bl-modal input { width:100%; padding:9px 12px; border:2px solid #ddd; border-radius:6px; font-family:var(--font-mono); font-size:12px; box-sizing:border-box; margin-bottom:14px; }
+    .bl-modal input:focus { outline:none; border-color:#c62828; }
+    .bl-modal-btns { display:flex; gap:8px; }
+    .bl-modal-btns button { flex:1; padding:10px; border:none; border-radius:6px; font-family:var(--font-mono); font-size:11px; font-weight:700; cursor:pointer; }
+
     /* ── Gym Calendar ── */
     .gc-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; flex-shrink:0; }
     .gc-month-label { font-family:var(--font-display); font-size:18px; letter-spacing:2px; color:var(--text); }
@@ -1176,7 +1208,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.12';
+const PORTALS_VERSION = '1.13';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2414,14 +2446,57 @@ window._giNewMessage = async () => {
 };
 
 // ── Gym Inbox — BROADCAST tab ──────────────────────────
+let _giAudience = 'all';  // 'all' | 'overdue' | 'inactive' | 'referrers'
+
+function _giAudienceLabel(key, count) {
+  const labels = { all:'ALL MEMBERS', overdue:'OVERDUE', inactive:'INACTIVE 14+ DAYS', referrers:'REFERRERS' };
+  return `${labels[key]||key} (${count})`;
+}
+
+function _giAudienceCount(key) {
+  const members = (_gymMembers||[]).filter(m => m.status === 'active' && m.uid);
+  if (key === 'all')      return members.length;
+  if (key === 'overdue')  return members.filter(m => m.payStatus === 'overdue').length;
+  if (key === 'inactive') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14);
+    const cutStr = cutoff.toISOString().split('T')[0];
+    return members.filter(m => !m.lastCheckin || m.lastCheckin < cutStr).length;
+  }
+  if (key === 'referrers') return members.filter(m => m._isReferrer).length;
+  return 0;
+}
+
+function _giGetAudienceUids(key) {
+  const members = (_gymMembers||[]).filter(m => m.status === 'active' && m.uid);
+  if (key === 'all')      return members.map(m => m.uid);
+  if (key === 'overdue')  return members.filter(m => m.payStatus === 'overdue').map(m => m.uid);
+  if (key === 'inactive') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14);
+    const cutStr = cutoff.toISOString().split('T')[0];
+    return members.filter(m => !m.lastCheckin || m.lastCheckin < cutStr).map(m => m.uid);
+  }
+  return members.map(m => m.uid);
+}
+
 function _giRenderBroadcasts(container) {
   if (!_gymId) { container.innerHTML = _sbPh('⚠️','NO GYM LOADED',''); return; }
+  _giAudience = 'all';
+  const allCount      = _giAudienceCount('all');
+  const overdueCount  = _giAudienceCount('overdue');
+  const inactiveCount = _giAudienceCount('inactive');
+
   container.innerHTML = `
     <div class="gi-bc-compose">
-      <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;color:#999;margin-bottom:6px">NEW BROADCAST</div>
-      <textarea id="gi-bc-input" rows="3" placeholder="Write an announcement for all members…"
+      <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;color:#999;margin-bottom:8px">AUDIENCE</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="gi-aud-pills">
+        <div class="gc-type-pill active" data-aud="all"      style="background:var(--accent);border-color:var(--accent);color:#fff;font-size:9px" onclick="window._giPickAudience('all')">ALL (${allCount})</div>
+        <div class="gc-type-pill" data-aud="overdue"  style="border-color:#c62828;color:#c62828;font-size:9px" onclick="window._giPickAudience('overdue')">🔴 OVERDUE (${overdueCount})</div>
+        <div class="gc-type-pill" data-aud="inactive" style="border-color:#e65100;color:#e65100;font-size:9px" onclick="window._giPickAudience('inactive')">😴 INACTIVE (${inactiveCount})</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;color:#999;margin-bottom:6px">MESSAGE</div>
+      <textarea id="gi-bc-input" rows="3" placeholder="Write your message…"
         style="width:100%;padding:9px 12px;border:2px solid #ddd;border-radius:6px;font-family:var(--font-mono);font-size:12px;color:var(--text);resize:none;line-height:1.4;box-sizing:border-box"></textarea>
-      <button onclick="window._giSendBroadcast(this)" class="gi-fab" style="margin:0">SEND TO ALL MEMBERS 📢</button>
+      <button onclick="window._giSendBroadcast(this)" class="gi-fab" style="margin:0">SEND BROADCAST 📢</button>
     </div>
     <div id="gi-bc-list" style="padding-bottom:20px"><div style="padding:20px;text-align:center"><div class="spinner"></div></div></div>`;
 
@@ -2439,12 +2514,15 @@ function _giRenderBroadcasts(container) {
         const ts = b.sentAt?.toDate?.();
         const t  = ts ? ts.toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
         const readCount = Array.isArray(b.readBy) ? b.readBy.length : 0;
+        const audLabels = { all:'All members', overdue:'Overdue members', inactive:'Inactive members', referrers:'Referrers' };
+        const audLabel  = audLabels[b.audience] || 'All members';
         return `<div class="gi-broadcast-item">
           <div class="gi-broadcast-text">${_sbEsc(b.text||'')}</div>
           <div class="gi-broadcast-meta">
             <span>📅 ${t}</span>
-            <span>👥 ${b.memberCount||0} members</span>
-            <span class="${readCount>0?'':''}">👁 ${readCount} read</span>
+            <span>🎯 ${audLabel}</span>
+            <span>👥 ${b.memberCount||0} sent</span>
+            <span>👁 ${readCount} read</span>
           </div>
         </div>`;
       }).join('');
@@ -2453,18 +2531,43 @@ function _giRenderBroadcasts(container) {
   _sbMsgListeners['list_bc'] = unsub;
 }
 
+window._giPickAudience = (aud) => {
+  _giAudience = aud;
+  document.querySelectorAll('#gi-aud-pills [data-aud]').forEach(p => {
+    const isActive = p.dataset.aud === aud;
+    p.classList.toggle('active', isActive);
+    p.style.background  = isActive ? 'var(--accent)' : 'var(--s2)';
+    p.style.borderColor = isActive ? 'var(--accent)' : (aud === p.dataset.aud ? 'var(--accent)' : p.style.borderColor);
+    p.style.color       = isActive ? '#fff' : p.style.color;
+  });
+  // Restore non-active pill colours
+  document.querySelectorAll('#gi-aud-pills [data-aud]').forEach(p => {
+    if (p.dataset.aud !== aud) {
+      p.style.background = 'var(--s2)';
+      if (p.dataset.aud === 'overdue')  { p.style.borderColor='#c62828'; p.style.color='#c62828'; }
+      if (p.dataset.aud === 'inactive') { p.style.borderColor='#e65100'; p.style.color='#e65100'; }
+      if (p.dataset.aud === 'all')      { p.style.borderColor='var(--border)'; p.style.color='var(--muted)'; }
+    }
+  });
+};
+
 window._giSendBroadcast = async (btn) => {
   const input = document.getElementById('gi-bc-input');
   const text  = input?.value.trim();
   if (!text || !_gymId) return;
+  const audienceUids = _giGetAudienceUids(_giAudience);
+  if (!audienceUids.length) { alert('No members in this audience.'); return; }
   const orig = btn.textContent;
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    const memberCount = (_gymMembers || []).filter(m => m.status === 'active').length;
     await addDoc(collection(db,'gyms',_gymId,'broadcasts'), {
       text, sentBy: _currentUid,
       sentByName: auth.currentUser?.displayName || 'Admin',
-      sentAt: serverTimestamp(), memberCount, readBy: []
+      sentAt: serverTimestamp(),
+      audience: _giAudience,
+      memberCount: audienceUids.length,
+      audienceUids,
+      readBy: []
     });
     if (input) input.value = '';
   } catch(e) {
@@ -2985,30 +3088,194 @@ function _gcUpdateSidebarValue() {
   }
 }
 
-// ── Revenue panel ──────────────────────────────────────
+// ── Billing / Revenue panel ────────────────────────────
+let _blFilter = 'all';  // 'all' | 'paid' | 'unpaid' | 'overdue'
+
 async function _sbRenderRevenue(body) {
-  body.innerHTML = `<div style="padding:24px;display:flex;justify-content:center"><div class="spinner"></div></div>`;
-  if (_portalType === 'gym' && _gymMembers?.length) {
-    const paid    = _gymMembers.filter(m => m.payStatus === 'paid').length;
-    const unpaid  = _gymMembers.filter(m => m.payStatus === 'unpaid').length;
-    const overdue = _gymMembers.filter(m => m.payStatus === 'overdue').length;
-    body.innerHTML = `<div style="padding:20px">
-      <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:3px;color:#bbb;margin-bottom:16px">MEMBER PAYMENT STATUS</div>
-      ${_sbRevRow('✅','Paid',paid,'#2e7d32')}
-      ${_sbRevRow('⏳','Unpaid',unpaid,'#e65100')}
-      ${_sbRevRow('🔴','Overdue',overdue,'#c62828')}
-    </div>${_sbPh('💰','FULL REPORTS','Stripe income tracking and detailed revenue analytics — coming soon.')}`;
-  } else {
-    body.innerHTML = _sbPh('💰','REVENUE','Earnings summary, session billing and payment history — coming soon.');
+  if (_portalType !== 'gym' || !_gymId) {
+    body.innerHTML = _sbPh('💰','REVENUE','Revenue overview is available for gym portals.');
+    return;
   }
+  _blFilter = 'all';
+  body.style.display = 'flex'; body.style.flexDirection = 'column'; body.style.overflow = 'hidden'; body.style.height = '100%';
+  _blRender(body);
 }
 
-function _sbRevRow(icon, label, count, color) {
-  return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-family:var(--font-mono)">
-    <span style="font-size:12px">${icon} ${label}</span>
-    <span style="font-size:18px;font-weight:700;color:${color||'var(--accent)'}">${count}</span>
+function _blRender(body) {
+  const members = _gymMembers || [];
+  const active  = members.filter(m => m.status === 'active');
+  const paid    = active.filter(m => m.payStatus === 'paid').length;
+  const unpaid  = active.filter(m => m.payStatus === 'unpaid').length;
+  const overdue = active.filter(m => m.payStatus === 'overdue').length;
+  const none    = active.filter(m => !m.payStatus).length;
+
+  const filtered = active.filter(m => {
+    if (_blFilter === 'all')    return true;
+    if (_blFilter === 'paid')   return m.payStatus === 'paid';
+    if (_blFilter === 'unpaid') return m.payStatus === 'unpaid' || !m.payStatus;
+    if (_blFilter === 'overdue')return m.payStatus === 'overdue';
+    return true;
+  });
+
+  // Update sidebar strip
+  const revVal = document.getElementById('sb-rev-value');
+  const revSub = document.getElementById('sb-rev-sub');
+  if (revVal) revVal.textContent = `${paid} paid · ${overdue} overdue`;
+  if (revSub) revSub.textContent = unpaid ? `${unpaid} unpaid` : '';
+
+  body.innerHTML = `
+    <!-- Stats bar -->
+    <div class="bl-stats" style="margin-top:14px">
+      <div class="bl-stat-seg" style="background:#e8f5e9">
+        <div class="v" style="color:#2e7d32">${paid}</div>
+        <div class="l" style="color:#2e7d32">Paid</div>
+      </div>
+      <div class="bl-stat-seg" style="background:#fff3e0">
+        <div class="v" style="color:#e65100">${unpaid + none}</div>
+        <div class="l" style="color:#e65100">Unpaid</div>
+      </div>
+      <div class="bl-stat-seg" style="background:#ffebee">
+        <div class="v" style="color:#c62828">${overdue}</div>
+        <div class="l" style="color:#c62828">Overdue</div>
+      </div>
+      <div class="bl-stat-seg" style="background:var(--s2)">
+        <div class="v" style="color:var(--accent)">${active.length}</div>
+        <div class="l" style="color:#999">Total</div>
+      </div>
+    </div>
+    <!-- Filter tabs -->
+    <div class="bl-filter-bar">
+      <button class="bl-filter-btn${_blFilter==='all'?' active':''}"    onclick="window._blSetFilter('all')">ALL (${active.length})</button>
+      <button class="bl-filter-btn${_blFilter==='paid'?' active':''}"   onclick="window._blSetFilter('paid')">✅ PAID (${paid})</button>
+      <button class="bl-filter-btn${_blFilter==='unpaid'?' active':''}" onclick="window._blSetFilter('unpaid')">⏳ UNPAID (${unpaid+none})</button>
+      <button class="bl-filter-btn${_blFilter==='overdue'?' active':''}" onclick="window._blSetFilter('overdue')">🔴 OVERDUE (${overdue})</button>
+    </div>
+    <!-- Member list -->
+    <div id="bl-list" style="flex:1;overflow-y:auto">
+      ${filtered.length ? filtered.map(m => _blMemberRow(m)).join('') : `<div style="padding:24px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#bbb">No members in this category.</div>`}
+    </div>`;
+}
+
+function _blMemberRow(m) {
+  const status    = m.payStatus || 'none';
+  const lastSeen  = m.lastCheckin ? 'Last in: ' + m.lastCheckin : 'No check-ins';
+  const expiry    = m.validTo ? 'Expires: ' + m.validTo : '';
+  const hasSub    = !!m.stripeSubscriptionId;
+  const safeName  = _sbEsc(m.name || '—');
+  const safeId    = m.id;
+  return `<div class="bl-member-row">
+    <div class="sb-thread-avatar" style="flex-shrink:0">${(safeName[0]||'?').toUpperCase()}</div>
+    <div style="flex:1;min-width:0">
+      <div class="bl-member-name">${safeName}</div>
+      <div class="bl-member-sub">${lastSeen}${expiry ? ' · ' + expiry : ''}</div>
+      <div class="bl-action-row">
+        <button class="bl-btn message" onclick="window._blQuickMessage('${safeId}','${safeName.replace(/'/g,'&#39;')}','${status}')">💬 MESSAGE</button>
+        ${hasSub ? `<button class="bl-btn cancel" onclick="window._blCancelConfirm('${safeId}','${safeName.replace(/'/g,'&#39;')}')">✕ CANCEL SUB</button>` : ''}
+        ${status === 'paid' ? `<button class="bl-btn reward" onclick="window._blGrantFreeMonth('${safeId}','${safeName.replace(/'/g,'&#39;')}',this)">🎁 FREE MONTH</button>` : ''}
+      </div>
+    </div>
+    <span class="bl-status ${status}">${status.toUpperCase()}</span>
   </div>`;
 }
+
+window._blSetFilter = (f) => {
+  _blFilter = f;
+  const body = document.getElementById('sb-panel-body');
+  if (body) _blRender(body);
+};
+
+// ── Quick message a specific member ───────────────────
+window._blQuickMessage = (memberId, memberName, payStatus) => {
+  const statusHints = {
+    overdue: `Hi ${memberName}, we noticed your membership payment is overdue. Please update your payment details to keep your access active.`,
+    unpaid:  `Hi ${memberName}, your membership payment is pending. Let us know if you need any help.`,
+    none:    `Hi ${memberName}, `,
+    paid:    `Hi ${memberName}, `,
+  };
+  const member = _gymMembers.find(m => m.id === memberId);
+  if (!member?.uid) {
+    alert('This member has not linked their KritFit account yet — no inbox thread available.');
+    return;
+  }
+  // Open inbox → direct → this member's thread, pre-seeded with hint text
+  _sbOpen('inbox');
+  setTimeout(() => {
+    window._giSwitchTab('direct');
+    setTimeout(() => window._giOpenThread(member.uid, memberName), 80);
+    setTimeout(() => {
+      const inp = document.getElementById('sb-compose-input');
+      if (inp) { inp.value = statusHints[payStatus] || `Hi ${memberName}, `; inp.focus(); }
+    }, 250);
+  }, 80);
+};
+
+// ── Cancel subscription confirm modal ─────────────────
+window._blCancelConfirm = (memberId, memberName) => {
+  const existing = document.getElementById('bl-cancel-modal');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'bl-cancel-modal';
+  overlay.className = 'bl-modal-overlay';
+  overlay.innerHTML = `
+    <div class="bl-modal">
+      <h3>Cancel Subscription</h3>
+      <p>This will immediately cancel <strong>${_sbEsc(memberName)}</strong>'s Stripe subscription. They will lose access at the end of their current billing period.<br><br>Type the member's name to confirm:</p>
+      <input type="text" id="bl-cancel-confirm-input" placeholder="${_sbEsc(memberName)}" autocomplete="off">
+      <div class="bl-modal-btns">
+        <button onclick="document.getElementById('bl-cancel-modal').remove()" style="background:var(--s2);color:var(--text)">CANCEL</button>
+        <button id="bl-cancel-confirm-btn" onclick="window._blExecuteCancel('${memberId}','${_sbEsc(memberName).replace(/'/g,'&#39;')}')"
+          style="background:#c62828;color:#fff">CONFIRM CANCEL</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+};
+
+window._blExecuteCancel = async (memberId, memberName) => {
+  const input = document.getElementById('bl-cancel-confirm-input');
+  if (!input || input.value.trim().toLowerCase() !== memberName.toLowerCase()) {
+    input?.classList.add('shake');
+    input?.setAttribute('placeholder','Name does not match — try again');
+    input?.style && (input.style.borderColor = '#c62828');
+    return;
+  }
+  const btn = document.getElementById('bl-cancel-confirm-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Cancelling…'; }
+  try {
+    const { httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js');
+    const fns = (await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js')).getFunctions(app);
+    const cancelFn = httpsCallable(fns, 'adminCancelMemberSubscription');
+    await cancelFn({ gymId: _gymId, memberId });
+    document.getElementById('bl-cancel-modal')?.remove();
+    // Refresh member data
+    await _gdLoadMembers();
+    const body = document.getElementById('sb-panel-body');
+    if (body) _blRender(body);
+    alert(`${memberName}'s subscription has been cancelled.`);
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'CONFIRM CANCEL'; }
+    alert('Cancel failed: ' + e.message);
+  }
+};
+
+// ── Grant free month ───────────────────────────────────
+window._blGrantFreeMonth = async (memberId, memberName, btn) => {
+  if (!confirm(`Grant ${memberName} one free month? This applies a 100% discount to their next invoice.`)) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Applying…';
+  try {
+    const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js');
+    const fns    = getFunctions(app);
+    const grantFn = httpsCallable(fns, 'grantMemberFreeMonth');
+    await grantFn({ gymId: _gymId, memberId });
+    btn.textContent = '✓ GRANTED';
+    btn.style.background = '#e8f5e9'; btn.style.color = '#2e7d32';
+  } catch(e) {
+    btn.disabled = false; btn.textContent = orig;
+    alert('Grant failed: ' + e.message);
+  }
+};
 
 // ── Inbox watcher — keeps sidebar badge live ───────────
 async function _sbStartInboxWatcher() {
