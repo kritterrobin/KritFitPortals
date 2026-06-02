@@ -1109,7 +1109,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.09';
+const PORTALS_VERSION = '1.10';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1332,7 +1332,7 @@ window._gModalSave  = () => _gModalSubmit?.();
 
 async function _loadGymPortal(gymDoc) {
   _portalType = 'gym';
-  _currentUid = gymDoc.data().ownerId;
+  _currentUid = _authUid;   // always the signed-in owner; gymDoc.data().ownerId may be absent
   _gymId   = gymDoc.id;
   _gymData = gymDoc.data();
   _setPortalTypePill('gym');
