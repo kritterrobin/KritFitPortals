@@ -489,6 +489,69 @@
       color:#999; text-transform:uppercase; padding:4px 0 2px;
     }
     .subs-section-divider { height:1px; background:var(--border); margin:12px 0 4px; }
+
+    /* ── Gym Inbox ── */
+    .gi-tabs { display:flex; border-bottom:2px solid var(--border); flex-shrink:0; }
+    .gi-tab {
+      flex:1; background:none; border:none; border-bottom:3px solid transparent;
+      margin-bottom:-2px; padding:11px 4px 9px; font-family:var(--font-mono);
+      font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+      color:var(--muted); cursor:pointer; transition:color .15s, border-color .15s;
+    }
+    .gi-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .gi-thread-item {
+      display:flex; align-items:center; gap:12px; padding:14px 16px;
+      border-bottom:1px solid var(--border); cursor:pointer; transition:background .15s;
+    }
+    .gi-thread-item:hover { background:var(--s2); }
+    .gi-avatar {
+      position:relative; width:38px; height:38px; border-radius:50%;
+      background:var(--accent); color:#fff; display:flex; align-items:center;
+      justify-content:center; font-size:15px; font-family:var(--font-display);
+      letter-spacing:1px; flex-shrink:0;
+    }
+    .gi-online-dot {
+      position:absolute; bottom:1px; right:1px; width:10px; height:10px;
+      border-radius:50%; border:2px solid #fff; background:#bbb;
+    }
+    .gi-online-dot.online { background:#43a047; }
+    .gi-thread-name { font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--text); }
+    .gi-thread-preview { font-family:var(--font-mono); font-size:10px; color:#999; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; margin-top:2px; }
+    .gi-unread-dot { background:#c62828; color:#fff; font-family:var(--font-mono); font-size:9px; font-weight:700; padding:2px 7px; border-radius:10px; flex-shrink:0; }
+    /* Message bubbles */
+    .gi-messages { display:flex; flex-direction:column; gap:8px; padding:16px; overflow-y:auto; flex:1; }
+    .gi-bubble-row { display:flex; flex-direction:column; }
+    .gi-bubble-row.out { align-items:flex-end; }
+    .gi-bubble-row.in  { align-items:flex-start; }
+    .gi-bubble {
+      max-width:72%; padding:9px 13px; border-radius:14px; font-family:var(--font-mono);
+      font-size:12px; line-height:1.6; word-break:break-word;
+    }
+    .gi-bubble.out { background:var(--accent); color:#fff; border-bottom-right-radius:4px; }
+    .gi-bubble.in  { background:var(--s3); color:var(--text); border-bottom-left-radius:4px; }
+    .gi-bubble-meta { font-family:var(--font-mono); font-size:9px; color:var(--muted); margin-top:2px; padding:0 3px; }
+    .gi-ticks { font-size:11px; margin-left:4px; }
+    .gi-ticks.read { color:#4fc3f7; }
+    .gi-ticks.sent { color:rgba(255,255,255,.5); }
+    /* Broadcast */
+    .gi-broadcast-item {
+      padding:14px 16px; border-bottom:1px solid var(--border);
+    }
+    .gi-broadcast-text { font-family:var(--font-mono); font-size:12px; color:var(--text); line-height:1.6; margin-bottom:6px; }
+    .gi-broadcast-meta { font-family:var(--font-mono); font-size:9px; color:#bbb; display:flex; gap:10px; flex-wrap:wrap; }
+    /* New message / broadcast button */
+    .gi-fab {
+      margin:14px 16px 0; width:calc(100% - 32px); padding:11px;
+      background:var(--accent); color:#fff; border:none; border-radius:6px;
+      font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:1px;
+      cursor:pointer; transition:opacity .15s;
+    }
+    .gi-fab:hover { opacity:.88; }
+    /* Broadcast compose area */
+    .gi-bc-compose {
+      margin:14px 16px; display:flex; flex-direction:column; gap:8px;
+      background:var(--s2); border-radius:8px; padding:12px; border:1px solid var(--border);
+    }
     .sub-active-flag {
       display:block; width:100%; padding:10px; text-align:center;
       background:#e8f5e9; color:#2e7d32; border:2px solid #a5d6a7; border-radius:4px;
@@ -1024,14 +1087,15 @@
    '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
-   '_showSubscriptions','_subsClose'].forEach(fn => window[fn] = () => {});
+   '_showSubscriptions','_subsClose',
+   '_giSwitchTab','_giOpenThread','_giNewMessage','_giSendBroadcast'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs,
-          onSnapshot, addDoc, serverTimestamp, orderBy, limit }
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs,
+          onSnapshot, addDoc, serverTimestamp, orderBy, limit, arrayUnion }
                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const app  = initializeApp({
@@ -1045,7 +1109,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.08';
+const PORTALS_VERSION = '1.09';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2043,32 +2107,27 @@ function _sbPh(icon, title, text) {
   </div>`;
 }
 
-// ── Inbox — thread list ────────────────────────────────
+// ── Inbox — dispatch by portal type ───────────────────
 async function _sbRenderInboxList(body) {
   body.innerHTML = `<div style="padding:24px;display:flex;justify-content:center"><div class="spinner"></div></div>`;
-
-  if (_portalType !== 'trainer') {
-    body.innerHTML = _sbPh('💬','GYM INBOX','Member messaging and announcements coming soon.');
-    return;
-  }
   if (!_currentUid) {
     body.innerHTML = _sbPh('⚠️','NOT LOADED','Portal not fully loaded. Please refresh.');
     return;
   }
+  if (_portalType === 'gym') { _gymInboxRenderTabs(body); return; }
+  // Trainer inbox (trainer_connections subcollection)
   try {
     const connsSnap = await getDocs(query(collection(db,'trainer_connections'), where('trainerId','==',_currentUid)));
     const conns     = connsSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-
     if (!conns.length) {
       body.innerHTML = _sbPh('💬','NO CLIENTS YET','Messages from your clients will appear here once they connect via the KritFit app.');
       return;
     }
-
     body.innerHTML = '';
     conns.forEach(conn => {
       const item    = document.createElement('div');
       item.className = 'sb-thread-item';
-      item.onclick   = () => _sbOpenThread(conn);
+      item.onclick   = () => _sbOpenTrainerThread(conn);
       item.innerHTML = `
         <div class="sb-thread-avatar">${_sbEsc((conn.clientName||'?')[0]).toUpperCase()}</div>
         <div style="flex:1;min-width:0">
@@ -2077,16 +2136,14 @@ async function _sbRenderInboxList(body) {
         </div>
         <span id="sb-tb-${conn.id}" style="display:none;background:#c62828;color:#fff;font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0">●</span>`;
       body.appendChild(item);
-
       const unsub = onSnapshot(
         query(collection(db,'trainer_connections',conn.id,'messages'), orderBy('timestamp','desc'), limit(1)),
         snap => {
           const lastEl  = document.getElementById('sb-tl-' + conn.id);
           const badgeEl = document.getElementById('sb-tb-' + conn.id);
           if (!lastEl) return;
-          if (snap.empty) {
-            lastEl.textContent = 'No messages yet';
-          } else {
+          if (snap.empty) { lastEl.textContent = 'No messages yet'; }
+          else {
             const msg = snap.docs[0].data();
             lastEl.textContent = (msg.senderId === _currentUid ? 'You: ' : '') + (msg.text || '');
             if (badgeEl) badgeEl.style.display = (msg.senderId !== _currentUid && !msg.read) ? '' : 'none';
@@ -2102,8 +2159,311 @@ async function _sbRenderInboxList(body) {
   }
 }
 
-// ── Inbox — thread view ────────────────────────────────
-async function _sbOpenThread(conn) {
+// ── Gym Inbox — tab shell ──────────────────────────────
+let _giTab = 'direct';   // 'direct' | 'broadcast'
+let _giThreadMemberUid  = null;
+let _giThreadMemberName = null;
+
+function _gymInboxRenderTabs(body) {
+  body.innerHTML = `
+    <div class="gi-tabs">
+      <button class="gi-tab ${_giTab==='direct'?'active':''}"    onclick="window._giSwitchTab('direct')">💬 DIRECT</button>
+      <button class="gi-tab ${_giTab==='broadcast'?'active':''}" onclick="window._giSwitchTab('broadcast')">📢 BROADCAST</button>
+    </div>
+    <div id="gi-tab-body" style="flex:1;overflow-y:auto"></div>`;
+  _giRenderTabBody();
+}
+
+window._giSwitchTab = (tab) => {
+  _giTab = tab;
+  document.querySelectorAll('.gi-tab').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(tab)));
+  _giRenderTabBody();
+};
+
+function _giRenderTabBody() {
+  const body = document.getElementById('gi-tab-body');
+  if (!body) return;
+  // Clean up previous list/thread listeners (keep watcher_)
+  Object.keys(_sbMsgListeners).filter(k => k.startsWith('list_') || k === 'thread').forEach(k => { _sbMsgListeners[k](); delete _sbMsgListeners[k]; });
+  if (_giTab === 'direct')    _giRenderDirectList(body);
+  else                        _giRenderBroadcasts(body);
+}
+
+// ── Gym Inbox — DIRECT tab (thread list) ─────────────
+function _giRenderDirectList(container) {
+  if (!_gymId) { container.innerHTML = _sbPh('⚠️','NO GYM LOADED','Gym data not loaded. Please refresh.'); return; }
+  container.innerHTML = `
+    <button class="gi-fab" onclick="window._giNewMessage()">+ NEW MESSAGE</button>
+    <div id="gi-thread-list"></div>`;
+  const listEl = document.getElementById('gi-thread-list');
+
+  const unsub = onSnapshot(
+    query(collection(db,'gyms',_gymId,'threads'), orderBy('lastMessageAt','desc')),
+    snap => {
+      if (!listEl) return;
+      if (snap.empty) {
+        listEl.innerHTML = `<div style="padding:32px 20px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#bbb">No messages yet.<br>Tap + NEW MESSAGE to start a conversation.</div>`;
+        return;
+      }
+      // Preserve scroll position
+      const scrollTop = listEl.scrollTop;
+      listEl.innerHTML = snap.docs.map(d => {
+        const t = d.data();
+        const uid     = d.id;
+        const name    = _sbEsc(t.memberName || uid);
+        const safeName = name.replace(/'/g, '&#39;');
+        const preview = _sbEsc((t.lastMessage || '').substring(0,60));
+        const fromMe  = t.lastMessageFromUid === _currentUid;
+        const unread  = t.unreadAdmin || 0;
+        return `<div class="gi-thread-item" onclick="window._giOpenThread('${uid}','${safeName}')">
+          <div class="gi-avatar" id="gi-av-${uid}">${name[0]?.toUpperCase()||'?'}
+            <div class="gi-online-dot" id="gi-od-${uid}"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="gi-thread-name">${name}</div>
+            <div class="gi-thread-preview">${fromMe?'You: ':''}${preview||'No messages yet'}</div>
+          </div>
+          ${unread > 0 ? `<span class="gi-unread-dot">${unread}</span>` : ''}
+        </div>`;
+      }).join('');
+      listEl.scrollTop = scrollTop;
+      _sbRecalcBadge();
+      // Subscribe to online presence for each visible member
+      snap.docs.forEach(d => {
+        const uid = d.id;
+        if (_sbMsgListeners['pres_' + uid]) return; // already watching
+        _sbMsgListeners['pres_' + uid] = onSnapshot(doc(db,'user_registry',uid), presSnap => {
+          const dot = document.getElementById('gi-od-' + uid);
+          if (!dot) return;
+          const data = presSnap.data();
+          const online = data?.online === true;
+          dot.classList.toggle('online', online);
+          dot.title = online ? 'Online now' : (data?.lastSeen ? 'Last seen ' + data.lastSeen.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '');
+        });
+      });
+    }
+  );
+  _sbMsgListeners['list_gym_threads'] = unsub;
+}
+
+// ── Gym Inbox — open direct thread ───────────────────
+window._giOpenThread = async (memberUid, memberName) => {
+  _giThreadMemberUid  = memberUid;
+  _giThreadMemberName = memberName;
+  document.getElementById('sb-panel-title').textContent  = memberName || 'MEMBER';
+  document.getElementById('sb-panel-back').style.display = '';
+  document.getElementById('sb-compose').style.display    = '';
+  document.getElementById('sb-compose-input').placeholder = `Message ${memberName}…`;
+
+  const body = document.getElementById('sb-panel-body');
+  body.innerHTML = `<div style="padding:24px;display:flex;justify-content:center"><div class="spinner"></div></div>`;
+
+  // Mark admin messages as read — reset unreadAdmin counter
+  if (_gymId) {
+    updateDoc(doc(db,'gyms',_gymId,'threads',memberUid), { unreadAdmin: 0 }).catch(() => {});
+    // Mark all messages in thread as read by admin
+    getDocs(collection(db,'gyms',_gymId,'threads',memberUid,'messages')).then(snap => {
+      snap.docs.forEach(d => {
+        if (!d.data().readBy?.includes(_currentUid)) {
+          updateDoc(d.ref, { readBy: arrayUnion(_currentUid) }).catch(() => {});
+        }
+      });
+    }).catch(() => {});
+  }
+
+  if (_sbMsgListeners['thread']) { _sbMsgListeners['thread'](); delete _sbMsgListeners['thread']; }
+
+  body.innerHTML = `<div class="gi-messages" id="gi-messages"></div>`;
+  const msgsEl = document.getElementById('gi-messages');
+
+  _sbMsgListeners['thread'] = onSnapshot(
+    query(collection(db,'gyms',_gymId,'threads',memberUid,'messages'), orderBy('sentAt','asc'), limit(100)),
+    snap => {
+      if (!msgsEl) return;
+      _giRenderBubbles(msgsEl, snap.docs, memberUid);
+      // Mark incoming messages read in real-time
+      snap.docs.forEach(d => {
+        if (d.data().senderUid !== _currentUid && !d.data().readBy?.includes(_currentUid)) {
+          updateDoc(d.ref, { readBy: arrayUnion(_currentUid) }).catch(() => {});
+        }
+      });
+    }
+  );
+};
+
+function _giRenderBubbles(container, docs, memberUid) {
+  if (!docs.length) {
+    container.innerHTML = `<div style="text-align:center;font-family:var(--font-mono);font-size:11px;color:#bbb;padding:30px 0">No messages yet. Say hello! 👋</div>`;
+    return;
+  }
+  container.innerHTML = docs.map(d => {
+    const m   = d.data();
+    const out = m.senderUid === _currentUid;
+    const ts  = m.sentAt?.toDate?.();
+    const t   = ts ? ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+    const memberRead = Array.isArray(m.readBy) && m.readBy.includes(memberUid);
+    const tickHtml   = out ? `<span class="gi-ticks ${memberRead?'read':'sent'}">✓✓</span>` : '';
+    return `<div class="gi-bubble-row ${out?'out':'in'}">
+      <div class="gi-bubble ${out?'out':'in'}">${_sbEsc(m.text||'')}${tickHtml}</div>
+      <div class="gi-bubble-meta" style="text-align:${out?'right':'left'}">${t}</div>
+    </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── Gym Inbox — new message picker ────────────────────
+window._giNewMessage = async () => {
+  if (!_gymId) return;
+  const body = document.getElementById('sb-panel-body');
+  body.innerHTML = `<div style="padding:24px;display:flex;justify-content:center"><div class="spinner"></div></div>`;
+  document.getElementById('sb-panel-title').textContent  = 'SELECT MEMBER';
+  document.getElementById('sb-panel-back').style.display = '';
+
+  try {
+    const snap = await getDocs(query(collection(db,'gyms',_gymId,'members'), where('status','==','active')));
+    const members = snap.docs.map(d => ({ docId: d.id, ...d.data() })).filter(m => m.uid);
+    if (!members.length) {
+      body.innerHTML = _sbPh('👥','NO LINKED MEMBERS','Members appear here once they link via the KritFit app.');
+      return;
+    }
+    body.innerHTML = members.map(m => {
+      const name     = _sbEsc(m.name || m.uid);
+      const safeName = name.replace(/'/g, '&#39;');
+      return `<div class="gi-thread-item" onclick="window._giOpenThread('${m.uid}','${safeName}')">
+        <div class="gi-avatar">${(name[0]||'?').toUpperCase()}</div>
+        <div style="flex:1">
+          <div class="gi-thread-name">${name}</div>
+          <div class="gi-thread-preview">Tap to start a conversation</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = _sbPh('⚠️','ERROR','Could not load members.');
+  }
+};
+
+// ── Gym Inbox — BROADCAST tab ──────────────────────────
+function _giRenderBroadcasts(container) {
+  if (!_gymId) { container.innerHTML = _sbPh('⚠️','NO GYM LOADED',''); return; }
+  container.innerHTML = `
+    <div class="gi-bc-compose">
+      <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;color:#999;margin-bottom:6px">NEW BROADCAST</div>
+      <textarea id="gi-bc-input" rows="3" placeholder="Write an announcement for all members…"
+        style="width:100%;padding:9px 12px;border:2px solid #ddd;border-radius:6px;font-family:var(--font-mono);font-size:12px;color:var(--text);resize:none;line-height:1.4;box-sizing:border-box"></textarea>
+      <button onclick="window._giSendBroadcast(this)" class="gi-fab" style="margin:0">SEND TO ALL MEMBERS 📢</button>
+    </div>
+    <div id="gi-bc-list" style="padding-bottom:20px"><div style="padding:20px;text-align:center"><div class="spinner"></div></div></div>`;
+
+  const listEl = document.getElementById('gi-bc-list');
+  const unsub = onSnapshot(
+    query(collection(db,'gyms',_gymId,'broadcasts'), orderBy('sentAt','desc'), limit(50)),
+    snap => {
+      if (!listEl) return;
+      if (snap.empty) {
+        listEl.innerHTML = `<div style="padding:24px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#bbb">No broadcasts sent yet.</div>`;
+        return;
+      }
+      listEl.innerHTML = snap.docs.map(d => {
+        const b  = d.data();
+        const ts = b.sentAt?.toDate?.();
+        const t  = ts ? ts.toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+        const readCount = Array.isArray(b.readBy) ? b.readBy.length : 0;
+        return `<div class="gi-broadcast-item">
+          <div class="gi-broadcast-text">${_sbEsc(b.text||'')}</div>
+          <div class="gi-broadcast-meta">
+            <span>📅 ${t}</span>
+            <span>👥 ${b.memberCount||0} members</span>
+            <span class="${readCount>0?'':''}">👁 ${readCount} read</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  );
+  _sbMsgListeners['list_bc'] = unsub;
+}
+
+window._giSendBroadcast = async (btn) => {
+  const input = document.getElementById('gi-bc-input');
+  const text  = input?.value.trim();
+  if (!text || !_gymId) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const memberCount = (_gymMembers || []).filter(m => m.status === 'active').length;
+    await addDoc(collection(db,'gyms',_gymId,'broadcasts'), {
+      text, sentBy: _currentUid,
+      sentByName: auth.currentUser?.displayName || 'Admin',
+      sentAt: serverTimestamp(), memberCount, readBy: []
+    });
+    if (input) input.value = '';
+  } catch(e) {
+    console.error('[Broadcast]', e);
+    alert('Send failed: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+};
+
+// ── Inbox — send (both trainer and gym thread) ────────
+window._sbInboxBack = () => {
+  // Clean up thread + list listeners (keep watcher_/pres_)
+  if (_sbMsgListeners['thread']) { _sbMsgListeners['thread'](); delete _sbMsgListeners['thread']; }
+  Object.keys(_sbMsgListeners).filter(k => k.startsWith('list_')).forEach(k => { _sbMsgListeners[k](); delete _sbMsgListeners[k]; });
+  _sbActiveThread        = null;
+  _giThreadMemberUid     = null;
+  _giThreadMemberName    = null;
+  document.getElementById('sb-panel-back').style.display = 'none';
+  document.getElementById('sb-compose').style.display    = 'none';
+  document.getElementById('sb-panel-title').textContent  = 'INBOX';
+  _sbRenderInboxList(document.getElementById('sb-panel-body'));
+};
+
+window._sbSendMessage = async () => {
+  const input = document.getElementById('sb-compose-input');
+  const text  = input.value.trim();
+  if (!text || !_currentUid) return;
+  input.value = ''; input.disabled = true;
+  try {
+    if (_giThreadMemberUid && _gymId) {
+      // Gym direct message
+      const memberUid = _giThreadMemberUid;
+      const memberName = _giThreadMemberName || memberUid;
+      const threadRef = doc(db,'gyms',_gymId,'threads',memberUid);
+      await addDoc(collection(db,'gyms',_gymId,'threads',memberUid,'messages'), {
+        text, senderUid: _currentUid,
+        senderName: auth.currentUser?.displayName || 'Admin',
+        sentAt: serverTimestamp(), readBy: [_currentUid]
+      });
+      await setDoc(threadRef, {
+        memberUid, memberName,
+        lastMessage:        text.length > 60 ? text.substring(0,60) + '…' : text,
+        lastMessageAt:      serverTimestamp(),
+        lastMessageFromUid: _currentUid,
+        unreadMember:       1,
+        createdAt:          serverTimestamp()
+      }, { merge: true });
+    } else if (_sbActiveThread) {
+      // Trainer client message (legacy path)
+      await addDoc(collection(db,'trainer_connections',_sbActiveThread.id,'messages'), {
+        text, senderId: _currentUid,
+        senderName: auth.currentUser?.displayName || 'Trainer',
+        timestamp: serverTimestamp(), read: false
+      });
+    }
+  } catch(e) {
+    console.error('[Send msg]', e);
+    input.value = text;
+  } finally {
+    input.disabled = false; input.focus();
+  }
+};
+
+window._sbComposeKeydown = (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window._sbSendMessage(); }
+};
+
+// ── Trainer thread view (legacy path) ─────────────────
+async function _sbOpenTrainerThread(conn) {
   _sbActiveThread = conn;
   document.getElementById('sb-panel-title').textContent  = _sbEsc(conn.clientName || 'MESSAGES');
   document.getElementById('sb-panel-back').style.display = '';
@@ -2114,71 +2474,32 @@ async function _sbOpenThread(conn) {
 
   if (_sbMsgListeners['thread']) { _sbMsgListeners['thread'](); delete _sbMsgListeners['thread']; }
 
+  body.innerHTML = `<div class="gi-messages" id="gi-messages"></div>`;
+  const msgsEl = document.getElementById('gi-messages');
+
   _sbMsgListeners['thread'] = onSnapshot(
     query(collection(db,'trainer_connections',conn.id,'messages'), orderBy('timestamp','asc'), limit(100)),
     snap => {
-      if (!_sbActiveThread || _sbActiveThread.id !== conn.id) return;
-      _sbRenderMessages(body, snap.docs);
+      if (!msgsEl) return;
+      if (!snap.docs.length) {
+        msgsEl.innerHTML = `<div style="text-align:center;font-family:var(--font-mono);font-size:11px;color:#bbb;padding:30px 0">No messages yet. Say hello! 👋</div>`;
+        return;
+      }
+      msgsEl.innerHTML = snap.docs.map(d => {
+        const m   = d.data();
+        const out = m.senderId === _currentUid;
+        const ts  = m.timestamp?.toDate?.();
+        const t   = ts ? ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+        const tickHtml = out ? `<span class="gi-ticks ${m.read?'read':'sent'}">✓✓</span>` : '';
+        return `<div class="gi-bubble-row ${out?'out':'in'}">
+          <div class="gi-bubble ${out?'out':'in'}">${_sbEsc(m.text||'')}${tickHtml}</div>
+          <div class="gi-bubble-meta" style="text-align:${out?'right':'left'}">${t}</div>
+        </div>`;
+      }).join('');
+      msgsEl.scrollTop = msgsEl.scrollHeight;
     }
   );
 }
-
-function _sbRenderMessages(body, docs) {
-  if (!docs.length) {
-    body.innerHTML = `<div style="padding:40px 24px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#bbb">No messages yet. Say hi! 👋</div>`;
-    return;
-  }
-  body.innerHTML = docs.map(d => {
-    const msg = d.data();
-    const out = msg.senderId === _currentUid;
-    const ts  = msg.timestamp?.toDate?.();
-    const t   = ts ? ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ' · ' + ts.toLocaleDateString([],{month:'short',day:'numeric'}) : '';
-    return `<div class="sb-msg-row ${out?'out':'in'}">
-      <div>
-        <div class="sb-msg-bubble ${out?'out':'in'}">${_sbEsc(msg.text||'')}</div>
-        <div class="sb-msg-time" style="text-align:${out?'right':'left'}">${t}</div>
-      </div>
-    </div>`;
-  }).join('');
-  body.scrollTop = body.scrollHeight;
-}
-
-window._sbInboxBack = () => {
-  if (_sbMsgListeners['thread']) { _sbMsgListeners['thread'](); delete _sbMsgListeners['thread']; }
-  Object.keys(_sbMsgListeners).filter(k => k.startsWith('list_')).forEach(k => { _sbMsgListeners[k](); delete _sbMsgListeners[k]; });
-  _sbActiveThread = null;
-  document.getElementById('sb-panel-back').style.display = 'none';
-  document.getElementById('sb-compose').style.display    = 'none';
-  document.getElementById('sb-panel-title').textContent  = 'INBOX';
-  _sbRenderInboxList(document.getElementById('sb-panel-body'));
-};
-
-window._sbSendMessage = async () => {
-  if (!_sbActiveThread || !_currentUid) return;
-  const input = document.getElementById('sb-compose-input');
-  const text  = input.value.trim();
-  if (!text) return;
-  input.value = ''; input.disabled = true;
-  try {
-    await addDoc(collection(db,'trainer_connections',_sbActiveThread.id,'messages'), {
-      text,
-      senderId:   _currentUid,
-      senderName: auth.currentUser?.displayName || 'Trainer',
-      timestamp:  serverTimestamp(),
-      read:       false
-    });
-  } catch(e) {
-    console.error('[Send msg]', e);
-    input.value = text;
-  } finally {
-    input.disabled = false;
-    input.focus();
-  }
-};
-
-window._sbComposeKeydown = (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _sbSendMessage(); }
-};
 
 function _sbEsc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
@@ -2222,7 +2543,26 @@ function _sbRevRow(icon, label, count, color) {
 
 // ── Inbox watcher — keeps sidebar badge live ───────────
 async function _sbStartInboxWatcher() {
-  if (_portalType !== 'trainer' || !_currentUid) return;
+  if (!_currentUid) return;
+
+  if (_portalType === 'gym' && _gymId) {
+    // Watch gyms/{gymId}/threads — sum unreadAdmin across all threads
+    const unsub = onSnapshot(
+      collection(db,'gyms',_gymId,'threads'),
+      snap => {
+        const total = snap.docs.reduce((sum, d) => sum + (d.data().unreadAdmin || 0), 0);
+        const badge = document.getElementById('sb-inbox-badge');
+        const val   = document.getElementById('sb-inbox-value');
+        if (total > 0) { badge.textContent = total; badge.style.display = ''; val.textContent = `${total} unread`; }
+        else           { badge.style.display = 'none'; val.textContent = 'No new messages'; }
+        _updateSidebarIndicator();
+      }
+    );
+    _sbMsgListeners['watcher_gym'] = unsub;
+    return;
+  }
+
+  if (_portalType !== 'trainer') return;
   try {
     const connsSnap = await getDocs(query(collection(db,'trainer_connections'), where('trainerId','==',_currentUid)));
     if (!connsSnap.docs.length) return;
