@@ -1208,7 +1208,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.13';
+const PORTALS_VERSION = '1.14';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1467,6 +1467,9 @@ async function _gdLoadMembers() {
     document.getElementById('g-pay-paid').textContent    = _gymMembers.filter(m => m.payStatus === 'paid').length;
     document.getElementById('g-pay-unpaid').textContent  = _gymMembers.filter(m => m.payStatus === 'unpaid').length;
     document.getElementById('g-pay-overdue').textContent = _gymMembers.filter(m => m.payStatus === 'overdue').length;
+
+    // Revenue sidebar card — estimated MRR
+    _sbUpdateRevenueCard();
   } catch(e) { console.error('[Gym] load members:', e); }
 }
 
@@ -2177,7 +2180,7 @@ window._sbOpen = async (section) => {
   else if (section === 'revenue')       await _sbRenderRevenue(body);
   else if (section === 'calendar')      await _sbRenderCalendar(body);
   else if (section === 'notifications') body.innerHTML = _sbPh('🔔','NOTIFICATIONS','System alerts and activity notifications — coming soon.');
-  else if (section === 'billing')       body.innerHTML = _sbPh('💳','MANAGE BILLING','Portal subscription billing is managed via the KritFit app.<br><br>Stripe Customer Portal integration coming soon.');
+  else if (section === 'billing')       _sbRenderBilling(body);
   else if (section === 'add-store')     body.innerHTML = _sbPh('🛍️','ADD STORE','Add the Store module for <strong>$3.45/mo</strong>.<br><br>Manage product inventory and sell directly to your clients. Coming soon.');
 };
 
@@ -3091,14 +3094,146 @@ function _gcUpdateSidebarValue() {
 // ── Billing / Revenue panel ────────────────────────────
 let _blFilter = 'all';  // 'all' | 'paid' | 'unpaid' | 'overdue'
 
-async function _sbRenderRevenue(body) {
+function _sbUpdateRevenueCard() {
+  const members  = _gymMembers || [];
+  const active   = members.filter(m => m.status === 'active');
+  const tiers    = _gymData?.membershipTiers || [];
+  const currency = _gymData?.currency || '$';
+  const tierPriceMap = {};
+  tiers.forEach(t => { tierPriceMap[t.name] = parseFloat(t.price) || 0; });
+  const mrr = active.filter(m => m.payStatus === 'paid')
+    .reduce((s, m) => s + (tierPriceMap[m.membershipTier] || 0), 0);
+  const overdue = active.filter(m => m.payStatus === 'overdue').length;
+  const unpaid  = active.filter(m => m.payStatus === 'unpaid' || !m.payStatus).length;
+  const revVal  = document.getElementById('sb-rev-value');
+  const revSub  = document.getElementById('sb-rev-sub');
+  if (revVal) revVal.textContent = `${currency}${mrr.toFixed(2)} est./mo`;
+  if (revSub) revSub.textContent = `${unpaid} unpaid · ${overdue} overdue`;
+}
+
+function _sbRenderBilling(body) {
   if (_portalType !== 'gym' || !_gymId) {
-    body.innerHTML = _sbPh('💰','REVENUE','Revenue overview is available for gym portals.');
+    body.innerHTML = _sbPh('💳','MANAGE BILLING','Billing management is available for gym portals.');
     return;
   }
   _blFilter = 'all';
   body.style.display = 'flex'; body.style.flexDirection = 'column'; body.style.overflow = 'hidden'; body.style.height = '100%';
   _blRender(body);
+}
+
+async function _sbRenderRevenue(body) {
+  if (_portalType !== 'gym' || !_gymId) {
+    body.innerHTML = _sbPh('💰','REVENUE','Revenue overview is available for gym portals.');
+    return;
+  }
+  body.style.cssText = 'padding:16px;overflow-y:auto';
+
+  const members  = _gymMembers || [];
+  const active   = members.filter(m => m.status === 'active');
+  const tiers    = _gymData?.membershipTiers || [];
+  const currency = _gymData?.currency || '$';
+
+  // Build price lookup map from gym's tier list
+  const tierPriceMap = {};
+  tiers.forEach(t => { tierPriceMap[t.name] = parseFloat(t.price) || 0; });
+
+  // Per-tier counts and revenue
+  const tierStats = tiers.map(t => {
+    const paying = active.filter(m => m.membershipTier === t.name && m.payStatus === 'paid');
+    const all    = active.filter(m => m.membershipTier === t.name);
+    const price  = parseFloat(t.price) || 0;
+    return { name: t.name, price, interval: t.interval || 'month', count: all.length, paidCount: paying.length, est: paying.length * price };
+  });
+
+  // Members with no tier assigned
+  const noTier = active.filter(m => !m.membershipTier || !tiers.find(t => t.name === m.membershipTier));
+  const noTierPaid = noTier.filter(m => m.payStatus === 'paid').length;
+
+  const totalMRR   = tierStats.reduce((s, t) => s + t.est, 0);
+  const totalPaid  = active.filter(m => m.payStatus === 'paid').length;
+  const totalUnpaid= active.filter(m => m.payStatus === 'unpaid' || !m.payStatus).length;
+  const totalOverdue = active.filter(m => m.payStatus === 'overdue').length;
+
+  // Update sidebar card
+  const revVal = document.getElementById('sb-rev-value');
+  const revSub = document.getElementById('sb-rev-sub');
+  if (revVal) revVal.textContent = `${currency}${totalMRR.toFixed(2)} est./mo`;
+  if (revSub) revSub.textContent = `${totalPaid} paid · ${totalUnpaid} unpaid · ${totalOverdue} overdue`;
+
+  const tierRows = tierStats.length ? tierStats.map(t => `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 6px;font-family:var(--font-mono);font-size:11px;font-weight:700">${_sbEsc(t.name)}</td>
+      <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:11px">${currency}${t.price.toFixed(2)}<span style="color:#888;font-size:9px">/${t.interval}</span></td>
+      <td style="padding:8px 6px;text-align:center;font-family:var(--font-mono);font-size:11px">${t.count}</td>
+      <td style="padding:8px 6px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#2e7d32">${t.paidCount}</td>
+      <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent)">${currency}${t.est.toFixed(2)}</td>
+    </tr>`).join('') : `<tr><td colspan="5" style="padding:12px;text-align:center;color:#888;font-size:11px">No membership tiers defined yet — add tiers in GYM SETUP → TIERS</td></tr>`;
+
+  const noTierRow = noTier.length ? `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 6px;font-family:var(--font-mono);font-size:11px;color:#888">No tier</td>
+      <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:11px;color:#888">—</td>
+      <td style="padding:8px 6px;text-align:center;font-family:var(--font-mono);font-size:11px">${noTier.length}</td>
+      <td style="padding:8px 6px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#2e7d32">${noTierPaid}</td>
+      <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:11px;color:#888">—</td>
+    </tr>` : '';
+
+  body.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.8px;color:#888;margin-bottom:14px">REVENUE OVERVIEW</div>
+
+    <!-- MRR + payment status summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <div style="background:var(--s1);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--accent)">${currency}${totalMRR.toFixed(2)}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#888;margin-top:2px">EST. MONTHLY</div>
+      </div>
+      <div style="background:var(--s1);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:#333">${active.length}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#888;margin-top:2px">ACTIVE MEMBERS</div>
+      </div>
+    </div>
+
+    <!-- Payment status row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px">
+      <div style="background:#e8f5e9;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:#2e7d32">${totalPaid}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#2e7d32">PAID</div>
+      </div>
+      <div style="background:#fff3e0;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:#e65100">${totalUnpaid}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#e65100">UNPAID</div>
+      </div>
+      <div style="background:#ffebee;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:#c62828">${totalOverdue}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#c62828">OVERDUE</div>
+      </div>
+    </div>
+
+    <!-- Tier breakdown table -->
+    <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.8px;color:#888;margin-bottom:8px">TIER BREAKDOWN</div>
+    <div style="background:var(--s1);border-radius:8px;overflow:hidden;margin-bottom:16px">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border)">
+            <th style="padding:8px 6px;text-align:left;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">TIER</th>
+            <th style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">PRICE</th>
+            <th style="padding:8px 6px;text-align:center;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">TOTAL</th>
+            <th style="padding:8px 6px;text-align:center;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">PAID</th>
+            <th style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">EST. MRR</th>
+          </tr>
+        </thead>
+        <tbody>${tierRows}${noTierRow}</tbody>
+        ${tierStats.length ? `<tfoot><tr style="border-top:2px solid var(--border)">
+          <td colspan="4" style="padding:8px 6px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#888">TOTAL</td>
+          <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--accent)">${currency}${totalMRR.toFixed(2)}</td>
+        </tr></tfoot>` : ''}
+      </table>
+    </div>
+
+    <div style="font-family:var(--font-mono);font-size:9px;color:#aaa;text-align:center;line-height:1.5">
+      Estimated MRR is based on active members with PAID status × their tier price.<br>
+      Actual Stripe charges may differ due to discounts, trials, or overrides.
+    </div>`;
 }
 
 function _blRender(body) {
