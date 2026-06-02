@@ -414,8 +414,15 @@
     .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
 
     /* Compact padding for ALL gym nav bars */
-    #gym-top-nav .nav-btn { padding:5px 8px; }
-    #gym-top-nav .nav-btn .icon { font-size:14px; }
+    #gym-top-nav .nav-btn, #gym-finance-nav .nav-btn { padding:5px 8px; }
+    #gym-top-nav .nav-btn .icon, #gym-finance-nav .nav-btn .icon { font-size:14px; }
+
+    /* Finance section cards */
+    .gf-metric { background:#fff; border:1px solid var(--border); border-radius:6px; padding:16px; text-align:center; }
+    .gf-metric-val { font-family:var(--font-display); font-size:32px; color:var(--accent); }
+    .gf-metric-lbl { font-family:var(--font-mono); font-size:10px; letter-spacing:1px; color:#888; margin-top:4px; }
+    .gf-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
+    .gf-section-title { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:2px; color:#888; text-transform:uppercase; margin:16px 0 8px; }
 
     /* Mobile: sidebar hidden by default, toggle floats */
     @media(max-width:767px) {
@@ -933,6 +940,9 @@
   ══════════════════════════════════════════ -->
   <div class="portal-panel" id="gym-portal">
 
+    <!-- role badge — visible to non-master delegated users -->
+    <div id="g-role-badge" style="display:none;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:1px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-bottom:1px solid #bbdefb;text-align:center;flex-shrink:0"></div>
+
     <!-- NAV-1 -->
     <nav class="nav" id="gym-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
       <button class="nav-btn active" id="gtab-members"  onclick="_gNav('members')"> <span class="icon">👥</span>MEMBERS</button>
@@ -941,8 +951,18 @@
       <button class="nav-btn"        id="gtab-trainers" onclick="_gNav('trainers')"><span class="icon">🏋️</span>TRAINERS</button>
       <button class="nav-btn"        id="gtab-payments" onclick="_gNav('payments')"><span class="icon">💳</span>PAYMENTS</button>
       <button class="nav-btn"        id="gtab-store"    onclick="_gNav('store')">   <span class="icon">🛍️</span>STORE</button>
+      <button class="nav-btn"        id="gtab-finance"  onclick="_gNav('finance')"> <span class="icon">📊</span>FINANCE</button>
       <button class="nav-btn"        id="gtab-setup"    onclick="_gNav('setup')">   <span class="icon">⚙️</span>SETUP</button>
     </nav>
+
+    <!-- NAV-2: Finance sub-nav -->
+    <div id="gym-finance-subnav" style="display:none;flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="gym-finance-nav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="gftab-pl"      onclick="_gFinanceTab('pl')">     <span class="icon">📈</span>P&amp;L</button>
+        <button class="nav-btn"        id="gftab-expenses" onclick="_gFinanceTab('expenses')"><span class="icon">🧾</span>EXPENSES</button>
+        <button class="nav-btn"        id="gftab-payroll"  onclick="_gFinanceTab('payroll')"> <span class="icon">💼</span>PAYROLL</button>
+      </nav>
+    </div>
 
     <!-- NAV-2: Members sub-nav -->
     <div id="gym-members-subnav" style="display:none;flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--border)">
@@ -961,6 +981,7 @@
         <button class="nav-btn"        id="gstab-modules" onclick="_gSetupTab('modules')"><span class="icon">🧩</span>MODULES</button>
         <button class="nav-btn"        id="gstab-tiers"   onclick="_gSetupTab('tiers')">  <span class="icon">🎖️</span>TIERS</button>
         <button class="nav-btn"        id="gstab-stripe"  onclick="_gSetupTab('stripe')"> <span class="icon">💳</span>STRIPE</button>
+        <button class="nav-btn"        id="gstab-access"  onclick="_gSetupTab('access')"> <span class="icon">🔑</span>ACCESS</button>
         <button class="nav-btn"        id="gstab-archive" onclick="_gSetupTab('archive')"><span class="icon">📦</span>ARCHIVE</button>
       </nav>
     </div>
@@ -1202,6 +1223,18 @@
         </div>
       </div>
 
+      <!-- ACCESS -->
+      <div id="gs-access" style="display:none">
+        <div class="section-title">Portal Access</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:16px">Grant team members access to this portal with a specific role. They must have a KritFit account.</p>
+        <div class="toolbar"><button class="btn" onclick="_gGrantAccess()">+ GRANT ACCESS</button></div>
+        <div id="gs-access-list" class="ph-card">
+          <div class="ph-icon">🔑</div>
+          <div class="ph-title">Only you have access</div>
+          Add team members to delegate responsibilities.
+        </div>
+      </div>
+
       <!-- ARCHIVE -->
       <div id="gs-archive" style="display:none">
         <div class="section-title">Data Archives</div>
@@ -1213,6 +1246,35 @@
       </div>
 
     </div><!-- /g-setup -->
+
+    <!-- ══ FINANCE TAB ══ -->
+    <div class="tab-panel" id="g-finance">
+      <!-- P&L -->
+      <div id="gf-pl">
+        <div id="gf-pl-body" style="padding:16px"></div>
+      </div>
+      <!-- EXPENSES -->
+      <div id="gf-expenses" style="display:none">
+        <div class="section-title">Fixed Expenses</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Recurring costs — feeds into your P&amp;L calculation.</p>
+        <div class="toolbar"><button class="btn" onclick="_gAddExpense()">+ ADD EXPENSE</button></div>
+        <div id="gf-expenses-list" class="ph-card">
+          <div class="ph-icon">🧾</div>
+          <div class="ph-title">No expenses added</div>
+          Add rent, utilities, and other fixed costs.
+        </div>
+      </div>
+      <!-- PAYROLL -->
+      <div id="gf-payroll" style="display:none">
+        <div class="section-title">Payroll</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Staff salaries and benefits — visible to MASTER and FINANCE roles only.</p>
+        <div id="gf-payroll-list" class="ph-card">
+          <div class="ph-icon">💼</div>
+          <div class="ph-title">No payroll data</div>
+          Add salary information to staff records to see payroll totals.
+        </div>
+      </div>
+    </div><!-- /g-finance -->
 
   </div><!-- /gym-portal -->
 
@@ -1306,7 +1368,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.16';
+const PORTALS_VERSION = '1.17';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1390,7 +1452,17 @@ async function _detectAndRoute(uid) {
     // 3. Store add-on (separate subscription alongside any portal)
     if (reg.kfStoreActive === true) portals.push({ type: 'store' });
 
-    // 4. cfg.isTrainer fallback — only if no trainer/gym already found
+    // 4. Delegated gym access — user was granted portal access by a gym owner
+    const delegatedIds = reg.delegatedGymIds || [];
+    for (const gymId of delegatedIds) {
+      // Skip if the user already loaded this gym as owner
+      if (!portals.some(p => p.type === 'gym' && p.gymDoc?.id === gymId)) {
+        const dSnap = await getDoc(doc(db, 'gyms', gymId));
+        if (dSnap.exists()) portals.push({ type: 'gym', gymDoc: dSnap, delegated: true });
+      }
+    }
+
+    // 5. cfg.isTrainer fallback — only if no trainer/gym already found
     if (!portals.some(p => p.type === 'trainer') && !portals.some(p => p.type === 'gym')) {
       const cfgSnap = await getDoc(doc(db, 'users', uid, 'settings', 'cfg'));
       if (cfgSnap.exists() && cfgSnap.data().isTrainer === true) {
@@ -1511,6 +1583,26 @@ let _gymData    = null;
 let _gymMembers = [];
 let _gymClasses = [];
 let _gymStaff   = [];
+let _gymExpenses     = [];
+let _gymPortalUsers  = [];
+let _gymRole         = '';   // role of the currently signed-in user for this gym
+let _gymPerms        = {};   // resolved permission set
+
+// ── Role permission bundles ────────────────────────────
+const _ROLE_PERMS = {
+  master:     { members:true, checkins:true, classes:true, calendar:true, messaging:true, trainers:true,
+                'finance.view':true,'finance.costs':true,'finance.payroll':true,
+                billing:true, settings:true, access:true },
+  manager:    { members:true, checkins:true, classes:true, calendar:true, messaging:true, trainers:true,
+                'finance.view':true, settings:true },
+  finance:    { 'finance.view':true,'finance.costs':true,'finance.payroll':true, billing:true },
+  instructor: { checkins:true, classes:true, calendar:true, messaging:true },
+  front_desk: { members:true, checkins:true, messaging:true },
+  custom:     {},
+};
+const _ROLE_LABELS = { master:'MASTER', manager:'MANAGER', finance:'FINANCE',
+                       instructor:'INSTRUCTOR', front_desk:'FRONT DESK', custom:'CUSTOM' };
+function _perm(key) { return !!_gymPerms[key]; }
 let _qrLibLoaded = false;
 let _gModalSubmit = null;
 
@@ -1530,15 +1622,70 @@ window._gModalSave  = () => _gModalSubmit?.();
 
 async function _loadGymPortal(gymDoc) {
   _portalType = 'gym';
-  _currentUid = _authUid;   // always the signed-in owner; gymDoc.data().ownerId may be absent
-  _gymId   = gymDoc.id;
-  _gymData = gymDoc.data();
+  _currentUid = _authUid;
+  _gymId      = gymDoc.id;
+  _gymData    = gymDoc.data();
   _setPortalTypePill('gym');
   document.getElementById('portal-badge').textContent = (_gymData.name || 'GYM') + ' PORTAL';
+
+  // ── Resolve permissions ──────────────────────────────
+  const isOwner = (_gymData.ownerId === _authUid)
+    || (_gymData.adminUids || []).includes(_authUid)
+    || gymDoc.id === _authUid; // legacy: gymId == owner UID
+  if (isOwner) {
+    _gymRole  = 'master';
+    _gymPerms = { ..._ROLE_PERMS.master };
+  } else {
+    const puSnap = await getDoc(doc(db, 'gyms', _gymId, 'portalUsers', _authUid));
+    if (puSnap.exists()) {
+      const pu  = puSnap.data();
+      _gymRole  = pu.role || 'custom';
+      _gymPerms = _gymRole === 'custom'
+        ? { ...(pu.perms || {}) }
+        : { ...(_ROLE_PERMS[_gymRole] || {}) };
+    } else {
+      _gymRole  = '';
+      _gymPerms = {};
+    }
+  }
+
+  _gApplyNavPerms();
   _showPortal('gym');
-  await _gdLoadMembers();
-  _gRenderTrainers();
-  _gdPopulateSetup();
+  if (_perm('members'))  await _gdLoadMembers();
+  if (_perm('settings')) _gdPopulateSetup();
+  if (_perm('trainers')) _gRenderTrainers();
+}
+
+function _gApplyNavPerms() {
+  const gates = {
+    'gtab-members':  _perm('members'),
+    'gtab-checkins': _perm('checkins'),
+    'gtab-trainers': _perm('trainers'),
+    'gtab-payments': _perm('members'),
+    'gtab-store':    _perm('settings'),
+    'gtab-entryqr':  _perm('checkins'),
+    'gtab-finance':  _perm('finance.view'),
+    'gtab-setup':    _perm('settings'),
+  };
+  Object.entries(gates).forEach(([id, show]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+  const accessBtn  = document.getElementById('gstab-access');
+  if (accessBtn)  accessBtn.style.display  = _perm('access')           ? '' : 'none';
+  const payrollBtn = document.getElementById('gftab-payroll');
+  if (payrollBtn) payrollBtn.style.display = _perm('finance.payroll')  ? '' : 'none';
+  const badge = document.getElementById('g-role-badge');
+  if (badge) {
+    badge.textContent = _ROLE_LABELS[_gymRole] || _gymRole.toUpperCase();
+    badge.style.display = (_gymRole && _gymRole !== 'master') ? '' : 'none';
+  }
+  // For non-master users, activate the first permitted tab instead of defaulting to MEMBERS
+  if (_gymRole !== 'master') {
+    const tabOrder = ['gtab-members','gtab-checkins','gtab-finance','gtab-trainers','gtab-setup'];
+    const firstVisible = tabOrder.find(id => !!gates[id]);
+    if (firstVisible) setTimeout(() => _gNav(firstVisible.replace('gtab-','')), 0);
+  }
 }
 
 async function _gdLoadMembers() {
@@ -2438,6 +2585,489 @@ async function _gdLoadClasses() {
 
 window._gAddProduct = () => alert('Store product editor — coming soon.');
 
+// ══════════════════════════════════════════════════════
+// ACCESS — Portal Users (MASTER only)
+// ══════════════════════════════════════════════════════
+const _PERM_KEYS = ['members','checkins','classes','calendar','messaging','trainers',
+  'finance.view','finance.costs','finance.payroll','billing','settings','access'];
+
+async function _gdLoadPortalUsers() {
+  const el = document.getElementById('gs-access-list');
+  if (!el) return;
+  try {
+    const snap = await getDocs(collection(db,'gyms',_gymId,'portalUsers'));
+    _gymPortalUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    _gdRenderPortalUsers();
+  } catch(e) { console.error('[Access] load:', e); }
+}
+
+function _gdRenderPortalUsers() {
+  const el = document.getElementById('gs-access-list');
+  if (!el) return;
+  const others = _gymPortalUsers.filter(u => u.role !== 'master');
+  const master = _gymPortalUsers.find(u => u.uid === _authUid);
+  const masterRow = `<div class="staff-card" style="border-color:var(--accent)">
+    <div class="staff-avatar" style="background:#1565c0">👑</div>
+    <div style="flex:1"><div class="staff-name">${_sbEsc(master?.name || 'You (Owner)')}</div>
+    <div class="staff-role">MASTER — Full access</div></div>
+  </div>`;
+  if (!others.length) {
+    el.innerHTML = masterRow + `<div style="padding:16px;font-family:var(--font-mono);font-size:11px;color:#aaa;text-align:center">No other users have been granted access yet.</div>`;
+    return;
+  }
+  el.innerHTML = masterRow + others.map(u => {
+    const roleLabel = _ROLE_LABELS[u.role] || u.role.toUpperCase();
+    const roleColor = { manager:'#1565c0', finance:'#2e7d32', instructor:'#e65100', front_desk:'#6a1b9a', custom:'#555' }[u.role] || '#555';
+    return `<div class="staff-card">
+      <div class="staff-avatar" style="background:${roleColor}">${(u.name||'?')[0].toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div class="staff-name">${_sbEsc(u.name||u.uid)}</div>
+        <div class="staff-role" style="color:${roleColor}">${roleLabel}</div>
+        ${u.handle ? `<div class="staff-bio">@${_sbEsc(u.handle)}</div>` : ''}
+        ${u.email  ? `<div class="staff-bio">${_sbEsc(u.email)}</div>` : ''}
+      </div>
+      <div class="staff-actions">
+        <button class="tbl-action" onclick="window._gChangeRole('${u.uid}','${_sbEsc(u.name||'')}')" title="Change role">✏️</button>
+        <button class="tbl-action" onclick="window._gRevokeAccess('${u.uid}','${_sbEsc(u.name||u.uid)}')" title="Revoke">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window._gGrantAccess = () => {
+  const roleOpts = ['manager','finance','instructor','front_desk','custom']
+    .map(r => `<option value="${r}">${_ROLE_LABELS[r]}</option>`).join('');
+  _gOpenModal('GRANT PORTAL ACCESS', `
+    <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:14px">
+      Enter the person's KritFit @handle. They must have a KritFit account and will see this gym portal on their next sign-in.
+    </p>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">KritFit @handle *</label>
+        <input type="text" id="gac-handle" class="form-input" placeholder="e.g. jane_finance" autofocus>
+      </div>
+      <div class="form-group"><label class="form-label">Role *</label>
+        <select id="gac-role" class="form-input" onchange="_gAccessRoleChange()">${roleOpts}</select>
+      </div>
+    </div>
+    <div id="gac-custom-perms" style="display:none;background:var(--s2);border-radius:6px;padding:10px;margin-top:6px">
+      <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.8px;color:#888;margin-bottom:8px">CUSTOM PERMISSIONS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${_PERM_KEYS.map(k => `<label style="display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10px">
+          <input type="checkbox" class="gac-perm-chk" value="${k}"> ${k}</label>`).join('')}
+      </div>
+    </div>
+    <div id="gac-role-desc" style="font-family:var(--font-mono);font-size:10px;color:#888;margin-top:10px;padding:8px;background:var(--s2);border-radius:4px"></div>
+  `, async () => {
+    const handle = document.getElementById('gac-handle').value.trim().replace(/^@/,'');
+    const role   = document.getElementById('gac-role').value;
+    if (!handle) { alert('Handle is required.'); return; }
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Looking up…';
+    try {
+      // Look up UID from handle
+      const {getDoc:gd2,doc:d2,updateDoc:ud2,setDoc:sd2,serverTimestamp:st2,arrayUnion:au2} =
+        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const handleSnap = await gd2(d2(db,'usernames',handle));
+      if (!handleSnap.exists()) { btn.disabled=false; btn.textContent='SAVE'; alert(`@${handle} not found. Check the handle and try again.`); return; }
+      const targetUid = handleSnap.data().uid;
+      if (targetUid === _authUid) { btn.disabled=false; btn.textContent='SAVE'; alert('You already have master access.'); return; }
+
+      // Build permission set
+      let perms = {};
+      if (role === 'custom') {
+        [...document.querySelectorAll('.gac-perm-chk:checked')].forEach(c => { perms[c.value] = true; });
+      } else {
+        perms = { ..._ROLE_PERMS[role] };
+      }
+
+      // Get their display name
+      const regSnap = await gd2(d2(db,'user_registry',targetUid));
+      const regData = regSnap.exists() ? regSnap.data() : {};
+      const puData  = { role, perms, handle, name: regData.displayName||handle,
+        email: regData.email||'', addedBy:_authUid, addedAt: st2() };
+
+      // Write portalUsers entry
+      await sd2(d2(db,'gyms',_gymId,'portalUsers',targetUid), puData);
+      // Mirror to user_registry so their portal detects this gym
+      await ud2(d2(db,'user_registry',targetUid), { delegatedGymIds: au2(_gymId) });
+
+      _gymPortalUsers = [..._gymPortalUsers.filter(u=>u.uid!==targetUid), { uid:targetUid, ...puData }];
+      _gdRenderPortalUsers();
+      _gModalClose();
+      alert(`Access granted to @${handle} as ${_ROLE_LABELS[role]}.`);
+    } catch(e) { console.error('[Access] grant:', e); btn.disabled=false; btn.textContent='SAVE'; alert('Error: '+e.message); }
+  });
+  setTimeout(() => _gAccessRoleChange(), 50);
+};
+
+window._gAccessRoleChange = () => {
+  const role = document.getElementById('gac-role')?.value;
+  const customDiv = document.getElementById('gac-custom-perms');
+  const descDiv   = document.getElementById('gac-role-desc');
+  if (!role) return;
+  if (customDiv) customDiv.style.display = role === 'custom' ? '' : 'none';
+  const descs = {
+    manager:    'Members, check-ins, classes, calendar, messaging, trainers, basic revenue view, settings.',
+    finance:    'Revenue, expenses, payroll, billing management only. No member editing.',
+    instructor: 'Check-ins, classes, calendar, messaging only.',
+    front_desk: 'Check-ins, member lookup, messaging only.',
+    custom:     'You choose exactly which sections this person can access.',
+  };
+  if (descDiv) descDiv.textContent = descs[role] || '';
+};
+
+window._gChangeRole = (uid, name) => {
+  const current = _gymPortalUsers.find(u => u.uid === uid);
+  if (!current) return;
+  const roleOpts = ['manager','finance','instructor','front_desk','custom']
+    .map(r => `<option value="${r}" ${current.role===r?'selected':''}>${_ROLE_LABELS[r]}</option>`).join('');
+  _gOpenModal(`CHANGE ROLE — ${_sbEsc(name)}`, `
+    <div class="form-group"><label class="form-label">New Role</label>
+      <select id="gcr-role" class="form-input">${roleOpts}</select>
+    </div>
+  `, async () => {
+    const role = document.getElementById('gcr-role').value;
+    const perms = role === 'custom' ? (current.perms||{}) : { ..._ROLE_PERMS[role] };
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const {updateDoc:ud2,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await ud2(d2(db,'gyms',_gymId,'portalUsers',uid), { role, perms });
+      _gymPortalUsers = _gymPortalUsers.map(u => u.uid===uid ? {...u,role,perms} : u);
+      _gdRenderPortalUsers();
+      _gModalClose();
+    } catch(e) { console.error('[Access] change role:', e); btn.disabled=false; btn.textContent='SAVE'; }
+  });
+};
+
+window._gRevokeAccess = async (uid, name) => {
+  if (!confirm(`Revoke portal access for ${name}? They will no longer be able to sign in to this portal.`)) return;
+  try {
+    const {deleteDoc,doc:d2,updateDoc:ud2,arrayRemove:ar2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(d2(db,'gyms',_gymId,'portalUsers',uid));
+    await ud2(d2(db,'user_registry',uid), { delegatedGymIds: ar2(_gymId) });
+    _gymPortalUsers = _gymPortalUsers.filter(u => u.uid !== uid);
+    _gdRenderPortalUsers();
+  } catch(e) { console.error('[Access] revoke:', e); alert('Error: '+e.message); }
+};
+
+// ══════════════════════════════════════════════════════
+// FINANCE — Expenses
+// ══════════════════════════════════════════════════════
+const _EXP_CATEGORIES = ['Facility','Utilities','Insurance','Marketing','Equipment','Staff','Other'];
+const _EXP_PERIODS    = { monthly:'Monthly', annual:'Annual', weekly:'Weekly' };
+
+async function _gdLoadExpenses() {
+  try {
+    const snap = await getDocs(collection(db,'gyms',_gymId,'expenses'));
+    _gymExpenses = snap.docs.map(d => ({ id:d.id, ...d.data() }))
+      .filter(e => e.isActive !== false)
+      .sort((a,b) => (a.category||'').localeCompare(b.category||''));
+    _gdRenderExpenses();
+  } catch(e) { console.error('[Finance] load expenses:', e); }
+}
+
+function _gdRenderExpenses() {
+  const el = document.getElementById('gf-expenses-list');
+  if (!el) return;
+  if (!_gymExpenses.length) {
+    el.innerHTML = '<div class="ph-card"><div class="ph-icon">🧾</div><div class="ph-title">No expenses added</div>Add rent, utilities, and other fixed costs.</div>';
+    return;
+  }
+  const currency = _gymData?.currency || '$';
+  const monthly = exp => {
+    if (exp.period === 'annual') return exp.amount / 12;
+    if (exp.period === 'weekly') return exp.amount * 4.33;
+    return exp.amount;
+  };
+  const total = _gymExpenses.reduce((s,e) => s + monthly(e), 0);
+  el.innerHTML = `
+    <div style="background:var(--s1);border-radius:8px;overflow:hidden;margin-bottom:12px">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:8px 10px;text-align:left;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">NAME</th>
+          <th style="padding:8px 6px;text-align:left;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">CATEGORY</th>
+          <th style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">AMOUNT</th>
+          <th style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">~/MO</th>
+          <th style="padding:8px 6px;width:40px"></th>
+        </tr></thead>
+        <tbody>
+          ${_gymExpenses.map(e => `<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:8px 10px;font-family:var(--font-mono);font-size:11px;font-weight:700">${_sbEsc(e.name)}</td>
+            <td style="padding:8px 6px;font-family:var(--font-mono);font-size:10px;color:#888">${_sbEsc(e.category||'Other')}</td>
+            <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:11px">${currency}${(e.amount||0).toFixed(2)}<span style="color:#aaa;font-size:9px"> /${_sbEsc(e.period||'mo')}</span></td>
+            <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:11px;color:var(--accent)">${currency}${monthly(e).toFixed(2)}</td>
+            <td style="padding:4px"><button class="tbl-action" onclick="window._gdDeleteExpense('${e.id}')">🗑️</button></td>
+          </tr>`).join('')}
+        </tbody>
+        <tfoot><tr style="border-top:2px solid var(--border);background:var(--s2)">
+          <td colspan="3" style="padding:8px 10px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#888">TOTAL MONTHLY OVERHEAD</td>
+          <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:#c62828">${currency}${total.toFixed(2)}</td>
+          <td></td>
+        </tr></tfoot>
+      </table>
+    </div>`;
+}
+
+window._gAddExpense = () => {
+  const catOpts = _EXP_CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  _gOpenModal('ADD EXPENSE', `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Name *</label><input type="text" id="gex-nm" class="form-input" placeholder="e.g. Rent" autofocus></div>
+      <div class="form-group"><label class="form-label">Category</label><select id="gex-cat" class="form-input">${catOpts}</select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Amount (${_gymData?.currency||'$'})</label><input type="number" id="gex-amt" class="form-input" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="form-group"><label class="form-label">Period</label>
+        <select id="gex-period" class="form-input">
+          <option value="monthly">Monthly</option>
+          <option value="annual">Annual</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label class="form-label">Notes</label><input type="text" id="gex-notes" class="form-input" placeholder="optional"></div>
+    </div>
+  `, async () => {
+    const name = document.getElementById('gex-nm').value.trim();
+    if (!name) { alert('Name is required.'); return; }
+    const amount = parseFloat(document.getElementById('gex-amt').value) || 0;
+    const data = {
+      name, amount,
+      category: document.getElementById('gex-cat').value,
+      period:   document.getElementById('gex-period').value,
+      notes:    document.getElementById('gex-notes').value.trim(),
+      isActive: true,
+    };
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const {addDoc:add2,collection:col2,serverTimestamp:st2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const ref = await add2(col2(db,'gyms',_gymId,'expenses'), { ...data, addedAt: st2() });
+      _gymExpenses = [..._gymExpenses, { id:ref.id, ...data }];
+      _gdRenderExpenses();
+      _gModalClose();
+    } catch(e) { console.error('[Finance] add expense:', e); btn.disabled=false; btn.textContent='SAVE'; }
+  });
+};
+
+window._gdDeleteExpense = async (expId) => {
+  if (!confirm('Delete this expense?')) return;
+  try {
+    const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db,'gyms',_gymId,'expenses',expId), { isActive: false });
+    _gymExpenses = _gymExpenses.filter(e => e.id !== expId);
+    _gdRenderExpenses();
+  } catch(e) { console.error('[Finance] delete expense:', e); }
+};
+
+// ══════════════════════════════════════════════════════
+// FINANCE — Payroll
+// ══════════════════════════════════════════════════════
+function _gRenderPayroll() {
+  const el = document.getElementById('gf-payroll-list');
+  if (!el) return;
+  // Ensure staff loaded
+  if (!_gymStaff.length) { _gdLoadStaff().then(() => _gRenderPayrollList()); return; }
+  _gRenderPayrollList();
+}
+
+function _gRenderPayrollList() {
+  const el = document.getElementById('gf-payroll-list');
+  if (!el) return;
+  const currency = _gymData?.currency || '$';
+  const withPay  = _gymStaff.filter(s => s.salary);
+  const noPay    = _gymStaff.filter(s => !s.salary);
+
+  const monthlyEq = s => {
+    if (!s.salary) return 0;
+    if (s.salaryPeriod === 'hourly')  return s.salary * (s.hoursPerWeek||0) * 4.33;
+    if (s.salaryPeriod === 'weekly')  return s.salary * 4.33;
+    if (s.salaryPeriod === 'annual')  return s.salary / 12;
+    return s.salary; // monthly
+  };
+
+  const totalMonthly = _gymStaff.reduce((s, m) => s + monthlyEq(m), 0);
+
+  if (!_gymStaff.length) {
+    el.innerHTML = '<div class="ph-card"><div class="ph-icon">💼</div><div class="ph-title">No staff added</div>Add staff in SETUP → STAFF, then set salaries here.</div>';
+    return;
+  }
+
+  const rows = _gymStaff.map(s => {
+    const mo = monthlyEq(s);
+    const payLabel = s.salary
+      ? `${currency}${s.salary.toFixed(2)}/${s.salaryPeriod||'mo'}`
+      : '—';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 10px">
+        <div style="font-family:var(--font-mono);font-size:11px;font-weight:700">${_sbEsc(s.name||'—')}</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent)">${_sbEsc(s.role||'')}</div>
+      </td>
+      <td style="padding:8px 6px;font-family:var(--font-mono);font-size:11px;text-align:right">${payLabel}</td>
+      <td style="padding:8px 6px;font-family:var(--font-mono);font-size:11px;text-align:right;color:var(--accent)">${mo ? currency+mo.toFixed(2) : '—'}</td>
+      <td style="padding:8px 6px;font-family:var(--font-mono);font-size:10px;color:#888;max-width:120px">${_sbEsc(s.benefits||'')}</td>
+      <td style="padding:4px"><button class="tbl-action" onclick="window._gEditPayroll('${s.id}')">✏️</button></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="background:var(--s1);border-radius:8px;overflow:hidden;margin-bottom:12px">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:8px 10px;text-align:left;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">STAFF MEMBER</th>
+          <th style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">RATE</th>
+          <th style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">~/MO</th>
+          <th style="padding:8px 6px;text-align:left;font-family:var(--font-mono);font-size:9px;color:#888;font-weight:700">BENEFITS</th>
+          <th style="width:40px"></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr style="border-top:2px solid var(--border);background:var(--s2)">
+          <td colspan="2" style="padding:8px 10px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#888">TOTAL MONTHLY PAYROLL</td>
+          <td style="padding:8px 6px;text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:#c62828">${currency}${totalMonthly.toFixed(2)}</td>
+          <td colspan="2"></td>
+        </tr></tfoot>
+      </table>
+    </div>`;
+}
+
+window._gEditPayroll = (staffId) => {
+  const s = _gymStaff.find(x => x.id === staffId);
+  if (!s) return;
+  _gOpenModal(`PAYROLL — ${_sbEsc(s.name||'Staff')}`, `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Salary / Rate (${_gymData?.currency||'$'})</label>
+        <input type="number" id="gpr-sal" class="form-input" value="${s.salary||''}" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group"><label class="form-label">Period</label>
+        <select id="gpr-per" class="form-input">
+          <option value="hourly"  ${s.salaryPeriod==='hourly' ?'selected':''}>Hourly</option>
+          <option value="weekly"  ${s.salaryPeriod==='weekly' ?'selected':''}>Weekly</option>
+          <option value="monthly" ${!s.salaryPeriod||s.salaryPeriod==='monthly'?'selected':''}>Monthly</option>
+          <option value="annual"  ${s.salaryPeriod==='annual' ?'selected':''}>Annual</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Hours / Week</label>
+        <input type="number" id="gpr-hrs" class="form-input" value="${s.hoursPerWeek||''}" min="0" max="168" placeholder="for hourly staff">
+      </div>
+      <div class="form-group"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label class="form-label">Benefits</label>
+        <textarea id="gpr-ben" class="form-input" rows="2" placeholder="e.g. Health insurance, 2 weeks PTO, gym membership">${_sbEsc(s.benefits||'')}</textarea>
+      </div>
+    </div>
+  `, async () => {
+    const salary  = parseFloat(document.getElementById('gpr-sal').value) || null;
+    const period  = document.getElementById('gpr-per').value;
+    const hours   = parseInt(document.getElementById('gpr-hrs').value) || null;
+    const benefits= document.getElementById('gpr-ben').value.trim();
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const {updateDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const upd = { salary, salaryPeriod: period, benefits };
+      if (hours) upd.hoursPerWeek = hours;
+      await updateDoc(d2(db,'gyms',_gymId,'staff',staffId), upd);
+      _gymStaff = _gymStaff.map(x => x.id===staffId ? {...x,...upd} : x);
+      _gRenderPayrollList();
+      _gModalClose();
+    } catch(e) { console.error('[Finance] payroll save:', e); btn.disabled=false; btn.textContent='SAVE'; }
+  });
+};
+
+// ══════════════════════════════════════════════════════
+// FINANCE — P&L
+// ══════════════════════════════════════════════════════
+function _gRenderPL() {
+  const el = document.getElementById('gf-pl-body');
+  if (!el) return;
+
+  const currency = _gymData?.currency || '$';
+  const members  = _gymMembers || [];
+  const tiers    = _gymData?.membershipTiers || [];
+  const priceMap = {};
+  tiers.forEach(t => { priceMap[t.name] = parseFloat(t.price)||0; });
+
+  // Revenue
+  const active     = members.filter(m => m.status === 'active');
+  const mrr        = active.filter(m => m.payStatus === 'paid')
+    .reduce((s,m) => s + (priceMap[m.membershipTier]||0), 0);
+  const paidCount  = active.filter(m => m.payStatus === 'paid').length;
+  const unpaidCount= active.filter(m => m.payStatus !== 'paid').length;
+
+  // Costs
+  const monthlyExp = exp => {
+    if (exp.period === 'annual') return exp.amount / 12;
+    if (exp.period === 'weekly') return exp.amount * 4.33;
+    return exp.amount || 0;
+  };
+  const totalExpenses = _gymExpenses.reduce((s,e) => s + monthlyExp(e), 0);
+
+  const monthlyPay = s => {
+    if (!s.salary) return 0;
+    if (s.salaryPeriod === 'hourly') return s.salary * (s.hoursPerWeek||0) * 4.33;
+    if (s.salaryPeriod === 'weekly') return s.salary * 4.33;
+    if (s.salaryPeriod === 'annual') return s.salary / 12;
+    return s.salary;
+  };
+  const totalPayroll = _perm('finance.payroll') ? _gymStaff.reduce((s,m) => s + monthlyPay(m), 0) : null;
+
+  const totalCosts = totalExpenses + (totalPayroll || 0);
+  const net        = mrr - totalCosts;
+  const margin     = mrr > 0 ? (net / mrr * 100) : 0;
+  const netColor   = net >= 0 ? '#2e7d32' : '#c62828';
+  const marginColor= margin >= 0 ? '#2e7d32' : '#c62828';
+
+  const row = (label, val, color='var(--text)', bold=false) =>
+    `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 14px;font-family:var(--font-mono);font-size:${bold?'12':'11'}px;${bold?'font-weight:700':'color:#555'}">${label}</td>
+      <td style="padding:10px 14px;text-align:right;font-family:var(--font-mono);font-size:${bold?'13':'12'}px;font-weight:${bold?'700':'400'};color:${color}">${val}</td>
+    </tr>`;
+
+  el.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.8px;color:#888;margin-bottom:14px">MONTHLY P&amp;L ESTIMATE</div>
+
+    <!-- Big numbers -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+      <div style="background:var(--s1);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:#2e7d32">${currency}${mrr.toFixed(2)}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#888;margin-top:2px">REVENUE</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#aaa;margin-top:2px">${paidCount} paid · ${unpaidCount} not paid</div>
+      </div>
+      <div style="background:var(--s1);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:${netColor}">${net>=0?'+':''}${currency}${net.toFixed(2)}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#888;margin-top:2px">NET</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:${marginColor};margin-top:2px">${margin.toFixed(1)}% margin</div>
+      </div>
+    </div>
+
+    <!-- Breakdown table -->
+    <div style="background:var(--s1);border-radius:8px;overflow:hidden;margin-bottom:14px">
+      <table style="width:100%;border-collapse:collapse">
+        <tbody>
+          ${row('+ Member Revenue (est.)',       `${currency}${mrr.toFixed(2)}`,              '#2e7d32', true)}
+          ${row('− Fixed Expenses',              `(${currency}${totalExpenses.toFixed(2)})`,  '#c62828')}
+          ${_perm('finance.payroll')
+            ? row('− Payroll',                   `(${currency}${totalPayroll.toFixed(2)})`,   '#c62828')
+            : row('− Payroll',                   '(restricted)',                              '#aaa')}
+          <tr style="border-top:2px solid var(--border);background:var(--s2)">
+            <td style="padding:12px 14px;font-family:var(--font-mono);font-size:12px;font-weight:700">= NET (est.)</td>
+            <td style="padding:12px 14px;text-align:right;font-family:var(--font-mono);font-size:14px;font-weight:700;color:${netColor}">${net>=0?'+':''}${currency}${net.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="font-family:var(--font-mono);font-size:9px;color:#aaa;text-align:center;line-height:1.5">
+      Estimates are based on paid members × tier price, active expenses, and payroll data.<br>
+      Actual figures depend on Stripe disbursements and real payment collection.
+    </div>`;
+}
+
 // ── Nav handlers ───────────────────────────────────────
 window._tNav = (tab) => {
   document.querySelectorAll('#trainer-top-nav .nav-btn').forEach(b => b.classList.remove('active'));
@@ -2451,11 +3081,25 @@ window._gNav = (tab) => {
   document.querySelectorAll('#gym-portal .tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('gtab-' + tab)?.classList.add('active');
   document.getElementById('g-' + tab)?.classList.add('active');
-  document.getElementById('gym-members-subnav').style.display = tab === 'members' ? '' : 'none';
-  document.getElementById('gym-setup-subnav').style.display   = tab === 'setup'   ? '' : 'none';
+  document.getElementById('gym-members-subnav').style.display  = tab === 'members' ? '' : 'none';
+  document.getElementById('gym-setup-subnav').style.display    = tab === 'setup'   ? '' : 'none';
+  document.getElementById('gym-finance-subnav').style.display  = tab === 'finance' ? '' : 'none';
   if (tab === 'checkins') _gLoadCheckins();
   if (tab === 'entryqr')  _gRenderEntryQR();
   if (tab === 'trainers') _gRenderTrainers();
+  if (tab === 'finance')  _gFinanceTab('pl');
+};
+
+window._gFinanceTab = (tab) => {
+  document.querySelectorAll('#gym-finance-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('gftab-' + tab)?.classList.add('active');
+  ['pl','expenses','payroll'].forEach(t => {
+    const el = document.getElementById('gf-' + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+  });
+  if (tab === 'pl')       _gRenderPL();
+  if (tab === 'expenses' && !_gymExpenses.length) _gdLoadExpenses();
+  if (tab === 'payroll')  _gRenderPayroll();
 };
 
 window._gMembersTab = (tab) => {
@@ -2468,12 +3112,13 @@ window._gMembersTab = (tab) => {
 window._gSetupTab = (tab) => {
   document.querySelectorAll('#gym-setup-nav .nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('gstab-' + tab)?.classList.add('active');
-  ['gym','staff','classes','modules','tiers','stripe','archive'].forEach(t => {
+  ['gym','staff','classes','modules','tiers','stripe','access','archive'].forEach(t => {
     const el = document.getElementById('gs-' + t);
     if (el) el.style.display = t === tab ? '' : 'none';
   });
   if (tab === 'classes' && !_gymClasses.length) _gdLoadClasses();
   if (tab === 'staff'   && !_gymStaff.length)   _gdLoadStaff();
+  if (tab === 'access')                          _gdLoadPortalUsers();
 };
 
 window._copyCode = () => {
