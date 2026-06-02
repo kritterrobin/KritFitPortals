@@ -490,6 +490,71 @@
     }
     .subs-section-divider { height:1px; background:var(--border); margin:12px 0 4px; }
 
+    /* ── Gym Calendar ── */
+    .gc-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; flex-shrink:0; }
+    .gc-month-label { font-family:var(--font-display); font-size:18px; letter-spacing:2px; color:var(--text); }
+    .gc-nav-btn { background:none; border:1px solid var(--border); border-radius:6px; width:28px; height:28px; cursor:pointer; font-size:14px; color:var(--muted); display:flex; align-items:center; justify-content:center; }
+    .gc-nav-btn:hover { background:var(--s2); }
+    .gc-weekdays { display:grid; grid-template-columns:repeat(7,1fr); padding:0 10px; }
+    .gc-weekday { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:1px; color:#bbb; text-align:center; padding:4px 0; }
+    .gc-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; padding:0 10px 10px; }
+    .gc-day {
+      aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+      padding-top:5px; border-radius:8px; cursor:pointer; transition:background .12s; position:relative;
+    }
+    .gc-day:hover { background:var(--s2); }
+    .gc-day.today .gc-day-num { background:var(--accent); color:#fff; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+    .gc-day.selected { background:var(--s3); }
+    .gc-day.other-month .gc-day-num { color:#ccc; }
+    .gc-day-num { font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text); width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+    .gc-dots { display:flex; gap:2px; flex-wrap:wrap; justify-content:center; margin-top:2px; max-width:28px; }
+    .gc-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .gc-divider { height:1px; background:var(--border); margin:0 16px 12px; }
+    /* Day event list */
+    .gc-day-heading { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:2px; color:#999; padding:0 16px 10px; text-transform:uppercase; }
+    .gc-event-row {
+      display:flex; align-items:center; gap:10px; padding:11px 16px;
+      border-bottom:1px solid var(--border); cursor:pointer; transition:background .12s;
+    }
+    .gc-event-row:hover { background:var(--s2); }
+    .gc-event-pip { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .gc-event-title { font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--text); }
+    .gc-event-meta  { font-family:var(--font-mono); font-size:10px; color:#999; margin-top:1px; }
+    .gc-new-btn { margin:12px 16px 4px; width:calc(100% - 32px); padding:10px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:1px; cursor:pointer; }
+    .gc-new-btn:hover { opacity:.88; }
+    /* Event detail */
+    .gc-detail-type { display:inline-block; font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:2px; padding:3px 10px; border-radius:3px; color:#fff; text-transform:uppercase; margin-bottom:10px; }
+    .gc-detail-title { font-family:var(--font-display); font-size:22px; letter-spacing:2px; color:var(--text); margin-bottom:4px; }
+    .gc-detail-meta  { font-family:var(--font-mono); font-size:10px; color:#999; margin-bottom:14px; }
+    .gc-detail-desc  { font-family:var(--font-mono); font-size:11px; color:#666; line-height:1.8; margin-bottom:14px; }
+    .gc-stat-row { display:flex; gap:12px; margin-bottom:16px; }
+    .gc-stat { flex:1; background:var(--s2); border-radius:8px; padding:10px 12px; text-align:center; }
+    .gc-stat-val { font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--accent); }
+    .gc-stat-lbl { font-family:var(--font-mono); font-size:9px; color:#999; letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+    .gc-action-btn { width:100%; padding:10px; border:none; border-radius:6px; font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:.5px; cursor:pointer; margin-bottom:8px; }
+    .gc-action-btn.primary { background:var(--accent); color:#fff; }
+    .gc-action-btn.secondary { background:var(--s2); color:var(--text); border:1px solid var(--border); }
+    .gc-action-btn.danger { background:#fff; color:#c62828; border:1px solid #ffcdd2; }
+    /* Referral table */
+    .gc-ref-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:11px; }
+    .gc-ref-name { font-weight:700; color:var(--text); }
+    .gc-ref-count { color:var(--accent); font-weight:700; }
+    .gc-reward-btn { font-size:9px; font-weight:700; letter-spacing:.5px; padding:3px 8px; border-radius:4px; cursor:pointer; border:1px solid; }
+    .gc-reward-btn.pending  { background:#fff; color:var(--accent); border-color:var(--accent); }
+    .gc-reward-btn.given    { background:#e8f5e9; color:#2e7d32; border-color:#a5d6a7; cursor:default; }
+    /* Create form */
+    .gc-form { padding:16px; display:flex; flex-direction:column; gap:12px; }
+    .gc-form label { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:1px; color:#999; text-transform:uppercase; display:block; margin-bottom:4px; }
+    .gc-form input, .gc-form select, .gc-form textarea {
+      width:100%; padding:9px 12px; border:2px solid #ddd; border-radius:6px;
+      font-family:var(--font-mono); font-size:12px; color:var(--text); background:#fff;
+      box-sizing:border-box;
+    }
+    .gc-form input:focus, .gc-form select:focus, .gc-form textarea:focus { outline:none; border-color:var(--accent); }
+    .gc-type-pills { display:flex; gap:6px; flex-wrap:wrap; }
+    .gc-type-pill { padding:5px 12px; border-radius:20px; font-family:var(--font-mono); font-size:10px; font-weight:700; cursor:pointer; border:2px solid transparent; transition:all .12s; background:var(--s2); color:var(--muted); }
+    .gc-type-pill.active { color:#fff; }
+
     /* ── Gym Inbox ── */
     .gi-tabs { display:flex; border-bottom:2px solid var(--border); flex-shrink:0; }
     .gi-tab {
@@ -1088,7 +1153,9 @@
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
    '_showSubscriptions','_subsClose',
-   '_giSwitchTab','_giOpenThread','_giNewMessage','_giSendBroadcast'].forEach(fn => window[fn] = () => {});
+   '_giSwitchTab','_giOpenThread','_giNewMessage','_giSendBroadcast',
+   '_gcNavMonth','_gcSelectDate','_gcOpenEvent','_gcBackToList','_gcShowCreate',
+   '_gcPickType','_gcSaveEvent','_gcSendReminder','_gcDeleteEvent','_gcToggleReward'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1109,7 +1176,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.10';
+const PORTALS_VERSION = '1.11';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2076,7 +2143,7 @@ window._sbOpen = async (section) => {
   const body = document.getElementById('sb-panel-body');
   if      (section === 'inbox')         await _sbRenderInboxList(body);
   else if (section === 'revenue')       await _sbRenderRevenue(body);
-  else if (section === 'calendar')      body.innerHTML = _sbPh('📅','CALENDAR','Session scheduling and availability — coming soon.');
+  else if (section === 'calendar')      await _sbRenderCalendar(body);
   else if (section === 'notifications') body.innerHTML = _sbPh('🔔','NOTIFICATIONS','System alerts and activity notifications — coming soon.');
   else if (section === 'billing')       body.innerHTML = _sbPh('💳','MANAGE BILLING','Portal subscription billing is managed via the KritFit app.<br><br>Stripe Customer Portal integration coming soon.');
   else if (section === 'add-store')     body.innerHTML = _sbPh('🛍️','ADD STORE','Add the Store module for <strong>$3.45/mo</strong>.<br><br>Manage product inventory and sell directly to your clients. Coming soon.');
@@ -2087,11 +2154,15 @@ window._sbClose = () => {
   overlay.classList.remove('open');
   setTimeout(() => {
     overlay.style.display = 'none';
-    // Clean up list + thread listeners; keep watcher_ listeners for badge
-    Object.keys(_sbMsgListeners).filter(k => !k.startsWith('watcher_')).forEach(k => {
+    // Clean up list + thread listeners; keep watcher_/pres_ listeners for badge
+    Object.keys(_sbMsgListeners).filter(k => !k.startsWith('watcher_') && !k.startsWith('pres_')).forEach(k => {
       _sbMsgListeners[k](); delete _sbMsgListeners[k];
     });
     _sbActiveThread = null;
+    // Clean up calendar snapshot
+    if (_gcEventsUnsub) { _gcEventsUnsub(); _gcEventsUnsub = null; }
+    // Reset calendar state so it reloads fresh next open
+    _gcSelectedDate = null; _gcSelectedEventId = null;
   }, 260);
 };
 
@@ -2514,6 +2585,399 @@ function _sbRecalcBadge() {
   if (unread > 0) { badge.textContent = unread; badge.style.display = ''; val.textContent = `${unread} unread`; }
   else            { badge.style.display = 'none'; val.textContent = 'No new messages'; }
   _updateSidebarIndicator();
+}
+
+// ── Calendar ───────────────────────────────────────────
+const _GC_TYPES = {
+  class:     { label:'CLASS',     color:'#1565c0' },
+  campaign:  { label:'CAMPAIGN',  color:'#e65100' },
+  charity:   { label:'CHARITY',   color:'#6a1b9a' },
+  challenge: { label:'CHALLENGE', color:'#b71c1c' },
+  milestone: { label:'MILESTONE', color:'#2e7d32' },
+};
+
+let _gcYear  = new Date().getFullYear();
+let _gcMonth = new Date().getMonth();   // 0-based
+let _gcEvents = [];                     // all events for current month, from onSnapshot
+let _gcSelectedDate = null;             // 'YYYY-MM-DD'
+let _gcSelectedEventId = null;
+let _gcCreateType = 'class';
+let _gcEventsUnsub = null;
+
+async function _sbRenderCalendar(body) {
+  if (_portalType !== 'gym' || !_gymId) {
+    body.innerHTML = _sbPh('📅','CALENDAR','Calendar is available for gym portals.');
+    return;
+  }
+  body.style.display = 'flex';
+  body.style.flexDirection = 'column';
+  body.style.overflow = 'hidden';
+  body.style.height = '100%';
+
+  _gcYear  = new Date().getFullYear();
+  _gcMonth = new Date().getMonth();
+  _gcSelectedDate = null;
+  _gcSelectedEventId = null;
+  _gcRenderMonthView(body);
+  _gcSubscribeMonth(body);
+}
+
+function _gcSubscribeMonth(body) {
+  if (_gcEventsUnsub) { _gcEventsUnsub(); _gcEventsUnsub = null; }
+  const pad  = n => String(n).padStart(2,'0');
+  const from = `${_gcYear}-${pad(_gcMonth+1)}-01`;
+  const to   = `${_gcYear}-${pad(_gcMonth+1)}-${new Date(_gcYear,_gcMonth+1,0).getDate()}`;
+  _gcEventsUnsub = onSnapshot(
+    query(collection(db,'gyms',_gymId,'events'),
+      where('date','>=',from), where('date','<=',to), orderBy('date','asc'), orderBy('time','asc')),
+    snap => {
+      _gcEvents = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      _gcRepaintGrid();
+      _gcRepaintDayList();
+      _gcUpdateSidebarValue();
+    },
+    err => console.warn('[Cal]', err)
+  );
+}
+
+function _gcRenderMonthView(body) {
+  body.innerHTML = `
+    <div class="gc-header">
+      <button class="gc-nav-btn" onclick="window._gcNavMonth(-1)">‹</button>
+      <div class="gc-month-label" id="gc-month-label"></div>
+      <button class="gc-nav-btn" onclick="window._gcNavMonth(1)">›</button>
+    </div>
+    <div class="gc-weekdays">
+      ${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="gc-weekday">${d}</div>`).join('')}
+    </div>
+    <div id="gc-grid" class="gc-grid"></div>
+    <div class="gc-divider"></div>
+    <div style="flex:1;overflow-y:auto">
+      <button class="gc-new-btn" onclick="window._gcShowCreate()">+ NEW EVENT</button>
+      <div id="gc-day-list"></div>
+    </div>`;
+  _gcRepaintGrid();
+}
+
+function _gcRepaintGrid() {
+  const labelEl = document.getElementById('gc-month-label');
+  const gridEl  = document.getElementById('gc-grid');
+  if (!labelEl || !gridEl) return;
+
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  labelEl.textContent = months[_gcMonth] + ' ' + _gcYear;
+
+  const today    = new Date();
+  const firstDay = new Date(_gcYear, _gcMonth, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(_gcYear, _gcMonth+1, 0).getDate();
+  const pad = n => String(n).padStart(2,'0');
+
+  // Build a map: date string → array of event type colors
+  const dotMap = {};
+  _gcEvents.forEach(ev => { (dotMap[ev.date] = dotMap[ev.date]||[]).push(_GC_TYPES[ev.type]?.color||'#999'); });
+
+  let cells = '';
+  // Leading blanks
+  for (let i = 0; i < firstDay; i++) cells += `<div class="gc-day other-month"><div class="gc-day-num"></div></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${_gcYear}-${pad(_gcMonth+1)}-${pad(d)}`;
+    const isToday = today.getFullYear()===_gcYear && today.getMonth()===_gcMonth && today.getDate()===d;
+    const isSel   = dateStr === _gcSelectedDate;
+    const dots    = (dotMap[dateStr]||[]).slice(0,4).map(c=>`<div class="gc-dot" style="background:${c}"></div>`).join('');
+    cells += `<div class="gc-day${isToday?' today':''}${isSel?' selected':''}" onclick="window._gcSelectDate('${dateStr}')">
+      <div class="gc-day-num">${d}</div>
+      <div class="gc-dots">${dots}</div>
+    </div>`;
+  }
+  gridEl.innerHTML = cells;
+}
+
+function _gcRepaintDayList() {
+  const listEl = document.getElementById('gc-day-list');
+  if (!listEl) return;
+
+  if (_gcSelectedEventId) return; // detail view open — don't repaint list
+
+  if (!_gcSelectedDate) {
+    // Show all events for the month
+    if (!_gcEvents.length) {
+      listEl.innerHTML = `<div style="padding:16px 18px;font-family:var(--font-mono);font-size:11px;color:#bbb">No events this month.</div>`;
+      return;
+    }
+    listEl.innerHTML = `<div class="gc-day-heading">THIS MONTH</div>` + _gcEvents.map(ev => _gcEventRowHtml(ev)).join('');
+    return;
+  }
+
+  const dayEvents = _gcEvents.filter(ev => ev.date === _gcSelectedDate);
+  const pad = n => String(n).padStart(2,'0');
+  const d   = new Date(_gcSelectedDate + 'T12:00:00');
+  const label = d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+
+  listEl.innerHTML = `<div class="gc-day-heading">${_sbEsc(label)}</div>` +
+    (dayEvents.length
+      ? dayEvents.map(ev => _gcEventRowHtml(ev)).join('')
+      : `<div style="padding:12px 18px;font-family:var(--font-mono);font-size:11px;color:#bbb">No events on this day.</div>`);
+}
+
+function _gcEventRowHtml(ev) {
+  const type  = _GC_TYPES[ev.type] || { label: ev.type, color:'#999' };
+  const timeStr = ev.time ? ev.time.replace(':','h').replace(/^0/,'') : 'All day';
+  return `<div class="gc-event-row" onclick="window._gcOpenEvent('${ev.id}')">
+    <div class="gc-event-pip" style="background:${type.color}"></div>
+    <div style="flex:1;min-width:0">
+      <div class="gc-event-title">${_sbEsc(ev.title)}</div>
+      <div class="gc-event-meta">${timeStr} · ${type.label}</div>
+    </div>
+    <div style="font-size:12px;color:#bbb">›</div>
+  </div>`;
+}
+
+window._gcNavMonth = (dir) => {
+  _gcMonth += dir;
+  if (_gcMonth > 11) { _gcMonth = 0; _gcYear++; }
+  if (_gcMonth < 0)  { _gcMonth = 11; _gcYear--; }
+  _gcSelectedDate = null;
+  _gcSelectedEventId = null;
+  const body = document.getElementById('sb-panel-body');
+  _gcRenderMonthView(body);
+  _gcSubscribeMonth(body);
+};
+
+window._gcSelectDate = (dateStr) => {
+  _gcSelectedDate    = (_gcSelectedDate === dateStr) ? null : dateStr;
+  _gcSelectedEventId = null;
+  _gcRepaintGrid();
+  _gcRepaintDayList();
+};
+
+// ── Calendar — event detail ─────────────────────────────
+window._gcOpenEvent = async (eventId) => {
+  _gcSelectedEventId = eventId;
+  const ev = _gcEvents.find(e => e.id === eventId);
+  if (!ev) return;
+
+  const listEl = document.getElementById('gc-day-list');
+  if (!listEl) return;
+
+  const type    = _GC_TYPES[ev.type] || { label: ev.type, color:'#999' };
+  const dateDisp = new Date(ev.date + 'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  const timeDisp = ev.time || 'All day';
+
+  // Count guests (lead submissions)
+  let guestCount = 0, referralRows = '';
+  if (ev.referralEnabled) {
+    try {
+      const gSnap = await getDocs(collection(db,'gyms',_gymId,'events',eventId,'guests'));
+      guestCount  = gSnap.size;
+      // Group by referrer
+      const byRef = {};
+      gSnap.docs.forEach(d => {
+        const g = d.data();
+        const key  = g.referrerUid || '__direct__';
+        const name = g.referrerName || 'Direct / Unknown';
+        if (!byRef[key]) byRef[key] = { name, count:0, docIds:[], anyRewardGiven: false };
+        byRef[key].count++;
+        byRef[key].docIds.push(d.id);
+        if (g.rewardGiven) byRef[key].anyRewardGiven = true;
+      });
+      referralRows = Object.entries(byRef).map(([key, r]) => `
+        <div class="gc-ref-row">
+          <div>
+            <div class="gc-ref-name">${_sbEsc(r.name)}</div>
+            <div class="gc-ref-count">${r.count} guest${r.count!==1?'s':''} brought</div>
+          </div>
+          ${key !== '__direct__' ? `<button class="gc-reward-btn ${r.anyRewardGiven?'given':'pending'}"
+            onclick="window._gcToggleReward('${eventId}','${key}',this)">${r.anyRewardGiven?'✓ REWARDED':'GIVE REWARD'}</button>` : ''}
+        </div>`).join('');
+    } catch(e) { console.warn('[Cal guests]', e); }
+  }
+
+  // Check-in count for event day
+  let checkinCount = 0;
+  try {
+    const ciSnap = await getDocs(query(collection(db,'gyms',_gymId,'checkins'), where('date','==',ev.date)));
+    checkinCount = ciSnap.size;
+  } catch(e) {}
+
+  const targetStr = ev.attendanceTarget ? `/ ${ev.attendanceTarget}` : '';
+
+  listEl.innerHTML = `
+    <div style="padding:16px">
+      <button onclick="window._gcBackToList()" style="background:none;border:none;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent);cursor:pointer;padding:0 0 12px;letter-spacing:.5px">← BACK</button>
+      <span class="gc-detail-type" style="background:${type.color}">${type.label}</span>
+      <div class="gc-detail-title">${_sbEsc(ev.title)}</div>
+      <div class="gc-detail-meta">📅 ${dateDisp} · ⏰ ${timeDisp}</div>
+      ${ev.description ? `<div class="gc-detail-desc">${_sbEsc(ev.description)}</div>` : ''}
+      <div class="gc-stat-row">
+        <div class="gc-stat"><div class="gc-stat-val">${checkinCount}${targetStr}</div><div class="gc-stat-lbl">Check-ins</div></div>
+        ${ev.referralEnabled ? `<div class="gc-stat"><div class="gc-stat-val">${guestCount}</div><div class="gc-stat-lbl">Guest Leads</div></div>` : ''}
+        ${ev.attendanceTarget ? `<div class="gc-stat"><div class="gc-stat-val">${Math.round(checkinCount/ev.attendanceTarget*100)||0}%</div><div class="gc-stat-lbl">Target</div></div>` : ''}
+      </div>
+      <button class="gc-action-btn primary" onclick="window._gcSendReminder('${_sbEsc(ev.title).replace(/'/g,'&#39;')}','${ev.date}','${ev.time||''}')">📢 SEND REMINDER</button>
+      ${ev.referralEnabled && ev.rewardDescription ? `<div style="font-family:var(--font-mono);font-size:10px;color:#999;margin-bottom:12px">🎁 Reward: ${_sbEsc(ev.rewardDescription)}</div>` : ''}
+      ${ev.referralEnabled && referralRows ? `<div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;color:#bbb;margin-bottom:8px">REFERRALS</div>${referralRows}` : ''}
+      <div style="margin-top:16px">
+        <button class="gc-action-btn danger" onclick="window._gcDeleteEvent('${eventId}')">🗑 DELETE EVENT</button>
+      </div>
+    </div>`;
+};
+
+window._gcBackToList = () => {
+  _gcSelectedEventId = null;
+  _gcRepaintDayList();
+};
+
+window._gcToggleReward = async (eventId, referrerUid, btn) => {
+  if (!_gymId) return;
+  const already = btn.classList.contains('given');
+  if (already) return;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    // Mark all guest docs for this referrer
+    const gSnap = await getDocs(collection(db,'gyms',_gymId,'events',eventId,'guests'));
+    const batch = gSnap.docs.filter(d => d.data().referrerUid === referrerUid);
+    await Promise.all(batch.map(d => updateDoc(d.ref, { rewardGiven: true })));
+    btn.classList.remove('pending'); btn.classList.add('given'); btn.textContent = '✓ REWARDED';
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'GIVE REWARD';
+    console.error('[Reward]', e);
+  }
+};
+
+window._gcSendReminder = (title, date, time) => {
+  const dateDisp = new Date(date + 'T12:00:00').toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+  const timeStr  = time ? ` at ${time}` : '';
+  const text     = `📢 Reminder: "${title}" is coming up on ${dateDisp}${timeStr}. We hope to see you there!`;
+  // Switch to inbox → broadcast tab, pre-fill the compose
+  document.getElementById('sb-panel-title').textContent = 'INBOX';
+  _sbOpen('inbox');
+  setTimeout(() => {
+    window._giSwitchTab('broadcast');
+    setTimeout(() => {
+      const inp = document.getElementById('gi-bc-input');
+      if (inp) { inp.value = text; inp.focus(); }
+    }, 120);
+  }, 80);
+};
+
+window._gcDeleteEvent = async (eventId) => {
+  if (!confirm('Delete this event?')) return;
+  try {
+    const { deleteDoc: del, doc: d2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await del(d2(db,'gyms',_gymId,'events',eventId));
+    _gcSelectedEventId = null;
+    _gcSelectedDate = null;
+  } catch(e) { alert('Delete failed: ' + e.message); }
+};
+
+// ── Calendar — create event form ────────────────────────
+window._gcShowCreate = () => {
+  _gcSelectedEventId = null;
+  const listEl = document.getElementById('gc-day-list');
+  if (!listEl) return;
+  const today = new Date().toISOString().split('T')[0];
+  const defaultDate = _gcSelectedDate || today;
+  _gcCreateType = 'class';
+
+  listEl.innerHTML = `
+    <div class="gc-form" id="gc-create-form">
+      <button onclick="window._gcBackToList()" style="background:none;border:none;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent);cursor:pointer;padding:0;letter-spacing:.5px;text-align:left">← BACK</button>
+      <div>
+        <label>Event Type</label>
+        <div class="gc-type-pills" id="gc-type-pills">
+          ${Object.entries(_GC_TYPES).map(([k,v])=>`
+            <div class="gc-type-pill${k==='class'?' active':''}" data-type="${k}"
+              style="${k==='class'?`background:${v.color};border-color:${v.color}`:'border-color:'+v.color+';color:'+v.color}"
+              onclick="window._gcPickType('${k}','${v.color}')">${v.label}</div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <label>Title</label>
+        <input type="text" id="gc-f-title" placeholder="e.g. Charity Boxing Night" maxlength="60">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label>Date</label><input type="date" id="gc-f-date" value="${defaultDate}"></div>
+        <div><label>Time (optional)</label><input type="time" id="gc-f-time"></div>
+      </div>
+      <div>
+        <label>Description (optional)</label>
+        <textarea id="gc-f-desc" rows="2" placeholder="What's happening?"></textarea>
+      </div>
+      <div>
+        <label>Attendance Target (optional)</label>
+        <input type="number" id="gc-f-target" placeholder="e.g. 40" min="1" max="9999">
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="gc-f-referral" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+        <label style="font-size:11px;letter-spacing:0;text-transform:none;color:var(--text);cursor:pointer" for="gc-f-referral">Enable Bring-a-Friend referral tracking</label>
+      </div>
+      <div id="gc-f-reward-wrap" style="display:none">
+        <label>Reward for referring member</label>
+        <input type="text" id="gc-f-reward" placeholder="e.g. 1 free class per friend who shows up">
+      </div>
+      <button class="gc-action-btn primary" onclick="window._gcSaveEvent(this)">CREATE EVENT</button>
+    </div>`;
+
+  document.getElementById('gc-f-referral').addEventListener('change', e => {
+    document.getElementById('gc-f-reward-wrap').style.display = e.target.checked ? '' : 'none';
+  });
+};
+
+window._gcPickType = (type, color) => {
+  _gcCreateType = type;
+  document.querySelectorAll('.gc-type-pill').forEach(p => {
+    const t = p.dataset.type;
+    const c = _GC_TYPES[t]?.color || '#999';
+    if (t === type) { p.classList.add('active'); p.style.background = c; p.style.borderColor = c; p.style.color = '#fff'; }
+    else            { p.classList.remove('active'); p.style.background = 'var(--s2)'; p.style.borderColor = c; p.style.color = c; }
+  });
+};
+
+window._gcSaveEvent = async (btn) => {
+  const title  = document.getElementById('gc-f-title')?.value.trim();
+  const date   = document.getElementById('gc-f-date')?.value;
+  const time   = document.getElementById('gc-f-time')?.value || null;
+  const desc   = document.getElementById('gc-f-desc')?.value.trim() || null;
+  const target = parseInt(document.getElementById('gc-f-target')?.value) || null;
+  const referral = document.getElementById('gc-f-referral')?.checked || false;
+  const reward   = referral ? (document.getElementById('gc-f-reward')?.value.trim() || null) : null;
+
+  if (!title) { alert('Please enter a title.'); return; }
+  if (!date)  { alert('Please pick a date.'); return; }
+
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await addDoc(collection(db,'gyms',_gymId,'events'), {
+      title, type: _gcCreateType, date, time,
+      description: desc, attendanceTarget: target,
+      referralEnabled: referral, rewardDescription: reward,
+      createdBy: _currentUid, createdAt: serverTimestamp(),
+      broadcastSentAt: null
+    });
+    _gcSelectedDate = date;
+    _gcSelectedEventId = null;
+    _gcRepaintGrid();
+    _gcRepaintDayList();
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+    btn.disabled = false; btn.textContent = orig;
+  }
+};
+
+function _gcUpdateSidebarValue() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayEvents = _gcEvents.filter(e => e.date === today);
+  const val = document.getElementById('sb-cal-value');
+  const sub = document.getElementById('sb-cal-sub');
+  if (!val) return;
+  if (todayEvents.length === 0) {
+    val.textContent = 'No events today';
+    if (sub) sub.textContent = '';
+  } else {
+    val.textContent = `${todayEvents.length} event${todayEvents.length!==1?'s':''} today`;
+    if (sub) sub.textContent = todayEvents.map(e => e.title).join(' · ');
+  }
 }
 
 // ── Revenue panel ──────────────────────────────────────
