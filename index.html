@@ -1176,7 +1176,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.11';
+const PORTALS_VERSION = '1.12';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2629,9 +2629,14 @@ function _gcSubscribeMonth(body) {
   const to   = `${_gcYear}-${pad(_gcMonth+1)}-${new Date(_gcYear,_gcMonth+1,0).getDate()}`;
   _gcEventsUnsub = onSnapshot(
     query(collection(db,'gyms',_gymId,'events'),
-      where('date','>=',from), where('date','<=',to), orderBy('date','asc'), orderBy('time','asc')),
+      where('date','>=',from), where('date','<=',to), orderBy('date','asc')),
     snap => {
-      _gcEvents = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      _gcEvents = snap.docs
+        .map(d => ({ id:d.id, ...d.data() }))
+        .sort((a,b) => {
+          if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+          return (a.time||'99:99') < (b.time||'99:99') ? -1 : 1;
+        });
       _gcRepaintGrid();
       _gcRepaintDayList();
       _gcUpdateSidebarValue();
