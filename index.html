@@ -655,6 +655,47 @@
       font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:1px;
       box-sizing:border-box;
     }
+    /* ── Specialty tags ── */
+    .sp-tag-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; min-height:24px; }
+    .sp-tag { display:inline-flex; align-items:center; gap:4px; background:var(--accent); color:#fff;
+      padding:3px 8px; border-radius:12px; font-family:var(--font-mono); font-size:10px; font-weight:700; }
+    .sp-tag-rm { background:none; border:none; color:#fff; cursor:pointer; font-size:12px; line-height:1; padding:0; }
+    .sp-suggest { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+    .sp-chip { padding:4px 10px; border-radius:12px; border:1px solid var(--border); background:var(--s2);
+      font-family:var(--font-mono); font-size:10px; cursor:pointer; color:var(--muted); transition:all .12s; }
+    .sp-chip:hover { border-color:var(--accent); color:var(--accent); }
+    /* ── Amenity grid ── */
+    .amenity-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px; margin-bottom:4px; }
+    .amenity-chk { display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:10px;
+      cursor:pointer; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--s1); transition:all .12s; }
+    .amenity-chk input { margin:0; accent-color:var(--accent); }
+    .amenity-chk:has(input:checked) { border-color:var(--accent); background:#e8f0fe; color:var(--accent); font-weight:700; }
+    /* ── Staff cards ── */
+    .staff-card { background:var(--s1); border:1px solid var(--border); border-radius:8px; padding:12px 14px;
+      margin-bottom:10px; display:flex; align-items:flex-start; gap:12px; }
+    .staff-avatar { width:38px; height:38px; border-radius:50%; background:var(--accent); color:#fff;
+      display:flex; align-items:center; justify-content:center; font-family:var(--font-mono);
+      font-size:14px; font-weight:700; flex-shrink:0; overflow:hidden; }
+    .staff-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .staff-name { font-family:var(--font-mono); font-size:12px; font-weight:700; margin-bottom:2px; }
+    .staff-role { font-family:var(--font-mono); font-size:10px; color:var(--accent); font-weight:700;
+      letter-spacing:.5px; margin-bottom:3px; }
+    .staff-bio  { font-family:var(--font-mono); font-size:10px; color:#666; line-height:1.4; }
+    .staff-pub  { font-family:var(--font-mono); font-size:9px; color:#aaa; margin-top:4px; }
+    .staff-actions { margin-left:auto; display:flex; gap:6px; flex-shrink:0; }
+    /* ── Enhanced class cards ── */
+    .class-level { padding:2px 6px; border-radius:4px; font-family:var(--font-mono); font-size:9px;
+      font-weight:700; letter-spacing:.5px; background:#e3f2fd; color:#1565c0; }
+    .class-level.inter { background:#fff3e0; color:#e65100; }
+    .class-level.adv   { background:#ffebee; color:#c62828; }
+    .class-level.all   { background:#e8f5e9; color:#2e7d32; }
+    .class-pip { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    /* ── Class calendar sessions ── */
+    .gc-class-row { display:flex; align-items:center; gap:10px; padding:8px 16px;
+      border-bottom:1px solid var(--border); cursor:default; opacity:.85; }
+    .gc-class-pip { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:#78909c; }
+    .gc-class-title { font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text); }
+    .gc-class-meta  { font-family:var(--font-mono); font-size:10px; color:#888; }
   </style>
 </head>
 <body>
@@ -914,7 +955,8 @@
     <!-- NAV-2: Setup sub-nav -->
     <div id="gym-setup-subnav" style="display:none;flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--border)">
       <nav class="nav" id="gym-setup-nav" style="overflow-x:auto;scrollbar-width:none">
-        <button class="nav-btn active" id="gstab-gym"     onclick="_gSetupTab('gym')">    <span class="icon">🏠</span>GYM</button>
+        <button class="nav-btn active" id="gstab-gym"     onclick="_gSetupTab('gym')">    <span class="icon">🏠</span>PROFILE</button>
+        <button class="nav-btn"        id="gstab-staff"   onclick="_gSetupTab('staff')">  <span class="icon">👥</span>STAFF</button>
         <button class="nav-btn"        id="gstab-classes" onclick="_gSetupTab('classes')"><span class="icon">📅</span>CLASSES</button>
         <button class="nav-btn"        id="gstab-modules" onclick="_gSetupTab('modules')"><span class="icon">🧩</span>MODULES</button>
         <button class="nav-btn"        id="gstab-tiers"   onclick="_gSetupTab('tiers')">  <span class="icon">🎖️</span>TIERS</button>
@@ -1040,7 +1082,7 @@
     <!-- ══ SETUP TAB ══ -->
     <div class="tab-panel" id="g-setup">
 
-      <!-- GYM INFO -->
+      <!-- PROFILE -->
       <div id="gs-gym">
         <div class="section-title">Gym Information</div>
         <div class="form-row">
@@ -1061,14 +1103,68 @@
           <div class="form-group"><label class="form-label">Currency Symbol</label><input type="text" id="gs-currency" class="form-input" placeholder="$" style="max-width:80px"></div>
           <div class="form-group"><label class="form-label">Logo URL</label><input type="text" id="gs-logo" class="form-input" placeholder="https://…/logo.png"></div>
         </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Max Capacity</label><input type="number" id="gs-maxcap" class="form-input" placeholder="unlimited" min="1" style="max-width:120px"></div>
+          <div class="form-group"><label class="form-label">Founded Year</label><input type="number" id="gs-founded" class="form-input" placeholder="e.g. 2015" min="1800" max="2099" style="max-width:120px"></div>
+        </div>
+        <div class="section-title" style="margin-top:20px">Specialties</div>
+        <p style="font-family:var(--font-mono);font-size:10px;color:#888;margin-bottom:8px">What disciplines does your gym focus on? Members can find you by these.</p>
+        <div id="gs-sp-tags" class="sp-tag-wrap"></div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="text" id="gs-sp-input" class="form-input" placeholder="Type a specialty + Enter" style="flex:1" onkeydown="_gSpKeydown(event)">
+        </div>
+        <div class="sp-suggest" id="gs-sp-suggest"></div>
+
+        <div class="section-title" style="margin-top:20px">Amenities</div>
+        <p style="font-family:var(--font-mono);font-size:10px;color:#888;margin-bottom:8px">Tick what your gym offers — visible to prospective members.</p>
+        <div class="amenity-grid" id="gs-amenities"></div>
+
+        <div class="section-title" style="margin-top:20px">Social Links</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Instagram</label><input type="text" id="gs-instagram" class="form-input" placeholder="https://instagram.com/…"></div>
+          <div class="form-group"><label class="form-label">Facebook</label><input type="text" id="gs-facebook" class="form-input" placeholder="https://facebook.com/…"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">TikTok</label><input type="text" id="gs-tiktok" class="form-input" placeholder="https://tiktok.com/@…"></div>
+          <div class="form-group"><label class="form-label">YouTube</label><input type="text" id="gs-youtube" class="form-input" placeholder="https://youtube.com/…"></div>
+        </div>
+
+        <div class="section-title" style="margin-top:20px">Join Policy</div>
+        <p style="font-family:var(--font-mono);font-size:10px;color:#888;margin-bottom:10px">Controls what happens when someone scans your join QR code.</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <label class="amenity-chk" style="flex:1"><input type="radio" name="gs-join-policy" id="gsjp-open"     value="open"    onchange="_gJoinPolicyChange()"> Open — anyone can join instantly</label>
+          <label class="amenity-chk" style="flex:1"><input type="radio" name="gs-join-policy" id="gsjp-approval" value="approval" onchange="_gJoinPolicyChange()"> Requires Approval — you review each request</label>
+        </div>
+        <div id="gs-join-note" style="display:none;background:#fff3e0;border-radius:6px;padding:10px 12px;font-family:var(--font-mono);font-size:10px;color:#e65100;margin-bottom:12px">
+          ⚠️ Approval mode: new members will enter a PENDING state until you approve them in the MEMBERS tab.
+        </div>
+
+        <div class="section-title" style="margin-top:20px">Gym Rules</div>
+        <div class="form-row full">
+          <div class="form-group"><textarea id="gs-rules" class="form-input" rows="4" placeholder="e.g. Wipe down equipment after use. Respect fellow members. No food on the gym floor…"></textarea></div>
+        </div>
+
         <div class="section-title" style="margin-top:20px">Opening Hours</div>
         <div id="gs-hours-grid"></div>
-        <button class="save-btn" onclick="_gSaveAbout()">SAVE GYM INFO</button>
+        <button class="save-btn" onclick="_gSaveAbout()">SAVE PROFILE</button>
+      </div>
+
+      <!-- STAFF -->
+      <div id="gs-staff" style="display:none">
+        <div class="section-title">Staff</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:16px">Your team — separate from KritFit trainer subscriptions. Staff appear on your public gym profile.</p>
+        <div class="toolbar"><button class="btn" onclick="_gAddStaff()">+ ADD STAFF MEMBER</button></div>
+        <div id="gs-staff-list" class="ph-card">
+          <div class="ph-icon">👥</div>
+          <div class="ph-title">No staff added yet</div>
+          Add your team members to display them on your gym's public profile.
+        </div>
       </div>
 
       <!-- CLASSES -->
       <div id="gs-classes" style="display:none">
         <div class="section-title">Class Schedule</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Recurring weekly classes. Sessions appear automatically on the Calendar — no separate event needed.</p>
         <div class="toolbar"><button class="btn" onclick="_gAddClass()">+ ADD CLASS</button></div>
         <div id="gs-classes-list" class="ph-card">
           <div class="ph-icon">📅</div>
@@ -1187,7 +1283,9 @@
    '_showSubscriptions','_subsClose',
    '_giSwitchTab','_giOpenThread','_giNewMessage','_giSendBroadcast',
    '_gcNavMonth','_gcSelectDate','_gcOpenEvent','_gcBackToList','_gcShowCreate',
-   '_gcPickType','_gcSaveEvent','_gcSendReminder','_gcDeleteEvent','_gcToggleReward'].forEach(fn => window[fn] = () => {});
+   '_gcPickType','_gcSaveEvent','_gcSendReminder','_gcDeleteEvent','_gcToggleReward',
+   '_gAddStaff','_gEditStaff','_gdDeleteStaff',
+   '_gSpKeydown','_gSpAdd','_gSpRemove','_gAmenityChange','_gJoinPolicyChange'].forEach(fn => window[fn] = () => {});
 </script>
 <script type="module">
 import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1208,7 +1306,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.14';
+const PORTALS_VERSION = '1.15';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1412,6 +1510,7 @@ let _gymId      = null;
 let _gymData    = null;
 let _gymMembers = [];
 let _gymClasses = [];
+let _gymStaff   = [];
 let _qrLibLoaded = false;
 let _gModalSubmit = null;
 
@@ -1614,6 +1713,11 @@ window._gLoadPeriod = async () => {
   } catch(e) { console.error('[Gym] period:', e); }
 };
 
+const _AMENITY_LIST = ['Lockers','Showers','Parking','Pool','Sauna','Steam Room','Childcare',
+  'Smoothie Bar','Café','Free WiFi','Towels','Equipment Rental','Wheelchair Access','Outdoor Space'];
+const _SP_SUGGEST = ['Boxing','Yoga','CrossFit','HIIT','Spinning','Weights','Pilates','Swimming',
+  'Martial Arts','Dance','Zumba','Running','Stretching','Rehabilitation','Personal Training','Group Classes'];
+
 function _gdPopulateSetup() {
   if (!_gymData) return;
   const g = _gymData;
@@ -1625,6 +1729,37 @@ function _gdPopulateSetup() {
   document.getElementById('gs-address').value  = g.address || '';
   document.getElementById('gs-currency').value = g.currency || '$';
   document.getElementById('gs-logo').value     = g.logoUrl || '';
+  if (document.getElementById('gs-maxcap'))  document.getElementById('gs-maxcap').value  = g.maxCapacity  || '';
+  if (document.getElementById('gs-founded')) document.getElementById('gs-founded').value = g.foundedYear || '';
+
+  // Social links
+  const sl = g.socialLinks || {};
+  ['instagram','facebook','tiktok','youtube'].forEach(k => {
+    const el = document.getElementById('gs-' + k);
+    if (el) el.value = sl[k] || '';
+  });
+
+  // Gym rules
+  const rulesEl = document.getElementById('gs-rules');
+  if (rulesEl) rulesEl.value = g.gymRules || '';
+
+  // Join policy
+  const policy = g.joinPolicy || 'open';
+  const jpEl = document.getElementById('gsjp-' + policy);
+  if (jpEl) { jpEl.checked = true; _gJoinPolicyChange(); }
+
+  // Specialties tags
+  _gRenderSpTags(g.specialties || []);
+  _gRenderSpSuggest(g.specialties || []);
+
+  // Amenities
+  const amenEl = document.getElementById('gs-amenities');
+  if (amenEl) {
+    const saved = g.amenities || [];
+    amenEl.innerHTML = _AMENITY_LIST.map(a =>
+      `<label class="amenity-chk"><input type="checkbox" value="${a}" ${saved.includes(a)?'checked':''} onchange="_gAmenityChange()"> ${a}</label>`
+    ).join('');
+  }
 
   // Hours
   const days = ['mon','tue','wed','thu','fri','sat','sun'];
@@ -1654,6 +1789,54 @@ function _gdPopulateSetup() {
   _gdRenderTiers(g.membershipTiers || []);
 }
 
+// ── Specialty tag helpers ──────────────────────────────
+let _gymSpecialties = [];
+
+function _gRenderSpTags(tags) {
+  _gymSpecialties = [...tags];
+  const el = document.getElementById('gs-sp-tags');
+  if (!el) return;
+  el.innerHTML = tags.map(t =>
+    `<span class="sp-tag">${_sbEsc(t)}<button class="sp-tag-rm" onclick="_gSpRemove('${t.replace(/'/g,'&#39;')}')">×</button></span>`
+  ).join('');
+}
+
+function _gRenderSpSuggest(saved) {
+  const el = document.getElementById('gs-sp-suggest');
+  if (!el) return;
+  el.innerHTML = _SP_SUGGEST.filter(s => !saved.includes(s))
+    .map(s => `<span class="sp-chip" onclick="_gSpAdd('${s}')">${s}</span>`).join('');
+}
+
+window._gSpKeydown = (e) => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const val = document.getElementById('gs-sp-input').value.trim();
+  if (val) _gSpAdd(val);
+};
+
+window._gSpAdd = (val) => {
+  if (_gymSpecialties.includes(val)) return;
+  _gymSpecialties.push(val);
+  _gRenderSpTags(_gymSpecialties);
+  _gRenderSpSuggest(_gymSpecialties);
+  document.getElementById('gs-sp-input').value = '';
+};
+
+window._gSpRemove = (val) => {
+  _gymSpecialties = _gymSpecialties.filter(s => s !== val);
+  _gRenderSpTags(_gymSpecialties);
+  _gRenderSpSuggest(_gymSpecialties);
+};
+
+window._gAmenityChange = () => {}; // triggers CSS :has() — no JS needed
+
+window._gJoinPolicyChange = () => {
+  const approval = document.querySelector('input[name="gs-join-policy"]:checked')?.value === 'approval';
+  const note = document.getElementById('gs-join-note');
+  if (note) note.style.display = approval ? '' : 'none';
+};
+
 window._gSaveAbout = async () => {
   if (!_gymId) return;
   const days = ['mon','tue','wed','thu','fri','sat','sun'];
@@ -1665,23 +1848,38 @@ window._gSaveAbout = async () => {
       closed: document.getElementById('gh-'+d+'-closed')?.checked || false
     };
   });
+  const maxCapRaw = parseInt(document.getElementById('gs-maxcap')?.value);
+  const foundedRaw = parseInt(document.getElementById('gs-founded')?.value);
+  const amenities = [...document.querySelectorAll('#gs-amenities input:checked')].map(el => el.value);
   const data = {
-    name:       document.getElementById('gs-name').value.trim(),
-    slug:       document.getElementById('gs-slug').value.trim(),
-    aboutText:  document.getElementById('gs-about').value.trim(),
-    phone:      document.getElementById('gs-phone').value.trim(),
-    website:    document.getElementById('gs-website').value.trim(),
-    address:    document.getElementById('gs-address').value.trim(),
-    currency:   document.getElementById('gs-currency').value.trim() || '$',
-    logoUrl:    document.getElementById('gs-logo').value.trim(),
-    hours
+    name:        document.getElementById('gs-name').value.trim(),
+    slug:        document.getElementById('gs-slug').value.trim(),
+    aboutText:   document.getElementById('gs-about').value.trim(),
+    phone:       document.getElementById('gs-phone').value.trim(),
+    website:     document.getElementById('gs-website').value.trim(),
+    address:     document.getElementById('gs-address').value.trim(),
+    currency:    document.getElementById('gs-currency').value.trim() || '$',
+    logoUrl:     document.getElementById('gs-logo').value.trim(),
+    gymRules:    document.getElementById('gs-rules')?.value.trim() || '',
+    joinPolicy:  document.querySelector('input[name="gs-join-policy"]:checked')?.value || 'open',
+    specialties: _gymSpecialties,
+    amenities,
+    socialLinks: {
+      instagram: document.getElementById('gs-instagram')?.value.trim() || '',
+      facebook:  document.getElementById('gs-facebook')?.value.trim()  || '',
+      tiktok:    document.getElementById('gs-tiktok')?.value.trim()    || '',
+      youtube:   document.getElementById('gs-youtube')?.value.trim()   || '',
+    },
+    hours,
   };
+  if (!isNaN(maxCapRaw) && maxCapRaw > 0) data.maxCapacity = maxCapRaw; else data.maxCapacity = null;
+  if (!isNaN(foundedRaw) && foundedRaw > 1800) data.foundedYear = foundedRaw; else data.foundedYear = null;
   try {
     const {updateDoc,doc:d2,serverTimestamp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
     await updateDoc(d2(db,'gyms',_gymId), { ...data, updatedAt: serverTimestamp() });
     _gymData = { ..._gymData, ...data };
     document.getElementById('portal-badge').textContent = (data.name || 'GYM') + ' PORTAL';
-    alert('Gym info saved.');
+    alert('Profile saved.');
   } catch(e) { console.error('[Gym] save about:', e); alert('Save failed.'); }
 };
 
@@ -1970,46 +2168,204 @@ async function _gRenderEntryQR() {
 }
 
 // ── Classes ─────────────────────────────────────────────
-window._gAddClass = () => {
-  _gOpenModal('ADD CLASS', `
+// ── Staff CRUD ──────────────────────────────────────────
+const _STAFF_ROLES = ['Owner','Manager','Head Trainer','Instructor','Front Desk','Nutritionist','Therapist','Other'];
+
+async function _gdLoadStaff() {
+  try {
+    const snap = await getDocs(collection(db, 'gyms', _gymId, 'staff'));
+    _gymStaff = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
+    _gdRenderStaff();
+  } catch(e) { console.error('[Gym] load staff:', e); }
+}
+
+function _gdRenderStaff() {
+  const el = document.getElementById('gs-staff-list');
+  if (!el) return;
+  if (!_gymStaff.length) {
+    el.innerHTML = '<div class="ph-card"><div class="ph-icon">👥</div><div class="ph-title">No staff added yet</div>Add your team members to display them on your gym\'s public profile.</div>';
+    return;
+  }
+  el.innerHTML = _gymStaff.map(s => {
+    const initials = (s.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const avatar = s.photoUrl
+      ? `<div class="staff-avatar"><img src="${_sbEsc(s.photoUrl)}" alt=""></div>`
+      : `<div class="staff-avatar">${initials}</div>`;
+    return `<div class="staff-card">
+      ${avatar}
+      <div style="flex:1;min-width:0">
+        <div class="staff-name">${_sbEsc(s.name||'—')}</div>
+        <div class="staff-role">${_sbEsc(s.role||'')}</div>
+        ${s.bio ? `<div class="staff-bio">${_sbEsc(s.bio)}</div>` : ''}
+        <div class="staff-pub">${s.isPublic ? '👁 Public profile' : '🔒 Internal only'}</div>
+      </div>
+      <div class="staff-actions">
+        <button class="tbl-action" onclick="window._gEditStaff('${s.id}')" title="Edit">✏️</button>
+        <button class="tbl-action" onclick="window._gdDeleteStaff('${s.id}')" title="Delete">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window._gAddStaff = () => _gOpenStaffModal(null);
+window._gEditStaff = (staffId) => _gOpenStaffModal(_gymStaff.find(s => s.id === staffId));
+
+function _gOpenStaffModal(existing) {
+  const s = existing || {};
+  const roleOpts = _STAFF_ROLES.map(r => `<option value="${r}" ${s.role===r?'selected':''}>${r}</option>`).join('');
+  _gOpenModal(existing ? 'EDIT STAFF' : 'ADD STAFF MEMBER', `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Name *</label><input type="text" id="gsf-nm" class="form-input" value="${_sbEsc(s.name||'')}" placeholder="Full name" autofocus></div>
+      <div class="form-group"><label class="form-label">Role *</label>
+        <select id="gsf-rl" class="form-input">${roleOpts}</select>
+      </div>
+    </div>
     <div class="form-row full">
-      <div class="form-group"><label class="form-label">Class Name *</label><input type="text" id="gcl-nm" class="form-input" placeholder="e.g. Morning Yoga, HIIT, Spin" autofocus></div>
+      <div class="form-group"><label class="form-label">Bio</label><textarea id="gsf-bio" class="form-input" rows="2" placeholder="Short description visible on public profile">${_sbEsc(s.bio||'')}</textarea></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Day *</label>
-        <select id="gcl-dy" class="form-input">
-          <option value="mon">Monday</option><option value="tue">Tuesday</option>
-          <option value="wed">Wednesday</option><option value="thu">Thursday</option>
-          <option value="fri">Friday</option><option value="sat">Saturday</option>
-          <option value="sun">Sunday</option>
+      <div class="form-group"><label class="form-label">Photo URL</label><input type="text" id="gsf-ph" class="form-input" value="${_sbEsc(s.photoUrl||'')}" placeholder="https://…"></div>
+      <div class="form-group"><label class="form-label">KritFit UID</label><input type="text" id="gsf-uid" class="form-input" value="${_sbEsc(s.linkedUid||'')}" placeholder="optional — links to trainer portal"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Phone (internal)</label><input type="text" id="gsf-phone" class="form-input" value="${_sbEsc(s.phone||'')}" placeholder="not shown publicly"></div>
+      <div class="form-group"><label class="form-label">Email (internal)</label><input type="text" id="gsf-email" class="form-input" value="${_sbEsc(s.email||'')}" placeholder="not shown publicly"></div>
+    </div>
+    <div class="form-row">
+      <label class="amenity-chk" style="width:auto">
+        <input type="checkbox" id="gsf-pub" ${s.isPublic!==false?'checked':''}> Show on public gym profile
+      </label>
+    </div>
+  `, async () => {
+    const name = document.getElementById('gsf-nm').value.trim();
+    if (!name) { alert('Name is required.'); return; }
+    const data = {
+      name,
+      role:      document.getElementById('gsf-rl').value,
+      bio:       document.getElementById('gsf-bio').value.trim(),
+      photoUrl:  document.getElementById('gsf-ph').value.trim(),
+      linkedUid: document.getElementById('gsf-uid').value.trim(),
+      phone:     document.getElementById('gsf-phone').value.trim(),
+      email:     document.getElementById('gsf-email').value.trim(),
+      isPublic:  document.getElementById('gsf-pub').checked,
+      sortOrder: existing ? (s.sortOrder || 0) : _gymStaff.length,
+    };
+    const btn = document.getElementById('g-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const {addDoc:add2,updateDoc:upd2,doc:d2,collection:col2,serverTimestamp:st2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      if (existing) {
+        await upd2(d2(db,'gyms',_gymId,'staff',existing.id), data);
+        _gymStaff = _gymStaff.map(x => x.id === existing.id ? { id: existing.id, ...data } : x);
+      } else {
+        const ref = await add2(col2(db,'gyms',_gymId,'staff'), { ...data, addedAt: st2() });
+        _gymStaff = [..._gymStaff, { id: ref.id, ...data }];
+      }
+      _gdRenderStaff();
+      _gModalClose();
+    } catch(e) { console.error('[Gym] save staff:', e); btn.disabled = false; btn.textContent = 'SAVE'; }
+  });
+}
+
+window._gdDeleteStaff = async (staffId) => {
+  if (!confirm('Remove this staff member?')) return;
+  try {
+    const {deleteDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(d2(db,'gyms',_gymId,'staff',staffId));
+    _gymStaff = _gymStaff.filter(s => s.id !== staffId);
+    _gdRenderStaff();
+  } catch(e) { console.error('[Gym] delete staff:', e); }
+};
+
+// ── Classes CRUD ────────────────────────────────────────
+const _CL_TYPES = ['Yoga','Boxing','HIIT','Spinning','Weights','CrossFit','Zumba','Pilates','Swimming','Martial Arts','Dance','Other'];
+const _CL_COLORS = { Yoga:'#6a1b9a',Boxing:'#b71c1c',HIIT:'#e65100',Spinning:'#1565c0',Weights:'#37474f',
+  CrossFit:'#c62828',Zumba:'#ad1457',Pilates:'#4a148c',Swimming:'#006064','Martial Arts':'#4e342e',Dance:'#880e4f',Other:'#555' };
+const _CL_LEVEL_LABEL = { all:'All Levels', beginner:'Beginner', intermediate:'Intermediate', advanced:'Advanced' };
+
+window._gAddClass = () => {
+  const staffOpts = _gymStaff.length
+    ? _gymStaff.map(s => `<option value="${_sbEsc(s.id)}">${_sbEsc(s.name)} (${_sbEsc(s.role)})</option>`).join('')
+    : '';
+  const typeOpts = _CL_TYPES.map(t => `<option value="${t}">${t}</option>`).join('');
+  _gOpenModal('ADD CLASS', `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Class Name *</label><input type="text" id="gcl-nm" class="form-input" placeholder="e.g. Morning HIIT" autofocus></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select id="gcl-type" class="form-input">${typeOpts}</select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label">Days *</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+        ${['mon','tue','wed','thu','fri','sat','sun'].map(d =>
+          `<label style="display:flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px">
+            <input type="checkbox" class="gcl-day-chk" value="${d}"> ${d.charAt(0).toUpperCase()+d.slice(1)}</label>`
+        ).join('')}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Start Time</label><input type="time" id="gcl-tm" class="form-input" value="09:00"></div>
+      <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" id="gcl-du" class="form-input" value="60" min="5" max="480"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Instructor</label>
+        ${staffOpts
+          ? `<select id="gcl-in-sel" class="form-input"><option value="">— select staff —</option>${staffOpts}</select>`
+          : `<input type="text" id="gcl-in" class="form-input" placeholder="Name (add staff first for dropdown)">`}
+      </div>
+      <div class="form-group"><label class="form-label">Level</label>
+        <select id="gcl-lv" class="form-input">
+          <option value="all">All Levels</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Start Time</label><input type="time" id="gcl-tm" class="form-input" value="09:00"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Duration (minutes)</label><input type="number" id="gcl-du" class="form-input" value="60" min="5" max="480"></div>
-      <div class="form-group"><label class="form-label">Instructor</label><input type="text" id="gcl-in" class="form-input" placeholder="optional"></div>
+      <div class="form-group"><label class="form-label">Room / Location</label><input type="text" id="gcl-room" class="form-input" placeholder="e.g. Studio A, Pool, Ring"></div>
+      <div class="form-group"><label class="form-label">Max Capacity</label><input type="number" id="gcl-mc" class="form-input" placeholder="unlimited" min="1"></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Max Capacity</label><input type="number" id="gcl-mc" class="form-input" placeholder="leave blank = unlimited" min="1"></div>
-      <div class="form-group"></div>
+    <div class="form-row full">
+      <div class="form-group"><label class="form-label">Description</label><textarea id="gcl-desc" class="form-input" rows="2" placeholder="Brief description for members"></textarea></div>
     </div>
   `, async () => {
     const title = document.getElementById('gcl-nm').value.trim();
     if (!title) { alert('Class name is required.'); return; }
-    const day      = document.getElementById('gcl-dy').value;
-    const time     = document.getElementById('gcl-tm').value || '09:00';
-    const duration = parseInt(document.getElementById('gcl-du').value) || 60;
-    const instructor = document.getElementById('gcl-in').value.trim();
-    const maxCapacity = parseInt(document.getElementById('gcl-mc').value) || null;
-    const data = { title, days: [day], sessions: [{ time, duration, instructor }], createdAt: serverTimestamp() };
-    if (maxCapacity) data.maxCapacity = maxCapacity;
+    const days = [...document.querySelectorAll('.gcl-day-chk:checked')].map(c => c.value);
+    if (!days.length) { alert('Select at least one day.'); return; }
+    const type       = document.getElementById('gcl-type').value;
+    const time       = document.getElementById('gcl-tm').value || '09:00';
+    const duration   = parseInt(document.getElementById('gcl-du').value) || 60;
+    const level      = document.getElementById('gcl-lv').value || 'all';
+    const room       = document.getElementById('gcl-room').value.trim();
+    const maxCapRaw  = parseInt(document.getElementById('gcl-mc').value);
+    const desc       = document.getElementById('gcl-desc')?.value.trim() || '';
+    const inSelEl    = document.getElementById('gcl-in-sel');
+    const inTxtEl    = document.getElementById('gcl-in');
+    let instructorId = '', instructorName = '';
+    if (inSelEl && inSelEl.value) {
+      instructorId = inSelEl.value;
+      instructorName = _gymStaff.find(s => s.id === instructorId)?.name || '';
+    } else if (inTxtEl) {
+      instructorName = inTxtEl.value.trim();
+    }
+    const color = _CL_COLORS[type] || '#555';
+    const data = {
+      title, type, days, level, color,
+      isActive: true,
+      sessions:    [{ time, duration, instructor: instructorName, instructorId }],
+      description: desc,
+    };
+    if (room)                       data.room        = room;
+    if (!isNaN(maxCapRaw) && maxCapRaw > 0) data.maxCapacity = maxCapRaw;
     const btn = document.getElementById('g-modal-save');
     btn.disabled = true; btn.textContent = 'Saving…';
     try {
       const {addDoc:add2,collection:col2,serverTimestamp:st2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const ref = await add2(col2(db, 'gyms', _gymId, 'classes'), { ...data, createdAt: st2() });
-      _gymClasses = [..._gymClasses, { id: ref.id, ...data, createdAt: null }];
+      _gymClasses = [..._gymClasses, { id: ref.id, ...data }];
       _gdRenderClasses();
       _gModalClose();
     } catch(e) { console.error('[Gym] add class:', e); btn.disabled = false; btn.textContent = 'SAVE'; }
@@ -2028,29 +2384,44 @@ window._gdDeleteClass = async (classId) => {
 
 const _DAY_ORDER = ['mon','tue','wed','thu','fri','sat','sun'];
 const _DAY_LABEL = { mon:'Mon', tue:'Tue', wed:'Wed', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun' };
+const _DAY_JS    = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 }; // matches Date.getDay()
 
 function _gdRenderClasses() {
   const el = document.getElementById('gs-classes-list');
   if (!el) return;
-  if (!_gymClasses.length) {
+  const active = _gymClasses.filter(c => c.isActive !== false);
+  if (!active.length) {
     el.innerHTML = '<div class="ph-card"><div class="ph-icon">📅</div><div class="ph-title">No classes yet</div>Add group classes to show your schedule to members.</div>';
     return;
   }
-  const sorted = [..._gymClasses].sort((a, b) => {
+  const sorted = [...active].sort((a, b) => {
     const da = _DAY_ORDER.indexOf((a.days || ['mon'])[0]);
     const db2 = _DAY_ORDER.indexOf((b.days || ['mon'])[0]);
     if (da !== db2) return da - db2;
     return ((a.sessions || [])[0]?.time || '').localeCompare((b.sessions || [])[0]?.time || '');
   });
   el.innerHTML = sorted.map(c => {
-    const day  = (c.days || ['mon'])[0];
-    const sess = (c.sessions || [])[0] || {};
-    const parts = [sess.time || '—', sess.duration ? `${sess.duration}min` : null, sess.instructor || null, c.maxCapacity ? `max ${c.maxCapacity}` : null].filter(Boolean);
+    const sess  = (c.sessions || [])[0] || {};
+    const days  = (c.days || []).map(d => _DAY_LABEL[d] || d).join(', ');
+    const lvl   = c.level || 'all';
+    const lvlCls= lvl === 'intermediate' ? 'inter' : lvl === 'advanced' ? 'adv' : lvl === 'all' ? 'all' : '';
+    const parts = [
+      sess.time || '—',
+      sess.duration ? `${sess.duration}min` : null,
+      c.room ? `📍 ${c.room}` : null,
+      sess.instructor ? `👤 ${sess.instructor}` : null,
+      c.maxCapacity ? `max ${c.maxCapacity}` : null
+    ].filter(Boolean);
     return `<div class="class-item">
-      <span class="class-day">${_DAY_LABEL[day] || day}</span>
-      <div class="class-info">
-        <div class="class-name">${c.title || 'Unnamed'}</div>
-        <div class="class-meta">${parts.join(' · ')}</div>
+      <div class="class-pip" style="background:${c.color||'#555'}"></div>
+      <div class="class-info" style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="class-name">${_sbEsc(c.title||'Unnamed')}</span>
+          <span class="class-level ${lvlCls}">${_CL_LEVEL_LABEL[lvl]||lvl}</span>
+          ${c.type ? `<span style="font-family:var(--font-mono);font-size:9px;color:#888">${_sbEsc(c.type)}</span>` : ''}
+        </div>
+        <div class="class-meta">${_sbEsc(days)} · ${parts.join(' · ')}</div>
+        ${c.description ? `<div class="class-meta" style="color:#666;margin-top:2px">${_sbEsc(c.description)}</div>` : ''}
       </div>
       <button class="tbl-action" onclick="_gdDeleteClass('${c.id}')" title="Delete">🗑️</button>
     </div>`;
@@ -2097,10 +2468,12 @@ window._gMembersTab = (tab) => {
 window._gSetupTab = (tab) => {
   document.querySelectorAll('#gym-setup-nav .nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('gstab-' + tab)?.classList.add('active');
-  ['gym','classes','modules','tiers','stripe','archive'].forEach(t =>
-    document.getElementById('gs-' + t).style.display = t === tab ? '' : 'none'
-  );
+  ['gym','staff','classes','modules','tiers','stripe','archive'].forEach(t => {
+    const el = document.getElementById('gs-' + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+  });
   if (tab === 'classes' && !_gymClasses.length) _gdLoadClasses();
+  if (tab === 'staff'   && !_gymStaff.length)   _gdLoadStaff();
 };
 
 window._copyCode = () => {
@@ -2724,6 +3097,10 @@ async function _sbRenderCalendar(body) {
   _gcMonth = new Date().getMonth();
   _gcSelectedDate = null;
   _gcSelectedEventId = null;
+
+  // Ensure classes are loaded (may already be loaded from Setup → Classes tab)
+  if (!_gymClasses.length) await _gdLoadClasses();
+
   _gcRenderMonthView(body);
   _gcSubscribeMonth(body);
 }
@@ -2783,9 +3160,20 @@ function _gcRepaintGrid() {
   const daysInMonth = new Date(_gcYear, _gcMonth+1, 0).getDate();
   const pad = n => String(n).padStart(2,'0');
 
-  // Build a map: date string → array of event type colors
+  // Build a map: date string → array of dot colors (events + class sessions)
   const dotMap = {};
   _gcEvents.forEach(ev => { (dotMap[ev.date] = dotMap[ev.date]||[]).push(_GC_TYPES[ev.type]?.color||'#999'); });
+  // Add class session dots — one grey dot per class that runs on that weekday
+  const activeCls = _gymClasses.filter(c => c.isActive !== false);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${_gcYear}-${pad(_gcMonth+1)}-${pad(d)}`;
+    const jsDay = new Date(_gcYear, _gcMonth, d).getDay(); // 0=Sun
+    activeCls.forEach(c => {
+      if ((c.days||[]).some(day => (_DAY_JS[day] ?? -1) === jsDay)) {
+        (dotMap[dateStr] = dotMap[dateStr]||[]).push(c.color || '#78909c');
+      }
+    });
+  }
 
   let cells = '';
   // Leading blanks
@@ -2810,24 +3198,73 @@ function _gcRepaintDayList() {
   if (_gcSelectedEventId) return; // detail view open — don't repaint list
 
   if (!_gcSelectedDate) {
-    // Show all events for the month
-    if (!_gcEvents.length) {
-      listEl.innerHTML = `<div style="padding:16px 18px;font-family:var(--font-mono);font-size:11px;color:#bbb">No events this month.</div>`;
+    const activeCls = _gymClasses.filter(c => c.isActive !== false);
+    const clsSummary = activeCls.length
+      ? `<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.8px;color:#aaa;padding:6px 16px 2px">RECURRING CLASSES</div>`
+        + activeCls.sort((a,b) => {
+            const da = _DAY_ORDER.indexOf((a.days||['mon'])[0]);
+            const db2= _DAY_ORDER.indexOf((b.days||['mon'])[0]);
+            return da !== db2 ? da - db2 : ((a.sessions||[])[0]?.time||'').localeCompare((b.sessions||[])[0]?.time||'');
+          }).map(c => {
+            const sess = (c.sessions||[])[0]||{};
+            const days = (c.days||[]).map(d=>_DAY_LABEL[d]||d).join(', ');
+            return `<div class="gc-class-row">
+              <div class="gc-class-pip" style="background:${c.color||'#78909c'}"></div>
+              <div><div class="gc-class-title">${_sbEsc(c.title||'Class')}</div>
+              <div class="gc-class-meta">${_sbEsc(days)} · ${sess.time||'—'} · ${sess.duration||60}min</div></div>
+            </div>`;
+          }).join('')
+      : '';
+    if (!_gcEvents.length && !activeCls.length) {
+      listEl.innerHTML = `<div style="padding:16px 18px;font-family:var(--font-mono);font-size:11px;color:#bbb">No classes or events this month.</div>`;
       return;
     }
-    listEl.innerHTML = `<div class="gc-day-heading">THIS MONTH</div>` + _gcEvents.map(ev => _gcEventRowHtml(ev)).join('');
+    const evSection = _gcEvents.length
+      ? `<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.8px;color:#aaa;padding:6px 16px 2px">EVENTS</div>`
+        + _gcEvents.map(ev => _gcEventRowHtml(ev)).join('')
+      : '';
+    listEl.innerHTML = `<div class="gc-day-heading">THIS MONTH</div>` + clsSummary + evSection;
     return;
   }
 
   const dayEvents = _gcEvents.filter(ev => ev.date === _gcSelectedDate);
   const pad = n => String(n).padStart(2,'0');
-  const d   = new Date(_gcSelectedDate + 'T12:00:00');
-  const label = d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+  const dObj  = new Date(_gcSelectedDate + 'T12:00:00');
+  const label = dObj.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+  const jsDay = dObj.getDay(); // 0=Sun
 
-  listEl.innerHTML = `<div class="gc-day-heading">${_sbEsc(label)}</div>` +
-    (dayEvents.length
-      ? dayEvents.map(ev => _gcEventRowHtml(ev)).join('')
-      : `<div style="padding:12px 18px;font-family:var(--font-mono);font-size:11px;color:#bbb">No events on this day.</div>`);
+  // Class sessions running on this weekday
+  const activeCls  = _gymClasses.filter(c => c.isActive !== false);
+  const dayClasses = activeCls.filter(c => (c.days||[]).some(day => (_DAY_JS[day] ?? -1) === jsDay));
+  const classRows  = dayClasses
+    .sort((a,b) => ((a.sessions||[])[0]?.time||'').localeCompare((b.sessions||[])[0]?.time||''))
+    .map(c => {
+      const sess = (c.sessions||[])[0] || {};
+      const parts = [
+        sess.duration ? `${sess.duration}min` : null,
+        c.level && c.level !== 'all' ? _CL_LEVEL_LABEL[c.level] : null,
+        c.room || null,
+        sess.instructor || null,
+        c.maxCapacity ? `max ${c.maxCapacity}` : null,
+      ].filter(Boolean);
+      return `<div class="gc-class-row">
+        <div class="gc-class-pip" style="background:${c.color||'#78909c'}"></div>
+        <div style="flex:1;min-width:0">
+          <div class="gc-class-title">${_sbEsc(c.title||'Class')}</div>
+          <div class="gc-class-meta">${sess.time||'—'} · ${_sbEsc(parts.join(' · '))}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  listEl.innerHTML = `<div class="gc-day-heading">${_sbEsc(label)}</div>`
+    + (classRows ? `<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.8px;color:#aaa;padding:6px 16px 2px">CLASSES</div>${classRows}` : '')
+    + (dayEvents.length
+        ? `<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.8px;color:#aaa;padding:6px 16px 2px">EVENTS</div>`
+          + dayEvents.map(ev => _gcEventRowHtml(ev)).join('')
+        : '')
+    + (!classRows && !dayEvents.length
+        ? `<div style="padding:12px 18px;font-family:var(--font-mono);font-size:11px;color:#bbb">No classes or events on this day.</div>`
+        : '');
 }
 
 function _gcEventRowHtml(ev) {
