@@ -2125,7 +2125,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.47';
+const PORTALS_VERSION = '1.48';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
@@ -7505,10 +7505,7 @@ let _tmTrainingTab = 'programs';
 async function _loadTeamPortal() {
   _portalType = 'team';
   _setPortalTypePill('team');
-  document.getElementById('coming-soon-screen').style.display = 'none';
-  document.querySelectorAll('.portal-panel').forEach(p => p.style.display = 'none');
-  const tp = document.getElementById('team-portal');
-  tp.style.display = 'flex';
+  _showPortal('team');
 
   // Find this user's team
   const uid = _authUid;
