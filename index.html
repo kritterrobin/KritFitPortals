@@ -1195,17 +1195,7 @@
 
     <!-- ══ PAYMENTS TAB ══ -->
     <div class="tab-panel" id="g-payments">
-      <div class="stat-row">
-        <div class="stat-card"><div class="stat-num" id="g-pay-paid">—</div><div class="stat-label">Paid</div></div>
-        <div class="stat-card"><div class="stat-num" id="g-pay-unpaid">—</div><div class="stat-label">Unpaid</div></div>
-        <div class="stat-card"><div class="stat-num" id="g-pay-overdue">—</div><div class="stat-label">Overdue</div></div>
-      </div>
-      <div class="section-title">Payment Overview</div>
-      <div id="g-payments-list" class="ph-card">
-        <div class="ph-icon">💳</div>
-        <div class="ph-title">Payment tracking</div>
-        Payment status is managed per member in the MEMBERS tab. Stripe integration coming soon.
-      </div>
+      <div id="g-pay-body" style="display:flex;flex-direction:column"></div>
     </div>
 
     <!-- ══ TRAINERS TAB ══ -->
@@ -1643,7 +1633,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.33';
+const PORTALS_VERSION = '1.34';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -4590,6 +4580,7 @@ window._gNav = (tab) => {
   if (tab === 'entryqr')   _gRenderEntryQR();
   if (tab === 'trainers')  _gRenderTrainers();
   if (tab === 'store')     _gRenderStore();
+  if (tab === 'payments')  _gRenderPaymentsTab();
   if (tab === 'finance')   _gFinanceTab('pl');
   if (tab === 'analytics') _gdLoadAnalytics();
 };
@@ -5678,6 +5669,29 @@ function _gcUpdateSidebarValue() {
   }
 }
 
+// ── Payments tab ──────────────────────────────────────
+window._gRenderPaymentsTab = () => {
+  const body = document.getElementById('g-pay-body');
+  if (!body) return;
+  if (!_gymData?.stripeAccountId) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:48px 20px">
+        <div style="font-size:52px;margin-bottom:16px">💳</div>
+        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:1px;margin-bottom:10px">STRIPE NOT CONNECTED</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;line-height:1.8;max-width:380px;margin:0 auto 24px">
+          Connect Stripe to accept membership payments and track billing status for every member.
+        </p>
+        <button onclick="window._gNav('setup');window._gSetupTab('stripe')"
+          style="background:#635bff;color:#fff;border:none;border-radius:6px;padding:12px 28px;font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer">
+          SET UP STRIPE →
+        </button>
+      </div>`;
+    return;
+  }
+  _blFilter = 'all';
+  _blRender(body);
+};
+
 // ── Billing / Revenue panel ────────────────────────────
 let _blFilter = 'all';  // 'all' | 'paid' | 'unpaid' | 'overdue'
 
@@ -5886,8 +5900,10 @@ function _blMemberRow(m) {
 
 window._blSetFilter = (f) => {
   _blFilter = f;
-  const body = document.getElementById('sb-panel-body');
-  if (body) _blRender(body);
+  const sbBody   = document.getElementById('sb-panel-body');
+  const mainBody = document.getElementById('g-pay-body');
+  if (sbBody   && sbBody.querySelector('.bl-stats'))   _blRender(sbBody);
+  else if (mainBody && mainBody.querySelector('.bl-stats')) _blRender(mainBody);
 };
 
 // ── Quick message a specific member ───────────────────
@@ -5956,8 +5972,10 @@ window._blExecuteCancel = async (memberId, memberName) => {
     document.getElementById('bl-cancel-modal')?.remove();
     // Refresh member data
     await _gdLoadMembers();
-    const body = document.getElementById('sb-panel-body');
-    if (body) _blRender(body);
+    const sbBody   = document.getElementById('sb-panel-body');
+    const mainBody = document.getElementById('g-pay-body');
+    if (sbBody   && sbBody.querySelector('.bl-stats'))   _blRender(sbBody);
+    else if (mainBody && mainBody.querySelector('.bl-stats')) _blRender(mainBody);
     alert(`${memberName}'s subscription has been cancelled.`);
   } catch(e) {
     if (btn) { btn.disabled = false; btn.textContent = 'CONFIRM CANCEL'; }
