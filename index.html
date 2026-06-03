@@ -74,7 +74,7 @@
     .nav {
       display:flex; overflow-x:auto; scrollbar-width:none;
       background:var(--s1); border-bottom:1px solid var(--border);
-      position:sticky; z-index:190;
+      flex-shrink:0;
     }
     .nav::-webkit-scrollbar { display:none; }
     .nav-btn {
@@ -899,7 +899,7 @@
        TRAINER PORTAL
   ══════════════════════════════════════════ -->
   <div class="portal-panel" id="trainer-portal">
-    <nav class="nav lv-hide" id="trainer-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
+    <nav class="nav lv-hide" id="trainer-top-nav" style="overflow-x:auto;scrollbar-width:none">
       <button class="nav-btn active" id="ttab-clients"  onclick="_tNav('clients')"> <span class="icon">👥</span>CLIENTS</button>
       <button class="nav-btn"        id="ttab-sessions" onclick="_tNav('sessions')"><span class="icon">📅</span>SESSIONS</button>
       <button class="nav-btn"        id="ttab-messages" onclick="_tNav('messages')"><span class="icon">💬</span>MESSAGES</button>
@@ -982,7 +982,7 @@
     <div id="g-role-badge" style="display:none;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:1px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-bottom:1px solid #bbdefb;text-align:center;flex-shrink:0"></div>
 
     <!-- NAV-1 -->
-    <nav class="nav" id="gym-top-nav" style="flex-shrink:0;overflow-x:auto;scrollbar-width:none;top:57px">
+    <nav class="nav" id="gym-top-nav" style="overflow-x:auto;scrollbar-width:none">
       <button class="nav-btn active" id="gtab-members"  onclick="_gNav('members')"> <span class="icon">👥</span>MEMBERS</button>
       <button class="nav-btn"        id="gtab-checkins" onclick="_gNav('checkins')"><span class="icon">✅</span>CHECK-INS</button>
       <button class="nav-btn"        id="gtab-entryqr"  onclick="_gNav('entryqr')"> <span class="icon">📷</span>ENTRY QR</button>
@@ -1559,7 +1559,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.24';
+const PORTALS_VERSION = '1.25';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
