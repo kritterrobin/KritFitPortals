@@ -852,16 +852,6 @@
           </div>
         </div>
 
-        <!-- REVENUE -->
-        <div class="sb-section" onclick="_sbGoRevenue()">
-          <div class="sb-icon">💰</div>
-          <div class="sb-body">
-            <div class="sb-label">REVENUE</div>
-            <div class="sb-value" id="sb-rev-value">— this month</div>
-            <div class="sb-sub"  id="sb-rev-sub"></div>
-          </div>
-        </div>
-
         <!-- NOTIFICATIONS -->
         <div class="sb-section" onclick="_sbOpen('notifications')">
           <div class="sb-icon">🔔</div>
@@ -1559,7 +1549,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.25';
+const PORTALS_VERSION = '1.26';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -3427,9 +3417,6 @@ function _anRenderRevenue() {
   setEl('an-rev-mrr',        currency + totalMRR.toFixed(2));
   setEl('an-rev-active',     active.length);
   setEl('an-rev-per-member', currency + avgPerMember.toFixed(2));
-  // Keep sidebar card in sync
-  setEl('sb-rev-value', currency + totalMRR.toFixed(0) + ' est./mo');
-  setEl('sb-rev-sub',   `${totalPaid} paid · ${totalUnpaid} unpaid · ${totalOverdue} overdue`);
 
   // ── Payment status grid ──
   const payGrid = document.getElementById('an-pay-grid');
@@ -3991,16 +3978,6 @@ window._sidebarToggle = () => {
 };
 
 // ── Sidebar overlay ────────────────────────────────────
-window._sbGoRevenue = () => {
-  if (_portalType === 'gym') {
-    // Navigate to Analytics → REVENUE tab (the authoritative detailed view)
-    _gNav('analytics');
-    setTimeout(() => _gAnalyticsTab('revenue'), 50);
-  } else {
-    _sbOpen('revenue');
-  }
-};
-
 window._sbOpen = async (section) => {
   const overlay = document.getElementById('sb-overlay');
   overlay.style.display = '';
@@ -5006,10 +4983,6 @@ function _sbUpdateRevenueCard() {
     .reduce((s, m) => s + (tierPriceMap[m.membershipTier] || 0), 0);
   const overdue = active.filter(m => m.payStatus === 'overdue').length;
   const unpaid  = active.filter(m => m.payStatus === 'unpaid' || !m.payStatus).length;
-  const revVal  = document.getElementById('sb-rev-value');
-  const revSub  = document.getElementById('sb-rev-sub');
-  if (revVal) revVal.textContent = `${currency}${mrr.toFixed(2)} est./mo`;
-  if (revSub) revSub.textContent = `${unpaid} unpaid · ${overdue} overdue`;
 }
 
 function _sbRenderBilling(body) {
@@ -5054,12 +5027,6 @@ async function _sbRenderRevenue(body) {
   const totalPaid  = active.filter(m => m.payStatus === 'paid').length;
   const totalUnpaid= active.filter(m => m.payStatus === 'unpaid' || !m.payStatus).length;
   const totalOverdue = active.filter(m => m.payStatus === 'overdue').length;
-
-  // Update sidebar card
-  const revVal = document.getElementById('sb-rev-value');
-  const revSub = document.getElementById('sb-rev-sub');
-  if (revVal) revVal.textContent = `${currency}${totalMRR.toFixed(2)} est./mo`;
-  if (revSub) revSub.textContent = `${totalPaid} paid · ${totalUnpaid} unpaid · ${totalOverdue} overdue`;
 
   const tierRows = tierStats.length ? tierStats.map(t => `
     <tr style="border-bottom:1px solid var(--border)">
@@ -5152,12 +5119,6 @@ function _blRender(body) {
     if (_blFilter === 'overdue')return m.payStatus === 'overdue';
     return true;
   });
-
-  // Update sidebar strip
-  const revVal = document.getElementById('sb-rev-value');
-  const revSub = document.getElementById('sb-rev-sub');
-  if (revVal) revVal.textContent = `${paid} paid · ${overdue} overdue`;
-  if (revSub) revSub.textContent = unpaid ? `${unpaid} unpaid` : '';
 
   body.innerHTML = `
     <!-- Stats bar -->
