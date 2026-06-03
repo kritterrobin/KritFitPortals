@@ -108,6 +108,18 @@
     .pay-overdue { background:#ffebee; color:#c62828; }
     .tbl-action { background:none; border:none; cursor:pointer; font-size:14px; padding:2px 4px; opacity:.5; }
     .tbl-action:hover { opacity:1; }
+    .tbl-act-archive  { font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:3px;border:1px solid #888;color:#888;background:none;cursor:pointer; }
+    .tbl-act-archive:hover  { border-color:#c62828;color:#c62828; }
+    .tbl-act-unsub    { font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:3px;border:1px solid #e65100;color:#e65100;background:none;cursor:pointer; }
+    .tbl-act-unsub:hover    { background:#e65100;color:#fff; }
+    .tbl-act-delete   { font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:3px;border:1px solid #c62828;color:#c62828;background:none;cursor:pointer; }
+    .tbl-act-delete:hover   { background:#c62828;color:#fff; }
+    /* Typed-confirmation modal */
+    #g-confirm-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;align-items:center;justify-content:center; }
+    #g-confirm-box { background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:28px 24px;width:min(380px,92vw);box-sizing:border-box; }
+    #g-confirm-word-hint { font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:6px; }
+    #g-confirm-input { width:100%;box-sizing:border-box;padding:9px 12px;font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:1.5px;border:2px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);text-transform:uppercase;margin-bottom:14px; }
+    #g-confirm-input:focus { outline:none;border-color:var(--accent); }
     /* Member select mode */
     .g-sel-col { display:none; width:34px; text-align:center; padding:6px 2px !important; cursor:pointer; font-size:16px; color:#ccc; user-select:none; }
     #gm-manage.g-select-mode .g-sel-col { display:table-cell; }
@@ -1076,6 +1088,7 @@
           <button class="btn" onclick="_gAddMember()">+ ADD MEMBER</button>
           <button class="btn-outline" onclick="_gExportCSV()">EXPORT CSV</button>
           <button class="btn-outline" id="g-member-msg-btn" onclick="_gToggleSelectMode()">✉ MESSAGE</button>
+          <button class="btn-outline" id="g-archive-btn" onclick="_gToggleArchiveView()">📦 ARCHIVED</button>
         </div>
 
         <!-- Select mode bar -->
@@ -1649,6 +1662,22 @@
 
   </div><!-- /gym-portal -->
 
+  <!-- Typed-confirmation modal (ARCHIVE / UNSUBSCRIBE / DELETE) -->
+  <div id="g-confirm-overlay" style="display:none">
+    <div id="g-confirm-box">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:8px" id="g-confirm-title">Confirm</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px" id="g-confirm-msg"></div>
+      <div id="g-confirm-word-hint"></div>
+      <input id="g-confirm-input" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
+             placeholder="Type here…" oninput="_gConfirmCheck(this)">
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="_gConfirmClose()" style="padding:8px 18px;border-radius:4px;border:1px solid var(--border);background:var(--s2);font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;color:var(--text)">CANCEL</button>
+        <button id="g-confirm-ok" disabled onclick="_gConfirmExecute(this)"
+                style="padding:8px 18px;border-radius:4px;border:none;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;background:#c62828;color:#fff;opacity:.35">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ GYM MODAL ══ -->
   <div id="g-modal" style="display:none;align-items:center;justify-content:center;padding:20px">
     <div id="g-modal-box">
@@ -1708,7 +1737,7 @@
 <script>
   // Stub onclick handlers until module loads
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
-   '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
+   '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gArchiveMember','_gDeleteArchivedMember','_gToggleArchiveView','_gConfirmModal','_gConfirmCheck','_gConfirmClose','_gConfirmExecute','_gExportCSV',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer','_gStripeConnect','_gRenderStripeSetup','_gLogoPickFile','_gLogoFileSelected','_gCropZoom','_gLogoCropCancel','_gLogoCropApply','_gLogoRemove',
    '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown','_gScanRefocus','_gToggleVoice','_gVoiceSettingsToggle','_gTestVoice','_gSaveVoiceSettings',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
@@ -1739,7 +1768,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.45';
+const PORTALS_VERSION = '1.46';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
@@ -2152,13 +2181,14 @@ async function _gdLoadMembers() {
     const memQ    = query(collection(db, 'gyms', _gymId, 'members'));
     const memSnap = await getDocs(memQ);
     _gymMembers   = memSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    _gdRenderMembers(_gymMembers);
+    _gRenderCurrentView();
 
-    // Stats
+    // Stats — exclude archived members
     const today    = new Date().toISOString().slice(0,10);
-    const active   = _gymMembers.filter(m => m.status === 'active').length;
-    const pending  = _gymMembers.filter(m => m.status === 'pending').length;
-    const trainers = _gymMembers.filter(m => m.isTrainer === true).length;
+    const live     = _gymMembers.filter(m => m.status !== 'left');
+    const active   = live.filter(m => m.status === 'active').length;
+    const pending  = live.filter(m => m.status === 'pending').length;
+    const trainers = live.filter(m => m.isTrainer === true).length;
     document.getElementById('g-stat-members').textContent  = active;
     document.getElementById('g-stat-pending').textContent  = pending;
     document.getElementById('g-stat-trainers').textContent = trainers;
@@ -2176,7 +2206,8 @@ async function _gdLoadMembers() {
 function _gdRenderMembers(members) {
   const tbody = document.getElementById('g-member-tbody');
   if (!members.length) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:#bbb;font-family:var(--font-mono)">No members yet — share your join code to get started.</td></tr>`;
+    const emptyMsg = _gArchiveView ? 'No archived members.' : 'No members yet — share your join code to get started.';
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:#bbb;font-family:var(--font-mono)">${emptyMsg}</td></tr>`;
     return;
   }
   tbody.innerHTML = members.map(m => {
@@ -2193,19 +2224,14 @@ function _gdRenderMembers(members) {
       <td><span class="pay-badge ${payClass}" onclick="_gdCyclePay(this,'${m.id}','${m.payStatus||'unpaid'}')">${(m.payStatus||'unpaid').toUpperCase()}</span></td>
       <td><input type="text" value="${m.payAmount||''}" onblur="_gdSave('${m.id}','payAmount',this.value)" style="max-width:60px"></td>
       <td><input type="text" value="${m.comment||''}" onblur="_gdSave('${m.id}','comment',this.value)" placeholder="notes…"></td>
-      <td><button class="tbl-action" onclick="_gdRemoveMember('${m.id}','${(m.name||'').replace(/'/g,'')}')" title="Remove">🗑️</button></td>
+      <td>${(() => { const sn = (m.name||'').replace(/'/g,'\\\''); const hs = !!m.stripeSubscriptionId; return _gArchiveView ? `<button class="tbl-act-delete" onclick="_gDeleteArchivedMember('${m.id}','${sn}')">DELETE</button>` : hs ? `<button class="tbl-act-unsub" onclick="_gArchiveMember('${m.id}','${sn}',true)">UNSUB</button>` : `<button class="tbl-act-archive" onclick="_gArchiveMember('${m.id}','${sn}',false)">ARCHIVE</button>`; })()}</td>
     </tr>`;
   }).join('');
 }
 
 window._gFilterMembers = () => {
   const q = document.getElementById('g-member-search').value.toLowerCase();
-  const filtered = q ? _gymMembers.filter(m =>
-    (m.name||'').toLowerCase().includes(q) ||
-    (m.code||'').toLowerCase().includes(q) ||
-    (m.comment||'').toLowerCase().includes(q)
-  ) : _gymMembers;
-  _gdRenderMembers(filtered);
+  _gRenderCurrentView(q);
 };
 
 // ── Member bulk messaging ──────────────────────────────
@@ -2222,7 +2248,7 @@ window._gToggleSelectMode = () => {
   document.getElementById('g-select-bar').style.display = _gSelectMode ? '' : 'none';
   const btn = document.getElementById('g-member-msg-btn');
   if (btn) btn.style.fontWeight = _gSelectMode ? '900' : '';
-  _gdRenderMembers(_gymMembers);
+  _gRenderCurrentView();
   _gUpdateSelectBar();
 };
 
@@ -2382,14 +2408,111 @@ window._gAddMember = () => {
   });
 };
 
-window._gdRemoveMember = async (memberId, name) => {
-  if (!confirm(`Remove ${name || 'this member'}?`)) return;
+// ── Archive view toggle ────────────────────────────────────────────────────
+let _gArchiveView = false;
+
+window._gToggleArchiveView = () => {
+  _gArchiveView = !_gArchiveView;
+  const btn = document.getElementById('g-archive-btn');
+  if (btn) {
+    btn.textContent  = _gArchiveView ? '← ACTIVE' : '📦 ARCHIVED';
+    btn.style.fontWeight = _gArchiveView ? '900' : '';
+    btn.style.color      = _gArchiveView ? 'var(--accent)' : '';
+  }
+  // Hide messaging tools when in archive view
+  const msgBtn = document.getElementById('g-member-msg-btn');
+  if (msgBtn) msgBtn.style.display = _gArchiveView ? 'none' : '';
+  if (_gSelectMode) _gToggleSelectMode();   // exit select mode if active
+  _gRenderCurrentView();
+};
+
+function _gRenderCurrentView(filter) {
+  const src = _gymMembers.filter(m => _gArchiveView ? m.status === 'left' : m.status !== 'left');
+  const q   = filter ?? document.getElementById('g-member-search')?.value?.toLowerCase() ?? '';
+  const out = q ? src.filter(m =>
+    (m.name||'').toLowerCase().includes(q) || (m.code||'').toLowerCase().includes(q) || (m.comment||'').toLowerCase().includes(q)
+  ) : src;
+  _gdRenderMembers(out);
+}
+
+// ── Typed-confirmation modal ───────────────────────────────────────────────
+let _gConfirmCb   = null;
+let _gConfirmWord = '';
+
+window._gConfirmModal = (title, msg, word, onConfirm) => {
+  _gConfirmWord = word.toUpperCase();
+  _gConfirmCb   = onConfirm;
+  document.getElementById('g-confirm-title').textContent    = title;
+  document.getElementById('g-confirm-msg').textContent      = msg;
+  document.getElementById('g-confirm-word-hint').textContent = `Type  ${word.toUpperCase()}  to confirm`;
+  const inp = document.getElementById('g-confirm-input');
+  inp.value = '';
+  const ok = document.getElementById('g-confirm-ok');
+  ok.textContent = word.toUpperCase();
+  ok.disabled    = true;
+  ok.style.opacity = '.35';
+  document.getElementById('g-confirm-overlay').style.display = 'flex';
+  setTimeout(() => inp.focus(), 60);
+};
+
+window._gConfirmCheck = (inp) => {
+  const match = inp.value.toUpperCase() === _gConfirmWord;
+  const ok = document.getElementById('g-confirm-ok');
+  ok.disabled    = !match;
+  ok.style.opacity = match ? '1' : '.35';
+};
+
+window._gConfirmClose = () => {
+  document.getElementById('g-confirm-overlay').style.display = 'none';
+  _gConfirmCb = null;
+};
+
+window._gConfirmExecute = async (btn) => {
+  if (!_gConfirmCb) return;
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '…';
   try {
-    const {deleteDoc,doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    await deleteDoc(d2(db,'gyms',_gymId,'members',memberId));
-    _gymMembers = _gymMembers.filter(m => m.id !== memberId);
-    _gdRenderMembers(_gymMembers);
-  } catch(e) { console.error('[Gym] remove member:', e); }
+    await _gConfirmCb();
+    _gConfirmClose();
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = orig;
+    toast('✗ ' + e.message);
+  }
+};
+
+// ── Archive a member (soft delete) ────────────────────────────────────────
+window._gArchiveMember = (memberId, name, hasStripe) => {
+  const word  = hasStripe ? 'UNSUBSCRIBE' : 'ARCHIVE';
+  const title = hasStripe ? 'Unsubscribe & Archive Member' : 'Archive Member';
+  const msg   = hasStripe
+    ? `${name || 'This member'} has an active Stripe subscription. Confirming will cancel their subscription and move them to the archive.`
+    : `${name || 'This member'} will be moved to the archive. They can be permanently deleted from there if needed.`;
+  _gConfirmModal(title, msg, word, async () => {
+    const {updateDoc, doc:d2, serverTimestamp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    // TODO: if hasStripe, call cancelMemberSubscription Cloud Function first
+    await updateDoc(d2(db, 'gyms', _gymId, 'members', memberId), { status: 'left', archivedAt: serverTimestamp() });
+    _gymMembers = _gymMembers.map(m => m.id === memberId ? { ...m, status: 'left' } : m);
+    _gRenderCurrentView();
+    toast(`${name || 'Member'} archived.`);
+  });
+};
+
+// ── Permanently delete an archived member ─────────────────────────────────
+window._gDeleteArchivedMember = (memberId, name) => {
+  _gConfirmModal(
+    'Permanently Delete Member',
+    `${name || 'This member'} and all their records will be permanently deleted. This cannot be undone.`,
+    'DELETE',
+    async () => {
+      const {deleteDoc, doc:d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await deleteDoc(d2(db, 'gyms', _gymId, 'members', memberId));
+      _gymMembers = _gymMembers.filter(m => m.id !== memberId);
+      _gRenderCurrentView();
+      toast(`${name || 'Member'} permanently deleted.`);
+    }
+  );
 };
 
 window._gExportCSV = () => {
