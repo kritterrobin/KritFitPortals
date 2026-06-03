@@ -817,6 +817,25 @@
     <div class="cs-desc">This portal is in active development. You'll be notified as soon as it launches. Your subscription will activate automatically.</div>
   </div>
 
+  <!-- ══ LOGO CROP MODAL ══ -->
+  <div id="logo-crop-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.82);align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:10px;padding:20px 20px 16px;width:min(340px,94vw);box-sizing:border-box">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:2px;text-align:center;margin-bottom:14px">CROP LOGO</div>
+      <canvas id="logo-crop-canvas" width="300" height="300"
+        style="display:block;width:300px;height:300px;border-radius:6px;cursor:grab;touch-action:none;margin:0 auto 12px;background:#111"></canvas>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span style="font-size:13px">🔍</span>
+        <input type="range" id="logo-crop-zoom" min="50" max="400" value="100" style="flex:1;accent-color:var(--accent)" oninput="_gCropZoom(this.value)">
+        <span style="font-size:13px">🔎</span>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:#bbb;text-align:center;margin-bottom:14px;letter-spacing:1px">DRAG TO PAN · SCROLL OR PINCH TO ZOOM</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="_gLogoCropCancel()" style="flex:1;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:1px;padding:10px;background:none;border:2px solid #ddd;border-radius:4px;cursor:pointer;color:#888">CANCEL</button>
+        <button onclick="_gLogoCropApply(this)" style="flex:1;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:1px;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer">CROP &amp; SAVE</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ══════════════════════════════════════════
        PORTAL WORKSPACE (sidebar + content)
   ══════════════════════════════════════════ -->
@@ -1210,6 +1229,25 @@
       <!-- PROFILE -->
       <div id="gs-gym">
         <div class="section-title">Gym Information</div>
+
+        <!-- Logo upload -->
+        <div style="margin-bottom:18px">
+          <div class="form-label" style="margin-bottom:8px">GYM LOGO</div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div id="gs-logo-preview" onclick="_gLogoPickFile()"
+              style="width:80px;height:80px;border-radius:8px;border:2px dashed #ddd;background:var(--s1);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer">
+              <span id="gs-logo-ph" style="font-size:30px;opacity:.3;pointer-events:none">🏢</span>
+              <img id="gs-logo-img" style="display:none;width:100%;height:100%;object-fit:cover;pointer-events:none" alt="Logo">
+            </div>
+            <div>
+              <button class="btn-outline" onclick="_gLogoPickFile()" style="font-size:11px;padding:6px 14px">📷 UPLOAD LOGO</button>
+              <div style="font-family:var(--font-mono);font-size:10px;color:#bbb;margin-top:6px;line-height:1.7">Square crop · JPEG 192×192<br>Cached on device after first load</div>
+              <button id="gs-logo-remove-btn" onclick="_gLogoRemove()" style="display:none;margin-top:6px;background:none;border:none;font-family:var(--font-mono);font-size:10px;color:#c62828;cursor:pointer;padding:0">✕ Remove logo</button>
+            </div>
+          </div>
+          <input type="file" id="gs-logo-input" accept="image/*" style="display:none" onchange="_gLogoFileSelected(this)">
+        </div>
+
         <div class="form-row">
           <div class="form-group"><label class="form-label">Gym Name</label><input type="text" id="gs-name" class="form-input" placeholder="e.g. Peak Performance Gym"></div>
           <div class="form-group"><label class="form-label">URL Slug</label><input type="text" id="gs-slug" class="form-input" placeholder="e.g. peak-performance"></div>
@@ -1226,7 +1264,6 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Currency Symbol</label><input type="text" id="gs-currency" class="form-input" placeholder="$" style="max-width:80px"></div>
-          <div class="form-group"><label class="form-label">Logo URL</label><input type="text" id="gs-logo" class="form-input" placeholder="https://…/logo.png"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Peak Capacity (floor)</label><input type="number" id="gs-peakcap" class="form-input" placeholder="e.g. 80" min="1" style="max-width:120px"></div>
@@ -1576,7 +1613,7 @@
   // Stub onclick handlers until module loads
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
-   '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer','_gStripeConnect','_gRenderStripeSetup',
+   '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer','_gStripeConnect','_gRenderStripeSetup','_gLogoPickFile','_gLogoFileSelected','_gCropZoom','_gLogoCropCancel','_gLogoCropApply','_gLogoRemove',
    '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown','_gScanRefocus','_gToggleVoice','_gVoiceSettingsToggle','_gTestVoice','_gSaveVoiceSettings',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
@@ -1606,7 +1643,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.31';
+const PORTALS_VERSION = '1.32';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2129,7 +2166,7 @@ function _gdPopulateSetup() {
   document.getElementById('gs-website').value  = g.website || '';
   document.getElementById('gs-address').value  = g.address || '';
   document.getElementById('gs-currency').value = g.currency || '$';
-  document.getElementById('gs-logo').value     = g.logoUrl || '';
+  _gLogoLoad();
   if (document.getElementById('gs-peakcap')) document.getElementById('gs-peakcap').value = g.peakCapacity || '';
   if (document.getElementById('gs-founded')) document.getElementById('gs-founded').value = g.foundedYear || '';
 
@@ -2260,7 +2297,6 @@ window._gSaveAbout = async () => {
     website:     document.getElementById('gs-website').value.trim(),
     address:     document.getElementById('gs-address').value.trim(),
     currency:    document.getElementById('gs-currency').value.trim() || '$',
-    logoUrl:     document.getElementById('gs-logo').value.trim(),
     gymRules:    document.getElementById('gs-rules')?.value.trim() || '',
     joinPolicy:  document.querySelector('input[name="gs-join-policy"]:checked')?.value || 'open',
     specialties: _gymSpecialties,
@@ -3157,6 +3193,216 @@ function _gdRenderPortalUsers() {
     </div>`;
   }).join('');
 }
+
+// ── Minimal IDB for portals (logo + future caches) ───────
+const _pidb = (() => {
+  let _db = null;
+  const _open = () => new Promise((res, rej) => {
+    if (_db) return res(_db);
+    const r = indexedDB.open('kf-portals-cache', 1);
+    r.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+    r.onsuccess = e => { _db = e.target.result; res(_db); };
+    r.onerror   = () => rej(new Error('IDB open failed'));
+  });
+  return {
+    get: async k => { try { const db = await _open(); return await new Promise(res => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result ?? null); r.onerror = () => res(null); }); } catch { return null; } },
+    set: async (k, v) => { try { const db = await _open(); await new Promise(res => { const tx = db.transaction('kv','readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = res; }); } catch(e) { console.warn('IDB set:', e); } },
+    del: async k => { try { const db = await _open(); await new Promise(res => { const tx = db.transaction('kv','readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete = res; tx.onerror = res; }); } catch {} },
+  };
+})();
+
+// ── Gym Logo — upload / crop / cache ─────────────────────
+const _CROP_CANVAS = 300;  // display size of crop canvas
+const _LOGO_OUT    = 192;  // final output px
+let _cropImg = null, _cropScale = 1, _cropOffX = 0, _cropOffY = 0, _cropDragState = null;
+
+window._gLogoPickFile = () => document.getElementById('gs-logo-input')?.click();
+
+window._gLogoFileSelected = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      _cropImg   = img;
+      const s    = Math.max(_CROP_CANVAS / img.naturalWidth, _CROP_CANVAS / img.naturalHeight);
+      _cropScale = s;
+      _cropOffX  = 0;
+      _cropOffY  = 0;
+      const zoom = document.getElementById('logo-crop-zoom');
+      if (zoom) zoom.value = Math.min(400, Math.round(s * 100));
+      _gCropBindEvents();
+      _gCropDraw();
+      document.getElementById('logo-crop-modal').style.display = 'flex';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+function _gCropDraw() {
+  const canvas = document.getElementById('logo-crop-canvas');
+  if (!canvas || !_cropImg) return;
+  const ctx = canvas.getContext('2d');
+  const S = _CROP_CANVAS;
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, S, S);
+  const w = _cropImg.naturalWidth  * _cropScale;
+  const h = _cropImg.naturalHeight * _cropScale;
+  ctx.drawImage(_cropImg, (S - w) / 2 + _cropOffX, (S - h) / 2 + _cropOffY, w, h);
+}
+
+function _gCropClamp() {
+  if (!_cropImg) return;
+  const S = _CROP_CANVAS;
+  const maxX = Math.max(0, (_cropImg.naturalWidth  * _cropScale - S) / 2);
+  const maxY = Math.max(0, (_cropImg.naturalHeight * _cropScale - S) / 2);
+  _cropOffX = Math.max(-maxX, Math.min(maxX, _cropOffX));
+  _cropOffY = Math.max(-maxY, Math.min(maxY, _cropOffY));
+}
+
+function _gCropBindEvents() {
+  const canvas = document.getElementById('logo-crop-canvas');
+  if (!canvas) return;
+  canvas.onmousedown = e => { _cropDragState = { mx: e.clientX, my: e.clientY, ox: _cropOffX, oy: _cropOffY }; canvas.style.cursor = 'grabbing'; };
+  canvas.onmousemove = e => {
+    if (!_cropDragState) return;
+    _cropOffX = _cropDragState.ox + (e.clientX - _cropDragState.mx);
+    _cropOffY = _cropDragState.oy + (e.clientY - _cropDragState.my);
+    _gCropClamp(); _gCropDraw();
+  };
+  canvas.onmouseup = canvas.onmouseleave = () => { _cropDragState = null; canvas.style.cursor = 'grab'; };
+  canvas.onwheel = e => {
+    e.preventDefault();
+    const minS = !_cropImg ? 0.1 : Math.max(_CROP_CANVAS / _cropImg.naturalWidth, _CROP_CANVAS / _cropImg.naturalHeight) * 0.5;
+    _cropScale = Math.max(minS, Math.min(_cropScale * (e.deltaY > 0 ? 0.92 : 1.08), 8));
+    const z = document.getElementById('logo-crop-zoom');
+    if (z) z.value = Math.min(400, Math.round(_cropScale * 100));
+    _gCropClamp(); _gCropDraw();
+  };
+  let _tLast = null, _pinchD = null;
+  canvas.ontouchstart = e => {
+    e.preventDefault();
+    if (e.touches.length === 1) _tLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    else if (e.touches.length === 2) _pinchD = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  };
+  canvas.ontouchmove = e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && _tLast) {
+      _cropOffX += e.touches[0].clientX - _tLast.x;
+      _cropOffY += e.touches[0].clientY - _tLast.y;
+      _tLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      _gCropClamp(); _gCropDraw();
+    } else if (e.touches.length === 2 && _pinchD !== null) {
+      const d2 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const minS = !_cropImg ? 0.1 : Math.max(_CROP_CANVAS / _cropImg.naturalWidth, _CROP_CANVAS / _cropImg.naturalHeight) * 0.5;
+      _cropScale = Math.max(minS, Math.min(_cropScale * (d2 / _pinchD), 8));
+      _pinchD = d2; _gCropClamp(); _gCropDraw();
+    }
+  };
+  canvas.ontouchend = () => { _tLast = null; _pinchD = null; };
+}
+
+window._gCropZoom = (val) => {
+  if (!_cropImg) return;
+  const minS = Math.max(_CROP_CANVAS / _cropImg.naturalWidth, _CROP_CANVAS / _cropImg.naturalHeight) * 0.5;
+  _cropScale = Math.max(minS, parseFloat(val) / 100);
+  _gCropClamp(); _gCropDraw();
+};
+
+window._gLogoCropCancel = () => {
+  document.getElementById('logo-crop-modal').style.display = 'none';
+  _cropImg = null;
+};
+
+window._gLogoCropApply = async (btn) => {
+  if (!_cropImg) return;
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const out = document.createElement('canvas');
+    out.width = out.height = _LOGO_OUT;
+    const ctx   = out.getContext('2d');
+    const ratio = _LOGO_OUT / _CROP_CANVAS;
+    const w = _cropImg.naturalWidth  * _cropScale * ratio;
+    const h = _cropImg.naturalHeight * _cropScale * ratio;
+    const x = (_LOGO_OUT - w) / 2 + _cropOffX * ratio;
+    const y = (_LOGO_OUT - h) / 2 + _cropOffY * ratio;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, _LOGO_OUT, _LOGO_OUT);
+    ctx.drawImage(_cropImg, x, y, w, h);
+    const dataUrl = out.toDataURL('image/jpeg', 0.75);
+    document.getElementById('logo-crop-modal').style.display = 'none';
+    _cropImg = null;
+    await _gLogoSave(dataUrl);
+  } catch(e) {
+    console.error('[Logo] crop apply:', e);
+    toast('Logo crop failed: ' + e.message);
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+};
+
+async function _gLogoSave(dataUrl) {
+  if (!_gymId) return;
+  const version = (_gymData?.logoVersion || 0) + 1;
+  try {
+    const { updateDoc, doc: d2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db, 'gyms', _gymId), { logoBase64: dataUrl, logoVersion: version });
+    _gymData.logoBase64  = dataUrl;
+    _gymData.logoVersion = version;
+    await _pidb.set(`gym_logo_${_gymId}`, { version, base64: dataUrl });
+    _gLogoRender(dataUrl);
+    toast('✓ Logo saved');
+  } catch(e) {
+    console.error('[Logo] save:', e);
+    toast('Logo save failed: ' + e.message);
+  }
+}
+
+async function _gLogoLoad() {
+  if (!_gymId) return;
+  const version = _gymData?.logoVersion;
+  if (!version) { _gLogoRender(null); return; }
+  // Try IDB first (zero Firestore read if cached)
+  const cached = await _pidb.get(`gym_logo_${_gymId}`);
+  if (cached?.version === version && cached?.base64) { _gLogoRender(cached.base64); return; }
+  // Fall back to gymData (already in memory from the gym doc read)
+  const b64 = _gymData?.logoBase64;
+  if (b64) {
+    _gLogoRender(b64);
+    _pidb.set(`gym_logo_${_gymId}`, { version, base64: b64 });
+  }
+}
+
+function _gLogoRender(dataUrl) {
+  const img  = document.getElementById('gs-logo-img');
+  const ph   = document.getElementById('gs-logo-ph');
+  const rmbtn = document.getElementById('gs-logo-remove-btn');
+  if (dataUrl) {
+    if (img)   { img.src = dataUrl; img.style.display = ''; }
+    if (ph)    ph.style.display = 'none';
+    if (rmbtn) rmbtn.style.display = '';
+  } else {
+    if (img)   img.style.display = 'none';
+    if (ph)    ph.style.display = '';
+    if (rmbtn) rmbtn.style.display = 'none';
+  }
+}
+
+window._gLogoRemove = async () => {
+  if (!_gymId || !confirm('Remove the gym logo?')) return;
+  try {
+    const { updateDoc, doc: d2, deleteField } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db, 'gyms', _gymId), { logoBase64: deleteField(), logoVersion: deleteField() });
+    _gymData.logoBase64  = null;
+    _gymData.logoVersion = null;
+    await _pidb.del(`gym_logo_${_gymId}`);
+    _gLogoRender(null);
+    toast('Logo removed');
+  } catch(e) { toast('Remove failed: ' + e.message); }
+};
 
 // ── Stripe Connect Setup ─────────────────────────────────
 async function _gRenderStripeSetup() {
