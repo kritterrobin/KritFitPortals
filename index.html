@@ -1077,20 +1077,52 @@
 
     <!-- ══ CHECK-INS TAB ══ -->
     <div class="tab-panel" id="g-checkins">
-      <div class="section-title">Today's Check-Ins</div>
+
+      <!-- Top bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="section-title" style="margin:0;border:none;padding:0">Today's Check-Ins</div>
+        <button id="g-scanner-mode-btn" onclick="_gToggleScannerMode()" style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 14px;border:2px solid var(--accent);background:none;color:var(--accent);border-radius:4px;cursor:pointer">📡 SCANNER MODE</button>
+      </div>
+
+      <!-- Class selector — shared by both scanner and manual modes -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <label style="font-family:var(--font-mono);font-size:10px;color:#aaa;letter-spacing:1px;white-space:nowrap">CLASS:</label>
+        <select id="g-ci-class-select" class="form-input" style="flex:1;max-width:280px;font-family:var(--font-mono);font-size:11px;padding:7px 10px;border:2px solid #ddd;border-radius:4px;background:#fff">
+          <option value="">General / No class</option>
+        </select>
+      </div>
+
+      <!-- ── SCANNER STATION (hidden until activated) ── -->
+      <div id="g-scanner-station" style="display:none;margin-bottom:20px">
+        <!-- Invisible input captures scanner keystrokes -->
+        <input id="g-scan-input" type="text" autocomplete="off"
+          style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none"
+          onkeydown="_gScanKeydown(event)"
+          onblur="setTimeout(()=>{if(_scannerModeActive)document.getElementById('g-scan-input').focus();},40)">
+        <!-- Feedback panel -->
+        <div id="g-scan-feedback" style="border:2px solid #e0e0e0;border-radius:8px;padding:36px 20px;text-align:center;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .25s,border-color .25s,color .25s;color:#ccc">
+          <div style="font-size:34px;line-height:1;opacity:.35">📡</div>
+          <div style="font-family:var(--font-display);font-size:22px;letter-spacing:3px;margin-top:10px;opacity:.35">READY TO SCAN</div>
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;margin-top:6px;opacity:.25">POINT SCANNER AT MEMBER QR OR BARCODE</div>
+        </div>
+      </div>
+
+      <!-- ── TODAY'S LIST ── -->
       <div id="g-ci-today-list">
         <div class="ph-card"><div class="ph-icon">✅</div><div class="ph-title">Loading…</div></div>
       </div>
-      <div class="section-title" style="margin-top:24px">Manual Check-In</div>
-      <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Enter a member name or code to log a check-in. Select the class if applicable.</p>
-      <div class="toolbar" style="flex-wrap:wrap">
-        <input type="text" id="g-ci-manual-input" placeholder="Member name or code…" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')_gManualCheckin()">
-        <select id="g-ci-class-select" class="form-input" style="flex:0 0 auto;min-width:160px;font-family:var(--font-mono);font-size:11px;padding:7px 10px;border:2px solid #ddd;border-radius:4px;background:#fff">
-          <option value="">General / No class</option>
-        </select>
-        <button class="btn" id="g-ci-manual-btn" onclick="_gManualCheckin()">CHECK IN</button>
+
+      <!-- ── MANUAL CHECK-IN (hidden in scanner mode) ── -->
+      <div id="g-manual-section">
+        <div class="section-title" style="margin-top:24px">Manual Check-In</div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Enter a member name or code to log a check-in.</p>
+        <div class="toolbar">
+          <input type="text" id="g-ci-manual-input" placeholder="Member name or code…" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')_gManualCheckin()">
+          <button class="btn" id="g-ci-manual-btn" onclick="_gManualCheckin()">CHECK IN</button>
+        </div>
+        <div id="g-ci-manual-result"></div>
       </div>
-      <div id="g-ci-manual-result"></div>
+
     </div>
 
     <!-- ══ ENTRY QR TAB ══ -->
@@ -1505,7 +1537,7 @@
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer',
-   '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin',
+   '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
    '_showSubscriptions','_subsClose',
@@ -1534,7 +1566,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.27';
+const PORTALS_VERSION = '1.28';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1754,6 +1786,9 @@ let _gymPortalUsers  = [];
 let _gymRole         = '';   // role of the currently signed-in user for this gym
 let _gymPerms        = {};   // resolved permission set
 let _gymCheckins30   = [];   // last 30 days of check-ins — loaded on analytics open
+let _scannerModeActive = false;
+let _scannerStaleTimer = null;
+let _scannerFbTimer    = null;
 let _chartInstances  = {};   // Chart.js instance registry — destroy before recreating
 
 // ── Role permission bundles ────────────────────────────
@@ -2425,6 +2460,118 @@ async function _gLoadCheckins() {
       </div>`;
     }).join('');
   } catch(e) { console.error('[Gym] load checkins:', e); }
+}
+
+// ── Barcode / QR Scanner Mode ───────────────────────────
+window._gToggleScannerMode = () => {
+  _scannerModeActive = !_scannerModeActive;
+  const btn     = document.getElementById('g-scanner-mode-btn');
+  const station = document.getElementById('g-scanner-station');
+  const manual  = document.getElementById('g-manual-section');
+  if (_scannerModeActive) {
+    btn.textContent    = '✕ EXIT SCANNER MODE';
+    btn.style.background  = '#c62828';
+    btn.style.borderColor = '#c62828';
+    btn.style.color       = '#fff';
+    station.style.display = '';
+    manual.style.display  = 'none';
+    setTimeout(() => document.getElementById('g-scan-input')?.focus(), 50);
+  } else {
+    btn.textContent    = '📡 SCANNER MODE';
+    btn.style.background  = 'none';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color       = 'var(--accent)';
+    station.style.display = 'none';
+    manual.style.display  = '';
+    clearTimeout(_scannerStaleTimer);
+    clearTimeout(_scannerFbTimer);
+  }
+};
+
+window._gScanKeydown = (e) => {
+  clearTimeout(_scannerStaleTimer);
+  if (e.key === 'Enter') {
+    const val = e.target.value.trim();
+    e.target.value = '';
+    if (val) _gProcessScan(val);
+    return;
+  }
+  // Clear stale partial input after 2s with no Enter (handles disconnected scanners)
+  _scannerStaleTimer = setTimeout(() => { e.target.value = ''; }, 2000);
+};
+
+async function _gProcessScan(raw) {
+  if (!_gymId || !_scannerModeActive) return;
+  // Strip kritfit-member: prefix — this is what the KritFit app encodes in its QR
+  const uid    = raw.startsWith('kritfit-member:') ? raw.replace('kritfit-member:', '') : null;
+  const member = uid
+    ? _gymMembers.find(m => m.uid === uid)
+    : _gymMembers.find(m =>
+        (m.code || '').toLowerCase() === raw.toLowerCase() ||
+        (m.name || '').toLowerCase() === raw.toLowerCase()
+      );
+  const today   = new Date().toISOString().slice(0, 10);
+  const classId = document.getElementById('g-ci-class-select')?.value || null;
+  const isActive = member?.status === 'active';
+  const status   = !member ? 'unknown' : isActive ? 'valid' : 'expired';
+  const data = {
+    name:        member?.name || (uid ? uid.substring(0,8).toUpperCase() : raw),
+    date:        today,
+    hour:        new Date().getHours(),
+    timestamp:   serverTimestamp(),
+    status,
+    classId:     classId || null,
+    memberCode:  member?.code || raw,
+    memberDocId: member?.id   || null,
+    uid:         uid || member?.uid || null,
+  };
+  try {
+    await addDoc(collection(db, 'gyms', _gymId, 'checkins'), data);
+    if (member?.id) {
+      const {updateDoc: upd, doc: d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      upd(d2(db,'gyms',_gymId,'members',member.id), { lastCheckin: today }).catch(()=>{});
+    }
+    const fbType = !member ? 'unknown' : isActive ? 'success' : 'expired';
+    _gScanFeedback(fbType, data.name);
+    document.getElementById('g-stat-checkins').textContent =
+      (parseInt(document.getElementById('g-stat-checkins').textContent) || 0) + 1;
+    _gLoadCheckins();
+  } catch(e) {
+    _gScanFeedback('error', e.message);
+    console.error('[Gym] scanner check-in:', e);
+  } finally {
+    setTimeout(() => { if (_scannerModeActive) document.getElementById('g-scan-input')?.focus(); }, 80);
+  }
+}
+
+function _gScanFeedback(type, label) {
+  const fb = document.getElementById('g-scan-feedback');
+  if (!fb) return;
+  const cfg = {
+    success: { bg:'#e8f5e9', border:'#2e7d32', color:'#2e7d32', icon:'✓', tag:'ACTIVE',   msg: label },
+    expired: { bg:'#fff3e0', border:'#e65100', color:'#e65100', icon:'⚠', tag:'EXPIRED',  msg: label },
+    unknown: { bg:'#fff8e1', border:'#f9a825', color:'#f57f17', icon:'?', tag:'UNKNOWN',  msg: label },
+    error:   { bg:'#ffebee', border:'#c62828', color:'#c62828', icon:'✕', tag:'ERROR',    msg: label },
+  }[type];
+  fb.style.background  = cfg.bg;
+  fb.style.borderColor = cfg.border;
+  fb.style.color       = cfg.color;
+  const time = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  fb.innerHTML = `
+    <div style="font-size:40px;line-height:1">${cfg.icon}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;margin-top:10px">${cfg.msg}</div>
+    <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:2px;margin-top:6px;opacity:.7">${cfg.tag} · ${time}</div>
+  `;
+  clearTimeout(_scannerFbTimer);
+  _scannerFbTimer = setTimeout(() => {
+    fb.style.background  = '';
+    fb.style.borderColor = '#e0e0e0';
+    fb.style.color       = '#ccc';
+    fb.innerHTML = `
+      <div style="font-size:34px;line-height:1;opacity:.35">📡</div>
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:3px;margin-top:10px;opacity:.35">READY TO SCAN</div>
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;margin-top:6px;opacity:.25">POINT SCANNER AT MEMBER QR OR BARCODE</div>`;
+  }, 3500);
 }
 
 // ── Entry QR ────────────────────────────────────────────
