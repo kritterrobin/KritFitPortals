@@ -1099,12 +1099,54 @@
           style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none"
           onkeydown="_gScanKeydown(event)"
           onblur="setTimeout(()=>{if(_scannerModeActive)document.getElementById('g-scan-input').focus();},40)">
+        <!-- Scanner connection status -->
+        <div id="g-scan-status" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-family:var(--font-mono);font-size:11px;color:#bbb;letter-spacing:1px">
+          <span id="g-scan-status-dot" style="width:8px;height:8px;border-radius:50%;background:#ddd;flex-shrink:0;transition:background .3s"></span>
+          <span id="g-scan-status-text">WAITING FOR SCANNER</span>
+          <span style="color:#ddd;margin-left:4px;font-size:10px">— USB or wireless scanner will connect automatically</span>
+        </div>
+
         <!-- Feedback panel -->
         <div id="g-scan-feedback" style="border:2px solid #e0e0e0;border-radius:8px;padding:36px 20px;text-align:center;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .25s,border-color .25s,color .25s;color:#ccc">
           <div style="font-size:34px;line-height:1;opacity:.35">📡</div>
           <div style="font-family:var(--font-display);font-size:22px;letter-spacing:3px;margin-top:10px;opacity:.35">READY TO SCAN</div>
           <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;margin-top:6px;opacity:.25">POINT SCANNER AT MEMBER QR OR BARCODE</div>
         </div>
+
+        <!-- Voice bar -->
+        <div style="margin-top:10px;border:1px solid var(--border);border-radius:6px;background:var(--s1)">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:15px">🔊</span>
+              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:1px;color:#888">VOICE</span>
+              <div id="g-voice-toggle" class="report-chk" style="font-family:var(--font-mono);font-size:11px;padding:3px 10px" onclick="_gToggleVoice(this)">
+                <div class="rpt-box" style="width:13px;height:13px;border-radius:2px;flex-shrink:0"></div>&nbsp;OFF
+              </div>
+            </div>
+            <button onclick="_gVoiceSettingsToggle()" style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;background:none;border:1px solid #ddd;border-radius:3px;padding:3px 10px;cursor:pointer;color:#888">⚙ PHRASES</button>
+          </div>
+          <!-- Expandable phrase editor -->
+          <div id="g-voice-settings" style="display:none;padding:12px 12px 14px;border-top:1px solid var(--border)">
+            <div style="display:grid;gap:10px">
+              <div>
+                <div style="font-family:var(--font-mono);font-size:10px;color:#aaa;letter-spacing:1px;margin-bottom:5px">✓ SUCCESS PHRASE</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="g-voice-welcome" placeholder="Welcome" style="flex:1;font-family:var(--font-mono);font-size:12px;padding:7px 10px;border:2px solid #ddd;border-radius:4px;background:#fff">
+                  <button onclick="_gTestVoice('welcome')" style="font-family:var(--font-mono);font-size:11px;font-weight:700;background:none;border:2px solid var(--accent);color:var(--accent);border-radius:4px;padding:6px 12px;cursor:pointer;white-space:nowrap">▶ TEST</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:10px;color:#aaa;letter-spacing:1px;margin-bottom:5px">⚠ PROBLEM PHRASE</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="g-voice-problem" placeholder="Please see the assistant" style="flex:1;font-family:var(--font-mono);font-size:12px;padding:7px 10px;border:2px solid #ddd;border-radius:4px;background:#fff">
+                  <button onclick="_gTestVoice('problem')" style="font-family:var(--font-mono);font-size:11px;font-weight:700;background:none;border:2px solid #e65100;color:#e65100;border-radius:4px;padding:6px 12px;cursor:pointer;white-space:nowrap">▶ TEST</button>
+                </div>
+              </div>
+            </div>
+            <button onclick="_gSaveVoiceSettings(this)" style="margin-top:12px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:1px;background:var(--accent);color:#fff;border:none;border-radius:4px;padding:8px 20px;cursor:pointer">SAVE PHRASES</button>
+          </div>
+        </div>
+
       </div>
 
       <!-- ── TODAY'S LIST ── -->
@@ -1537,7 +1579,7 @@
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer',
-   '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown',
+   '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown','_gToggleVoice','_gVoiceSettingsToggle','_gTestVoice','_gSaveVoiceSettings',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
    '_showSubscriptions','_subsClose',
@@ -1566,7 +1608,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.28';
+const PORTALS_VERSION = '1.29';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2475,6 +2517,7 @@ window._gToggleScannerMode = () => {
     btn.style.color       = '#fff';
     station.style.display = '';
     manual.style.display  = 'none';
+    _gRestoreVoiceToggle();
     setTimeout(() => document.getElementById('g-scan-input')?.focus(), 50);
   } else {
     btn.textContent    = '📡 SCANNER MODE';
@@ -2488,20 +2531,38 @@ window._gToggleScannerMode = () => {
   }
 };
 
+let _scanFirstKeyAt = 0;
 window._gScanKeydown = (e) => {
   clearTimeout(_scannerStaleTimer);
   if (e.key === 'Enter') {
-    const val = e.target.value.trim();
+    const val     = e.target.value.trim();
+    const elapsed = _scanFirstKeyAt ? Date.now() - _scanFirstKeyAt : 999;
+    _scanFirstKeyAt = 0;
     e.target.value = '';
-    if (val) _gProcessScan(val);
+    if (val) _gProcessScan(val, elapsed);
     return;
   }
+  if (!_scanFirstKeyAt) _scanFirstKeyAt = Date.now();
   // Clear stale partial input after 2s with no Enter (handles disconnected scanners)
-  _scannerStaleTimer = setTimeout(() => { e.target.value = ''; }, 2000);
+  _scannerStaleTimer = setTimeout(() => { e.target.value = ''; _scanFirstKeyAt = 0; }, 2000);
 };
 
-async function _gProcessScan(raw) {
+let _scannerStatusTimer = null;
+async function _gProcessScan(raw, elapsed = 999) {
   if (!_gymId || !_scannerModeActive) return;
+  // Update connection status — fast input (<100ms) = scanner hardware confirmed
+  const isHardwareScanner = elapsed < 100;
+  const dot  = document.getElementById('g-scan-status-dot');
+  const txt  = document.getElementById('g-scan-status-text');
+  if (dot && txt) {
+    dot.style.background = isHardwareScanner ? '#2e7d32' : '#f9a825';
+    txt.textContent      = isHardwareScanner ? 'SCANNER ACTIVE' : 'MANUAL INPUT';
+    clearTimeout(_scannerStatusTimer);
+    _scannerStatusTimer = setTimeout(() => {
+      dot.style.background = '#ddd';
+      txt.textContent      = 'WAITING FOR SCANNER';
+    }, 5000);
+  }
   // Strip kritfit-member: prefix — this is what the KritFit app encodes in its QR
   const uid    = raw.startsWith('kritfit-member:') ? raw.replace('kritfit-member:', '') : null;
   const member = uid
@@ -2562,6 +2623,7 @@ function _gScanFeedback(type, label) {
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;margin-top:10px">${cfg.msg}</div>
     <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:2px;margin-top:6px;opacity:.7">${cfg.tag} · ${time}</div>
   `;
+  _gScanSpeak(type);
   clearTimeout(_scannerFbTimer);
   _scannerFbTimer = setTimeout(() => {
     fb.style.background  = '';
@@ -2572,6 +2634,90 @@ function _gScanFeedback(type, label) {
       <div style="font-family:var(--font-display);font-size:22px;letter-spacing:3px;margin-top:10px;opacity:.35">READY TO SCAN</div>
       <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;margin-top:6px;opacity:.25">POINT SCANNER AT MEMBER QR OR BARCODE</div>`;
   }, 3500);
+}
+
+// ── Scanner Voice (Web Speech API) ──────────────────────
+function _gScanSpeak(type) {
+  const v = _gymData?.scannerVoice;
+  if (!v?.enabled || !window.speechSynthesis) return;
+  const text = type === 'success'
+    ? (v.welcome || 'Welcome')
+    : (v.problem  || 'Please see the assistant');
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate   = 0.95;
+  utt.pitch  = 1;
+  utt.volume = 1;
+  window.speechSynthesis.cancel();  // cut off any prior utterance
+  window.speechSynthesis.speak(utt);
+}
+
+window._gToggleVoice = (el) => {
+  toggleRptChk(el);
+  const on = el.classList.contains('rpt-on');
+  el.childNodes[1].textContent = ' ' + (on ? 'ON' : 'OFF');
+  if (!_gymData) return;
+  if (!_gymData.scannerVoice) _gymData.scannerVoice = {};
+  _gymData.scannerVoice.enabled = on;
+  _gPersistVoiceSettings();
+};
+
+window._gVoiceSettingsToggle = () => {
+  const el = document.getElementById('g-voice-settings');
+  if (!el) return;
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? '' : 'none';
+  if (opening) _gPopulateVoicePhrases();
+};
+
+function _gPopulateVoicePhrases() {
+  const v = _gymData?.scannerVoice || {};
+  const w = document.getElementById('g-voice-welcome');
+  const p = document.getElementById('g-voice-problem');
+  if (w) w.value = v.welcome || '';
+  if (p) p.value = v.problem || '';
+}
+
+window._gTestVoice = (which) => {
+  if (!window.speechSynthesis) { alert('Speech synthesis not supported in this browser.'); return; }
+  const v = _gymData?.scannerVoice || {};
+  const text = which === 'welcome'
+    ? (document.getElementById('g-voice-welcome')?.value.trim() || v.welcome || 'Welcome')
+    : (document.getElementById('g-voice-problem')?.value.trim() || v.problem || 'Please see the assistant');
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.95; utt.pitch = 1; utt.volume = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utt);
+};
+
+window._gSaveVoiceSettings = async (btn) => {
+  const welcome = document.getElementById('g-voice-welcome')?.value.trim() || 'Welcome';
+  const problem = document.getElementById('g-voice-problem')?.value.trim() || 'Please see the assistant';
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  if (!_gymData.scannerVoice) _gymData.scannerVoice = {};
+  _gymData.scannerVoice.welcome = welcome;
+  _gymData.scannerVoice.problem = problem;
+  await _gPersistVoiceSettings();
+  btn.disabled = false; btn.textContent = orig;
+  document.getElementById('g-voice-settings').style.display = 'none';
+};
+
+async function _gPersistVoiceSettings() {
+  if (!_gymId || !_gymData?.scannerVoice) return;
+  try {
+    const {updateDoc, doc: d2} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(d2(db, 'gyms', _gymId), { scannerVoice: _gymData.scannerVoice });
+  } catch(e) { console.error('[Gym] persist voice settings:', e); }
+}
+
+function _gRestoreVoiceToggle() {
+  const el = document.getElementById('g-voice-toggle');
+  if (!el) return;
+  const on = _gymData?.scannerVoice?.enabled === true;
+  el.classList.toggle('rpt-on', on);
+  const box = el.querySelector('.rpt-box');
+  if (box) box.textContent = on ? '✓' : '';
+  el.childNodes[el.childNodes.length - 1].textContent = ' ' + (on ? 'ON' : 'OFF');
 }
 
 // ── Entry QR ────────────────────────────────────────────
