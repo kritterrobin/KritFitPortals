@@ -1643,7 +1643,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.32';
+const PORTALS_VERSION = '1.33';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2152,7 +2152,7 @@ window._gLoadPeriod = async () => {
 };
 
 const _AMENITY_LIST = ['Lockers','Showers','Parking','Pool','Sauna','Steam Room','Childcare',
-  'Smoothie Bar','Café','Free WiFi','Towels','Equipment Rental','Wheelchair Access','Outdoor Space'];
+  'Juice Bar','Smoothie Bar','Café','Free WiFi','Towels','Equipment Rental','Wheelchair Access','Outdoor Space'];
 const _SP_SUGGEST = ['Boxing','Yoga','CrossFit','HIIT','Spinning','Weights','Pilates','Swimming',
   'Martial Arts','Dance','Zumba','Running','Stretching','Rehabilitation','Personal Training','Group Classes'];
 
