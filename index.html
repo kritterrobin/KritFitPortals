@@ -165,10 +165,10 @@
     }
 
     /* ── Content panels ── */
-    .portal-panel { display:none; flex-direction:column; min-height:calc(100vh - 120px); }
-    .portal-panel.active { display:flex; }
-    .tab-panel { display:none; flex:1; padding:20px; max-width:1400px; margin:0 auto; width:100%; }
-    .tab-panel.active { display:block; }
+    .portal-panel { display:none; flex-direction:column; overflow:hidden; }
+    .portal-panel.active { display:flex; flex:1; }
+    .tab-panel { display:none; padding:20px; max-width:1400px; margin:0 auto; width:100%; box-sizing:border-box; }
+    .tab-panel.active { display:block; overflow-y:auto; flex:1; }
 
     /* ── Placeholder card ── */
     .ph-card {
@@ -271,7 +271,7 @@
     .cs-desc { font-family:var(--font-mono); font-size:11px; color:#bbb; letter-spacing:1px; max-width:380px; line-height:1.9; }
 
     /* ── Portal workspace (sidebar + main) ── */
-    #portal-workspace { display:flex; min-height:calc(100vh - 57px); }
+    #portal-workspace { display:flex; height:calc(100vh - 57px); overflow:hidden; }
 
     #sidebar {
       width:268px; flex-shrink:0; position:sticky; top:57px;
@@ -352,7 +352,7 @@
     .sb-action .sb-icon { font-size:14px; }
 
     /* Portal main */
-    #portal-main { flex:1; min-width:0; display:flex; flex-direction:column; }
+    #portal-main { flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
 
     /* ── Sidebar overlay panel ── */
     #sb-overlay { position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.35); }
@@ -417,12 +417,6 @@
     #gym-top-nav .nav-btn, #gym-finance-nav .nav-btn { padding:5px 8px; }
     #gym-top-nav .nav-btn .icon, #gym-finance-nav .nav-btn .icon { font-size:14px; }
 
-    /* Gym NAV-2 subnavs — sticky below NAV-1 (57px header + ~39px NAV-1 = 96px) */
-    #gym-finance-subnav, #gym-analytics-subnav, #gym-members-subnav, #gym-setup-subnav {
-      position: sticky;
-      top: 96px;
-      z-index: 180;
-    }
 
     /* Finance section cards */
     .gf-metric { background:#fff; border:1px solid var(--border); border-radius:6px; padding:16px; text-align:center; }
@@ -1565,7 +1559,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.23';
+const PORTALS_VERSION = '1.24';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
