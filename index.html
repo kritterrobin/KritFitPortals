@@ -43,9 +43,8 @@
     .brand-sub { font-family:var(--font-mono); font-size:9px; letter-spacing:3px; color:#999; text-transform:uppercase; }
     #top-bar-center { flex:1; text-align:center; }
     #portal-badge {
-      display:inline-block; font-family:var(--font-mono); font-size:clamp(10px,1vw,12px);
-      font-weight:700; letter-spacing:2px; text-transform:uppercase;
-      background:var(--accent); color:#fff; padding:4px 14px; border-radius:3px;
+      display:inline-block; font-family:var(--font-mono); font-size:clamp(11px,1vw,13px);
+      font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text);
     }
     #top-bar-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
     #user-name { font-family:var(--font-mono); font-size:11px; color:#888; }
@@ -1755,7 +1754,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.43';
+const PORTALS_VERSION = '1.44';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
