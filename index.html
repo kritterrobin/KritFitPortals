@@ -916,7 +916,7 @@
         </div>
 
         <!-- CALENDAR -->
-        <div class="sb-section" onclick="_sbOpen('calendar')">
+        <div id="sb-cal-section" class="sb-section" onclick="_sbOpen('calendar')">
           <div class="sb-icon">📅</div>
           <div class="sb-body">
             <div class="sb-label">CALENDAR</div>
@@ -2125,7 +2125,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.48';
+const PORTALS_VERSION = '1.49';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
@@ -2413,6 +2413,7 @@ async function _loadTrainerPortal(uid) {
   } catch(_) {}
 
   _showPortal('trainer');
+  _sbConfigureForPortal('trainer');
   _sbStartInboxWatcher();
 }
 
@@ -2495,6 +2496,7 @@ async function _loadGymPortal(gymDoc) {
 
   _gApplyNavPerms();
   _showPortal('gym');
+  _sbConfigureForPortal('gym');
   if (_perm('members'))  await _gdLoadMembers();
   if (_perm('settings')) _gdPopulateSetup();
   if (_perm('trainers')) _gRenderTrainers();
@@ -6514,9 +6516,19 @@ let _gcSelectedEventId = null;
 let _gcCreateType = 'class';
 let _gcEventsUnsub = null;
 
+function _sbConfigureForPortal(type) {
+  // Show/hide sidebar sections based on which portal is active.
+  // Calendar is meaningful for gym and team; hide it for all others.
+  const calSection = document.getElementById('sb-cal-section');
+  if (calSection) calSection.style.display = ['gym','team'].includes(type) ? '' : 'none';
+}
+
 async function _sbRenderCalendar(body) {
+  if (_portalType === 'team') {
+    _sbRenderTeamCalendar(body);
+    return;
+  }
   if (_portalType !== 'gym' || !_gymId) {
-    body.innerHTML = _sbPh('📅','CALENDAR','Calendar is available for gym portals.');
     return;
   }
   body.style.display = 'flex';
@@ -6728,6 +6740,55 @@ window._gcSelectDate = (dateStr) => {
   _gcRepaintGrid();
   _gcRepaintDayList();
 };
+
+// ── Team calendar (sidebar) ────────────────────────────────
+function _sbRenderTeamCalendar(body) {
+  body.style.cssText = 'overflow-y:auto;padding:12px';
+  const now      = new Date();
+  const upcoming = (_teamEvents || [])
+    .filter(e => { const d = e.date?.toDate ? e.date.toDate() : new Date(e.date); return d >= now; })
+    .slice(0, 10);
+
+  if (!upcoming.length) {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:#bbb;font-family:var(--font-mono);font-size:11px">No upcoming events</div>';
+    return;
+  }
+
+  const typeColor = { practice:'#2e7d32', game:'#1565c0', meeting:'#c62828', other:'#6a1b9a' };
+  body.innerHTML = upcoming.map(ev => {
+    const d       = ev.date?.toDate ? ev.date.toDate() : new Date(ev.date);
+    const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short' });
+    const timeStr = d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+    const color   = typeColor[ev.type] || '#888';
+    const title   = ev.title || (ev.type === 'game' ? `vs ${ev.opponentName || 'TBD'}` : 'Event');
+    return `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:4px;border-radius:2px;background:${color};flex-shrink:0"></div>
+      <div>
+        <div style="font-weight:700;font-size:12px">${title}</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${dateStr} · ${timeStr}</div>
+        ${ev.location ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">📍 ${ev.location}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _tmUpdateSidebarCalStrip() {
+  const val = document.getElementById('sb-cal-value');
+  const sub = document.getElementById('sb-cal-sub');
+  if (!val || _portalType !== 'team') return;
+  const today = new Date().toISOString().slice(0, 10);
+  const todayEvents = (_teamEvents || []).filter(e => {
+    const d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
+    return d.toISOString().slice(0, 10) === today;
+  });
+  if (todayEvents.length === 0) {
+    val.textContent = 'No events today';
+    if (sub) sub.textContent = '';
+  } else {
+    val.textContent = `${todayEvents.length} event${todayEvents.length !== 1 ? 's' : ''} today`;
+    if (sub) sub.textContent = todayEvents.map(e => e.title || e.type).join(' · ');
+  }
+}
 
 // ── Calendar — event detail ─────────────────────────────
 window._gcOpenEvent = async (eventId) => {
@@ -7000,7 +7061,6 @@ function _sbUpdateRevenueCard() {
 
 async function _sbRenderRevenue(body) {
   if (_portalType !== 'gym' || !_gymId) {
-    body.innerHTML = _sbPh('💰','REVENUE','Revenue overview is available for gym portals.');
     return;
   }
   body.style.cssText = 'padding:16px;overflow-y:auto';
@@ -7506,6 +7566,7 @@ async function _loadTeamPortal() {
   _portalType = 'team';
   _setPortalTypePill('team');
   _showPortal('team');
+  _sbConfigureForPortal('team');
 
   // Find this user's team
   const uid = _authUid;
@@ -7602,6 +7663,7 @@ async function _tmLoadEvents() {
   try {
     const snap = await getDocs(query(collection(db, 'teams', _teamId, 'events'), orderBy('date', 'asc')));
     _teamEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _tmUpdateSidebarCalStrip();
   } catch(e) { console.error('[Team] load events:', e); }
 }
 
