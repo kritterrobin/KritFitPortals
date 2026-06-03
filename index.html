@@ -121,6 +121,12 @@
     .pay-overdue { background:#ffebee; color:#c62828; }
     .tbl-action { background:none; border:none; cursor:pointer; font-size:14px; padding:2px 4px; opacity:.5; }
     .tbl-action:hover { opacity:1; }
+    /* Member select mode */
+    .g-sel-col { display:none; width:34px; text-align:center; padding:6px 2px !important; cursor:pointer; font-size:16px; color:#ccc; user-select:none; }
+    #gm-manage.g-select-mode .g-sel-col { display:table-cell; }
+    #gm-manage.g-select-mode tbody tr { cursor:pointer; }
+    #gm-manage.g-select-mode tbody tr.g-sel-on td { background:rgba(99,91,255,.07); }
+    #gm-manage.g-select-mode tbody tr.g-sel-on .g-sel-col { color:var(--accent); }
 
     /* ── Toolbar row ── */
     .toolbar { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
@@ -1074,11 +1080,38 @@
           <input type="text" id="g-member-search" placeholder="Search name, code…" oninput="_gFilterMembers()">
           <button class="btn" onclick="_gAddMember()">+ ADD MEMBER</button>
           <button class="btn-outline" onclick="_gExportCSV()">EXPORT CSV</button>
+          <button class="btn-outline" id="g-member-msg-btn" onclick="_gToggleSelectMode()">✉ MESSAGE</button>
         </div>
+
+        <!-- Select mode bar -->
+        <div id="g-select-bar" style="display:none;padding:10px 14px;background:var(--s2);border:2px solid var(--accent);border-radius:6px;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span id="g-select-count" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent);flex:1">Select members to message</span>
+          <button id="g-select-compose-btn" class="btn" style="padding:7px 16px;font-size:11px" onclick="_gOpenMemberCompose()" disabled>✉ COMPOSE</button>
+          <button onclick="_gToggleSelectMode()" style="background:none;border:none;font-family:var(--font-mono);font-size:11px;color:#999;cursor:pointer;padding:4px 8px">✕ CANCEL</button>
+        </div>
+
+        <!-- Inline compose area -->
+        <div id="g-member-compose" style="display:none;padding:14px;background:var(--s1);border:1px solid var(--border);border-radius:8px;margin-bottom:14px">
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.5px;color:#888;margin-bottom:8px">TO: <span id="g-compose-target" style="color:var(--accent)"></span></div>
+          <div style="position:relative">
+            <textarea id="g-compose-text" rows="3"
+              style="width:100%;box-sizing:border-box;padding:10px;padding-right:38px;font-family:var(--font-mono);font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--s2);color:var(--text);resize:vertical"
+              placeholder="Type your message…"></textarea>
+            <button id="g-compose-mic" class="body-mic-btn" onclick="_bodyMicToggle('g-compose-text')" title="Voice input"
+              style="display:none;position:absolute;right:8px;top:8px;background:none;border:none;font-size:16px;cursor:pointer;padding:2px;line-height:1">🎤</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;align-items:center">
+            <span id="g-compose-skip-note" style="font-family:var(--font-mono);font-size:10px;color:#bbb;flex:1"></span>
+            <button onclick="_gCloseCompose()" style="padding:7px 14px;border-radius:4px;border:1px solid var(--border);background:var(--s2);font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;color:var(--text)">CANCEL</button>
+            <button class="btn" style="padding:7px 18px;font-size:11px" onclick="_gSendBulkMessage(this)">SEND →</button>
+          </div>
+        </div>
+
         <div style="overflow-x:auto">
           <table class="member-table" id="g-member-table">
             <thead>
               <tr>
+                <th class="g-sel-col"></th>
                 <th>CODE</th><th>NAME</th><th>STATUS</th>
                 <th>VALID TO</th><th>LAST CHECK-IN</th>
                 <th>PAY STATUS</th><th>AMOUNT</th><th>NOTES</th><th></th>
@@ -1711,7 +1744,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.38';
+const PORTALS_VERSION = '1.39';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2083,13 +2116,15 @@ async function _gdLoadMembers() {
 function _gdRenderMembers(members) {
   const tbody = document.getElementById('g-member-tbody');
   if (!members.length) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:#bbb;font-family:var(--font-mono)">No members yet — share your join code to get started.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:#bbb;font-family:var(--font-mono)">No members yet — share your join code to get started.</td></tr>`;
     return;
   }
   tbody.innerHTML = members.map(m => {
     const statusClass = m.status === 'active' ? 'status-active' : m.status === 'paused' ? 'status-paused' : 'status-inactive';
     const payClass    = m.payStatus === 'paid' ? 'pay-paid' : m.payStatus === 'overdue' ? 'pay-overdue' : 'pay-unpaid';
-    return `<tr data-id="${m.id}">
+    const isSel       = _gSelectedIds.has(m.id);
+    return `<tr data-id="${m.id}"${isSel ? ' class="g-sel-on"' : ''}>
+      <td class="g-sel-col" onclick="_gToggleMemberSelect('${m.id}',event)">${isSel ? '☑' : '☐'}</td>
       <td><span style="font-family:var(--font-mono);font-size:10px;color:#888">${m.code||'—'}</span></td>
       <td><input type="text" value="${m.name||''}" onblur="_gdSave('${m.id}','name',this.value)" style="font-weight:700"></td>
       <td><span class="status-badge ${statusClass}" onclick="_gdCycleStatus(this,'${m.id}','${m.status||'active'}')">${(m.status||'active').toUpperCase()}</span></td>
@@ -2111,6 +2146,111 @@ window._gFilterMembers = () => {
     (m.comment||'').toLowerCase().includes(q)
   ) : _gymMembers;
   _gdRenderMembers(filtered);
+};
+
+// ── Member bulk messaging ──────────────────────────────
+let _gSelectMode = false;
+let _gSelectedIds = new Set();
+
+window._gToggleSelectMode = () => {
+  _gSelectMode = !_gSelectMode;
+  if (!_gSelectMode) {
+    _gSelectedIds.clear();
+    document.getElementById('g-member-compose').style.display = 'none';
+  }
+  document.getElementById('gm-manage')?.classList.toggle('g-select-mode', _gSelectMode);
+  document.getElementById('g-select-bar').style.display = _gSelectMode ? '' : 'none';
+  const btn = document.getElementById('g-member-msg-btn');
+  if (btn) btn.style.fontWeight = _gSelectMode ? '900' : '';
+  _gdRenderMembers(_gymMembers);
+  _gUpdateSelectBar();
+};
+
+window._gToggleMemberSelect = (id, e) => {
+  e.stopPropagation();
+  if (_gSelectedIds.has(id)) _gSelectedIds.delete(id);
+  else _gSelectedIds.add(id);
+  const row = document.querySelector(`#g-member-tbody tr[data-id="${id}"]`);
+  if (row) {
+    row.classList.toggle('g-sel-on', _gSelectedIds.has(id));
+    const cb = row.querySelector('.g-sel-col');
+    if (cb) cb.textContent = _gSelectedIds.has(id) ? '☑' : '☐';
+  }
+  _gUpdateSelectBar();
+};
+
+function _gUpdateSelectBar() {
+  const n = _gSelectedIds.size;
+  const el = document.getElementById('g-select-count');
+  if (el) el.textContent = n === 0 ? 'Select members to message' : `${n} member${n===1?'':'s'} selected`;
+  const btn = document.getElementById('g-select-compose-btn');
+  if (btn) btn.disabled = n === 0;
+}
+
+window._gOpenMemberCompose = () => {
+  const n = _gSelectedIds.size;
+  if (!n) return;
+  const selected = [..._gSelectedIds].map(id => _gymMembers.find(x => x.id === id)).filter(Boolean);
+  const withUid = selected.filter(m => m.uid);
+  const noUid   = selected.filter(m => !m.uid);
+  const label   = n === 1 ? (selected[0]?.name || 'member').toUpperCase()
+                           : `${n} MEMBERS`;
+  document.getElementById('g-compose-target').textContent = label;
+  document.getElementById('g-compose-text').value = '';
+  const skipNote = document.getElementById('g-compose-skip-note');
+  if (skipNote) skipNote.textContent = noUid.length
+    ? `⚠ ${noUid.length} member${noUid.length===1?'':'s'} skipped — no KritFit account linked`
+    : '';
+  const compose = document.getElementById('g-member-compose');
+  compose.style.display = '';
+  document.getElementById('g-compose-text').focus();
+};
+
+window._gCloseCompose = () => {
+  document.getElementById('g-member-compose').style.display = 'none';
+};
+
+window._gSendBulkMessage = async (btn) => {
+  const text = (document.getElementById('g-compose-text')?.value || '').trim();
+  if (!text) { toast('Please write a message first'); return; }
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px"></span>Sending…';
+  try {
+    const { doc, addDoc, setDoc, collection, serverTimestamp } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const senderName = auth.currentUser?.displayName || 'Gym Admin';
+    const preview    = text.length > 60 ? text.substring(0,60) + '…' : text;
+    const selected   = [..._gSelectedIds].map(id => _gymMembers.find(x => x.id === id)).filter(Boolean);
+    const withUid    = selected.filter(m => m.uid);
+    let sent = 0, failed = 0;
+    for (const m of withUid) {
+      try {
+        const threadRef = doc(db,'gyms',_gymId,'threads',m.uid);
+        await addDoc(collection(db,'gyms',_gymId,'threads',m.uid,'messages'), {
+          text, senderUid: _currentUid, senderName,
+          sentAt: serverTimestamp(), readBy: [_currentUid]
+        });
+        await setDoc(threadRef, {
+          memberUid: m.uid, memberName: m.name || m.uid,
+          lastMessage: preview, lastMessageAt: serverTimestamp(),
+          lastMessageFromUid: _currentUid, unreadMember: 1,
+          createdAt: serverTimestamp()
+        }, { merge: true });
+        sent++;
+      } catch(e) { console.error('bulk msg:', e); failed++; }
+    }
+    const skipped = selected.length - withUid.length;
+    let msg = `✓ Sent to ${sent} member${sent===1?'':'s'}`;
+    if (skipped) msg += ` · ${skipped} skipped (no app account)`;
+    if (failed)  msg += ` · ${failed} failed`;
+    toast(msg);
+    _gCloseCompose();
+    _gToggleSelectMode();
+  } catch(e) {
+    toast('Send failed: ' + e.message);
+    btn.disabled = false; btn.innerHTML = orig;
+  }
 };
 
 window._gdSave = async (memberId, field, value) => {
