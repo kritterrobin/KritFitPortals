@@ -1711,7 +1711,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.37';
+const PORTALS_VERSION = '1.38';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -3179,9 +3179,9 @@ function _mktDrawEvent(ctx, W, H, y, accent) {
   ctx.fillStyle = '#fff';
   ctx.font = `bold 26px system-ui,sans-serif`;
   ctx.fillText('🎉  EVENT', 84, y + 51);
-  y += 120;
+  y += 170;
   ctx.fillStyle = '#fff';
-  ctx.font = `bold 92px system-ui,sans-serif`;
+  ctx.font = `bold 86px system-ui,sans-serif`;
   y = _mktWrap(ctx, headline.toUpperCase(), 60, y, W-120, 106) + 20;
   if (date) {
     ctx.fillStyle = accent;
@@ -3210,7 +3210,7 @@ function _mktDrawStats(ctx, W, H, y, accent) {
     ctx.fillStyle = '#fff';
     ctx.font = `bold 50px system-ui,sans-serif`;
     ctx.textAlign = 'center';
-    _mktWrap(ctx, stat, 60, y + 88, W-120, 58);
+    _mktWrap(ctx, stat, W/2, y + 88, W-120, 58);
     ctx.textAlign = 'left';
     y += 174;
   });
