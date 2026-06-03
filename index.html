@@ -1990,11 +1990,6 @@ async function _gdLoadMembers() {
     const ciSnap = await getDocs(ciQ);
     document.getElementById('g-stat-checkins').textContent = ciSnap.size;
 
-    // Payment stats
-    document.getElementById('g-pay-paid').textContent    = _gymMembers.filter(m => m.payStatus === 'paid').length;
-    document.getElementById('g-pay-unpaid').textContent  = _gymMembers.filter(m => m.payStatus === 'unpaid').length;
-    document.getElementById('g-pay-overdue').textContent = _gymMembers.filter(m => m.payStatus === 'overdue').length;
-
     // Revenue sidebar card — estimated MRR
     _sbUpdateRevenueCard();
   } catch(e) { console.error('[Gym] load members:', e); }
