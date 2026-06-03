@@ -883,11 +883,6 @@
 
         <div class="sb-divider"></div>
 
-        <!-- MANAGE BILLING -->
-        <button class="sb-action" onclick="_sbOpen('billing')">
-          <span class="sb-icon">💳</span> Manage Billing
-        </button>
-
         <!-- SUBSCRIPTIONS / UPGRADE -->
         <button class="sb-action" onclick="_showSubscriptions()">
           <span class="sb-icon">🚀</span> Subscriptions &amp; Upgrades
@@ -4682,14 +4677,13 @@ window._sbOpen = async (section) => {
   document.getElementById('sb-panel-back').style.display = 'none';
   document.getElementById('sb-compose').style.display    = 'none';
   document.getElementById('sb-panel-title').textContent  =
-    ({inbox:'INBOX',calendar:'CALENDAR',revenue:'REVENUE',notifications:'NOTIFICATIONS',billing:'MANAGE BILLING','add-store':'ADD STORE'})[section] || section.toUpperCase();
+    ({inbox:'INBOX',calendar:'CALENDAR',revenue:'REVENUE',notifications:'NOTIFICATIONS','add-store':'ADD STORE'})[section] || section.toUpperCase();
 
   const body = document.getElementById('sb-panel-body');
   if      (section === 'inbox')         await _sbRenderInboxList(body);
   else if (section === 'revenue')       await _sbRenderRevenue(body);
   else if (section === 'calendar')      await _sbRenderCalendar(body);
   else if (section === 'notifications') body.innerHTML = _sbPh('🔔','NOTIFICATIONS','System alerts and activity notifications — coming soon.');
-  else if (section === 'billing')       _sbRenderBilling(body);
   else if (section === 'add-store')     body.innerHTML = _sbPh('🛍️','ADD STORE','Add the Store module for <strong>$3.45/mo</strong>.<br><br>Manage product inventory and sell directly to your clients. Coming soon.');
 };
 
@@ -5701,16 +5695,6 @@ function _sbUpdateRevenueCard() {
     .reduce((s, m) => s + (tierPriceMap[m.membershipTier] || 0), 0);
   const overdue = active.filter(m => m.payStatus === 'overdue').length;
   const unpaid  = active.filter(m => m.payStatus === 'unpaid' || !m.payStatus).length;
-}
-
-function _sbRenderBilling(body) {
-  if (_portalType !== 'gym' || !_gymId) {
-    body.innerHTML = _sbPh('💳','MANAGE BILLING','Billing management is available for gym portals.');
-    return;
-  }
-  _blFilter = 'all';
-  body.style.display = 'flex'; body.style.flexDirection = 'column'; body.style.overflow = 'hidden'; body.style.height = '100%';
-  _blRender(body);
 }
 
 async function _sbRenderRevenue(body) {
