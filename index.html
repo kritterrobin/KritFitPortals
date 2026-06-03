@@ -65,7 +65,9 @@
     #portal-type-pill[data-type="trainer"]      { background:#1565c0; color:#fff; }
     #portal-type-pill[data-type="nutritionist"] { background:#e65100; color:#fff; }
     #portal-type-pill[data-type="therapist"]    { background:#6a1b9a; color:#fff; }
-    #portal-type-pill[data-type="sports"]       { background:#b71c1c; color:#fff; }
+    #portal-type-pill[data-type="team"]          { background:#b71c1c; color:#fff; }
+    #portal-type-pill[data-type="league"]        { background:#b71c1c; color:#fff; }
+    #portal-type-pill[data-type="association"]   { background:#b71c1c; color:#fff; }
     #portal-type-pill[data-type="store"]        { background:#006064; color:#fff; }
     /* On small screens, hide the name badge but keep the type pill */
     @media(max-width:600px) { #portal-badge { display:none; } }
@@ -1753,7 +1755,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.42';
+const PORTALS_VERSION = '1.43';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
@@ -1767,7 +1769,7 @@ window.toast = (msg, duration = 3200) => {
   _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
 };
 
-let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
+let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'team' | 'league' | 'association'
 let _currentTier      = null;   // raw subscriptionTier from user_registry
 let _currentUid       = null;
 let _authUid          = null;   // signed-in user's uid (never changes; _currentUid may differ for client views)
@@ -1813,7 +1815,9 @@ const _PORTAL_META = {
   trainer:      { icon: '🏃', label: 'TRAINER' },
   nutritionist: { icon: '🥗', label: 'NUTRITIONIST' },
   therapist:    { icon: '🧠', label: 'THERAPIST' },
-  sports:       { icon: '🏆', label: 'SPORTS' },
+  team:         { icon: '🏅', label: 'TEAM' },
+  league:       { icon: '🏆', label: 'LEAGUE' },
+  association:  { icon: '🎖️', label: 'FEDERATION' },
   store:        { icon: '🛍️', label: 'STORE' },
 };
 
@@ -1842,8 +1846,9 @@ async function _detectAndRoute(uid) {
     if (tier === 'trainer')      portals.push({ type: 'trainer' });
     if (tier === 'nutritionist') portals.push({ type: 'nutritionist' });
     if (tier === 'therapist')    portals.push({ type: 'therapist' });
-    if (['champion','sports_team','sports_league','sports_association',
-         'team','league','association'].includes(tier)) portals.push({ type: 'sports' });
+    if (['champion','sports_team','team'].includes(tier))                              portals.push({ type: 'team' });
+    if (['sports_league','league'].includes(tier))                                     portals.push({ type: 'league' });
+    if (['sports_association','sports_federation','association'].includes(tier))        portals.push({ type: 'association' });
 
     // 3. Store add-on (separate subscription alongside any portal)
     if (reg.kfStoreActive === true) portals.push({ type: 'store' });
@@ -1870,11 +1875,11 @@ async function _detectAndRoute(uid) {
     //    was not yet written (e.g. stripeGymStorePlatformWebhook not yet registered).
     //    Reads what the Firebase Extension DID write, derives the tier, and self-heals
     //    user_registry so this fallback is not needed on the next load.
-    if (!portals.some(p => ['trainer','nutritionist','therapist','sports'].includes(p.type))) {
+    if (!portals.some(p => ['trainer','nutritionist','therapist','team','league','association'].includes(p.type))) {
       const _PORTAL_KEY_TO_PTYPE = {
         kf_trainer_personal: 'trainer', nutritionist_portal: 'nutritionist',
-        therapist_portal: 'therapist',  sports_team: 'sports',
-        sports_league: 'sports',        sports_federation: 'sports',
+        therapist_portal: 'therapist',  sports_team: 'team',
+        sports_league: 'league',        sports_federation: 'association',
       };
       const _PORTAL_KEY_TO_TIER = {
         kf_trainer_personal: 'trainer', nutritionist_portal: 'nutritionist',
@@ -1989,7 +1994,9 @@ async function _loadPortalByType(portal) {
     case 'trainer':      await _loadTrainerPortal(_authUid); break;
     case 'nutritionist': _setPortalTypePill('nutritionist'); _showComingSoon('NUTRITIONIST PORTAL'); break;
     case 'therapist':    _setPortalTypePill('therapist');    _showComingSoon('THERAPIST PORTAL'); break;
-    case 'sports':       _setPortalTypePill('sports');       _showComingSoon('SPORTS HUB'); break;
+    case 'team':         _setPortalTypePill('team');         _showComingSoon('TEAM PORTAL'); break;
+    case 'league':       _setPortalTypePill('league');       _showComingSoon('LEAGUE PORTAL'); break;
+    case 'association':  _setPortalTypePill('association');  _showComingSoon('FEDERATION PORTAL'); break;
     case 'store':        _setPortalTypePill('store');        _showComingSoon('STORE PORTAL'); break;
     default:             _showNoPortal(null);
   }
