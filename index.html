@@ -1328,7 +1328,6 @@
         <div class="module-row"><div class="module-info"><div class="module-name">CHECK-INS</div><div class="module-desc">QR code check-in system at the door</div></div><label class="toggle"><input type="checkbox" id="mod-checkins" onchange="_gToggleModule('checkins',this.checked)"><span class="toggle-slider"></span></label></div>
         <div class="module-row"><div class="module-info"><div class="module-name">TRAINERS</div><div class="module-desc">Gym trainers with client assignment (+$5.67/mo per trainer)</div></div><label class="toggle"><input type="checkbox" id="mod-trainers" onchange="_gToggleModule('trainers',this.checked)"><span class="toggle-slider"></span></label></div>
         <div class="module-row"><div class="module-info"><div class="module-name">CLASSES</div><div class="module-desc">Group class schedule visible to members</div></div><label class="toggle"><input type="checkbox" id="mod-classes" onchange="_gToggleModule('classes',this.checked)"><span class="toggle-slider"></span></label></div>
-        <div class="module-row"><div class="module-info"><div class="module-name">STORE</div><div class="module-desc">Sell products to members (+$3.45/mo)</div></div><label class="toggle"><input type="checkbox" id="mod-store" onchange="_gToggleModule('store',this.checked)"><span class="toggle-slider"></span></label></div>
       </div>
 
       <!-- TIERS -->
@@ -1628,7 +1627,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.35';
+const PORTALS_VERSION = '1.36';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1744,6 +1743,13 @@ async function _detectAndRoute(uid) {
       if (_portalType === 'gym') {
         setTimeout(() => { _gNav('setup'); _gSetupTab('stripe'); }, 400);
       }
+    }
+
+    if (qp.get('storeSubscribed') === '1') {
+      history.replaceState(null, '', location.pathname);
+      if (_gymData) _gymData.storeSubscriptionActive = true;
+      toast('✓ Gym Store activated! You can now add products.');
+      if (_portalType === 'gym') setTimeout(() => _gNav('store'), 400);
     }
 
   } catch(e) {
@@ -2198,7 +2204,7 @@ function _gdPopulateSetup() {
 
   // Modules
   const mods = g.enabledModules || [];
-  ['payments','checkins','trainers','classes','store'].forEach(m => {
+  ['payments','checkins','trainers','classes'].forEach(m => {
     const el = document.getElementById('mod-' + m);
     if (el) el.checked = mods.includes(m);
   });
@@ -2761,7 +2767,7 @@ async function _loadQRLib() {
 window._gRenderStore = () => {
   const panel = document.getElementById('g-store');
   if (!panel) return;
-  if (_gymData?.enabledModules?.includes('store')) {
+  if (_gymData?.storeSubscriptionActive === true) {
     panel.innerHTML = `
       <div class="section-title">Inventory</div>
       <div class="toolbar"><button class="btn" onclick="_gAddProduct()">+ ADD PRODUCT</button></div>
@@ -2799,11 +2805,29 @@ window._gRenderStore = () => {
               <div style="font-family:var(--font-body);font-size:12px;color:#888;line-height:1.5">${desc}</div>
             </div>`).join('')}
         </div>
-        <button class="btn" style="font-size:13px;padding:13px 36px;letter-spacing:2px" onclick="_showSubscriptions()">
+        <button class="btn" style="font-size:13px;padding:13px 36px;letter-spacing:2px" onclick="_gSubscribeStore(this)">
           ADD STORE — $3.45/mo →
         </button>
         <div style="font-family:var(--font-mono);font-size:10px;color:#bbb;margin-top:10px;letter-spacing:1px">Cancel any time · No setup fee</div>
       </div>`;
+  }
+};
+
+window._gSubscribeStore = async (btn) => {
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px"></span>Opening Stripe…';
+  btn.style.opacity = '.85';
+  try {
+    const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js');
+    const fns       = getFunctions(app);
+    const returnUrl = `${location.origin}${location.pathname}?storeSubscribed=1&gymId=${_gymId}`;
+    const cancelUrl = `${location.origin}${location.pathname}?gymId=${_gymId}`;
+    const res = await httpsCallable(fns, 'subscribeGymStore')({ gymId: _gymId, returnUrl, cancelUrl });
+    window.location.href = res.data.url;
+  } catch(e) {
+    btn.disabled = false; btn.innerHTML = orig; btn.style.opacity = '';
+    toast('Store subscription error: ' + e.message);
   }
 };
 
@@ -4339,7 +4363,7 @@ function _anRenderTrainers() {
 function _anRenderStore() {
   const storeSection = document.getElementById('ga-store');
   if (!storeSection) return;
-  const storeActive = _gymData?.modules?.store === true;
+  const storeActive = _gymData?.storeSubscriptionActive === true;
   storeSection.style.display = storeActive ? '' : 'none';
 }
 
@@ -4572,7 +4596,11 @@ window._gNav = (tab) => {
   if (tab === 'store')     _gRenderStore();
   if (tab === 'payments')  _gRenderPaymentsTab();
   if (tab === 'finance')   _gFinanceTab('pl');
-  if (tab === 'analytics') _gdLoadAnalytics();
+  if (tab === 'analytics') {
+    const storeNavBtn = document.getElementById('gatab-store');
+    if (storeNavBtn) storeNavBtn.style.display = _gymData?.storeSubscriptionActive ? '' : 'none';
+    _gdLoadAnalytics();
+  }
 };
 
 window._gFinanceTab = (tab) => {
