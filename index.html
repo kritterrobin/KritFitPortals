@@ -79,9 +79,43 @@
 
     /* Compact padding for portal navs */
     #trainer-top-nav .nav-btn, #trainer-subnav .nav-btn,
-    #gym-top-nav .nav-btn, #gym-members-nav .nav-btn, #gym-setup-nav .nav-btn { padding:5px 10px; }
+    #gym-top-nav .nav-btn, #gym-members-nav .nav-btn, #gym-setup-nav .nav-btn,
+    #team-top-nav .nav-btn, #tm-schedule-subnav .nav-btn, #tm-training-subnav .nav-btn { padding:5px 2px; }
     #trainer-top-nav .nav-btn .icon, #trainer-subnav .nav-btn .icon,
-    #gym-top-nav .nav-btn .icon, #gym-members-nav .nav-btn .icon, #gym-setup-nav .nav-btn .icon { font-size:14px; }
+    #gym-top-nav .nav-btn .icon, #gym-members-nav .nav-btn .icon, #gym-setup-nav .nav-btn .icon,
+    #team-top-nav .nav-btn .icon, #tm-schedule-subnav .nav-btn .icon, #tm-training-subnav .nav-btn .icon { font-size:14px; }
+
+    /* Team portal styles */
+    .tm-event-card { background:var(--s1); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:14px; }
+    .tm-event-date { font-family:var(--font-mono); font-size:10px; color:var(--muted); min-width:72px; padding-top:2px; }
+    .tm-event-type { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 7px; border-radius:3px; text-transform:uppercase; display:inline-block; margin-bottom:4px; }
+    .tm-event-type.practice { background:#e8f5e9; color:#2e7d32; }
+    .tm-event-type.game     { background:#e3f2fd; color:#1565c0; }
+    .tm-event-type.meeting  { background:#fce4ec; color:#c62828; }
+    .tm-event-type.other    { background:#f3e5f5; color:#6a1b9a; }
+    .tm-event-title { font-weight:700; font-size:13px; }
+    .tm-event-meta  { font-size:11px; color:var(--muted); margin-top:2px; }
+    .tm-rsvp-row    { display:flex; gap:8px; margin-top:8px; font-family:var(--font-mono); font-size:10px; }
+    .tm-rsvp-yes    { color:#2e7d32; } .tm-rsvp-no { color:#c62828; } .tm-rsvp-maybe { color:#e65100; }
+    .tm-result-score { font-family:var(--font-mono); font-size:20px; font-weight:900; letter-spacing:2px; }
+    .tm-result-badge { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:3px; }
+    .tm-result-w { background:#e8f5e9; color:#2e7d32; } .tm-result-l { background:#ffebee; color:#c62828; } .tm-result-d { background:#fff3e0; color:#e65100; }
+    .tm-finance-income { color:#2e7d32; } .tm-finance-expense { color:#c62828; }
+    .tm-player-card { background:var(--s1); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:6px; }
+    .tm-readiness-green { color:#2e7d32; font-weight:700; } .tm-readiness-amber { color:#e65100; font-weight:700; } .tm-readiness-red { color:#c62828; font-weight:700; }
+    .tm-ticket-lock { text-align:center; padding:48px 24px; }
+    .tm-ticket-lock .lock-icon { font-size:48px; margin-bottom:16px; }
+    .tm-ticket-lock .lock-title { font-family:var(--font-mono); font-size:14px; font-weight:900; letter-spacing:2px; margin-bottom:10px; }
+    .tm-ticket-lock .lock-desc { font-size:13px; color:var(--muted); line-height:1.7; max-width:360px; margin:0 auto 24px; }
+    .tm-staff-role-badge { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:.5px; padding:2px 8px; border-radius:3px; }
+    .tm-role-admin   { background:#e3f2fd; color:#1565c0; }
+    .tm-role-coach   { background:#e8f5e9; color:#2e7d32; }
+    .tm-role-player  { background:var(--s2); color:var(--muted); }
+    .tm-create-team  { text-align:center; padding:60px 24px; }
+    .tm-create-team .ct-icon { font-size:48px; margin-bottom:16px; }
+    .tm-create-team .ct-title { font-family:var(--font-mono); font-size:14px; font-weight:900; letter-spacing:2px; margin-bottom:10px; }
+    .tbl-act-remove  { font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:3px;border:1px solid #c62828;color:#c62828;background:none;cursor:pointer; }
+    .tbl-act-remove:hover { background:#ffebee; }
 
     /* Portal switcher tabs (multi-portal users) */
     #portal-switcher { flex-shrink:0; background:var(--s2); border-bottom:2px solid var(--accent); }
@@ -1690,6 +1724,322 @@
     </div>
   </div>
 
+  <!-- ══════════════════════════════════════════
+       TEAM PORTAL
+  ══════════════════════════════════════════ -->
+  <div class="portal-panel" id="team-portal">
+
+    <!-- NAV-1 -->
+    <nav class="nav lv-hide" id="team-top-nav" style="overflow-x:auto;scrollbar-width:none;flex-shrink:0">
+      <button class="nav-btn active" id="tmnav-home"      onclick="_tmNav('home')">     <span class="icon">🏠</span>HOME</button>
+      <button class="nav-btn"        id="tmnav-roster"    onclick="_tmNav('roster')">   <span class="icon">👥</span>ROSTER</button>
+      <button class="nav-btn"        id="tmnav-schedule"  onclick="_tmNav('schedule')"> <span class="icon">📅</span>SCHEDULE</button>
+      <button class="nav-btn"        id="tmnav-results"   onclick="_tmNav('results')">  <span class="icon">🏆</span>RESULTS</button>
+      <button class="nav-btn"        id="tmnav-training"  onclick="_tmNav('training')"> <span class="icon">💪</span>TRAINING</button>
+      <button class="nav-btn"        id="tmnav-fitness"   onclick="_tmNav('fitness')">  <span class="icon">❤️</span>FITNESS</button>
+      <button class="nav-btn"        id="tmnav-analytics" onclick="_tmNav('analytics')"><span class="icon">📊</span>ANALYTICS</button>
+      <button class="nav-btn"        id="tmnav-staff"     onclick="_tmNav('staff')">    <span class="icon">🎖️</span>STAFF</button>
+      <button class="nav-btn"        id="tmnav-finance"   onclick="_tmNav('finance')">  <span class="icon">💰</span>FINANCE</button>
+      <button class="nav-btn"        id="tmnav-ticketing" onclick="_tmNav('ticketing')"><span class="icon">🎟️</span>TICKETING</button>
+      <button class="nav-btn"        id="tmnav-messages"  onclick="_tmNav('messages')"> <span class="icon">💬</span>MESSAGES</button>
+      <button class="nav-btn"        id="tmnav-setup"     onclick="_tmNav('setup')">    <span class="icon">⚙️</span>SETUP</button>
+    </nav>
+
+    <!-- SCHEDULE sub-nav -->
+    <div id="tm-schedule-subnav-wrap" style="display:none;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="tm-schedule-subnav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="tmsnav-upcoming"     onclick="_tmScheduleNav('upcoming')">    <span class="icon">📆</span>UPCOMING</button>
+        <button class="nav-btn"        id="tmsnav-past"         onclick="_tmScheduleNav('past')">        <span class="icon">📋</span>PAST</button>
+        <button class="nav-btn"        id="tmsnav-availability" onclick="_tmScheduleNav('availability')"><span class="icon">✅</span>AVAILABILITY</button>
+      </nav>
+    </div>
+
+    <!-- TRAINING sub-nav -->
+    <div id="tm-training-subnav-wrap" style="display:none;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="tm-training-subnav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="tmtnav-programs"    onclick="_tmTrainingNav('programs')">   <span class="icon">📋</span>PROGRAMS</button>
+        <button class="nav-btn"        id="tmtnav-assignments"  onclick="_tmTrainingNav('assignments')"><span class="icon">📌</span>ASSIGNMENTS</button>
+      </nav>
+    </div>
+
+    <!-- ── HOME ────────────────────────────────────────── -->
+    <div class="tab-panel active" id="tm-home">
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="tm-stat-players">—</div><div class="stat-label">Players</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-stat-record">—</div><div class="stat-label">Season Record</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-stat-next-days">—</div><div class="stat-label">Days to Next</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-stat-coaches">—</div><div class="stat-label">Coaches</div></div>
+      </div>
+      <div class="section-title">Next Event</div>
+      <div id="tm-home-next"></div>
+      <div class="section-title" style="margin-top:20px">Last Result</div>
+      <div id="tm-home-last-result"></div>
+      <div class="section-title" style="margin-top:20px">Squad Summary</div>
+      <div id="tm-home-squad"></div>
+    </div>
+
+    <!-- ── ROSTER ──────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-roster">
+      <div class="tbl-toolbar">
+        <input type="text" id="tm-roster-search" placeholder="Search players…" oninput="_tmFilterRoster()" style="flex:1;min-width:120px">
+        <button class="btn" onclick="_tmOpenAddPlayer(this)">+ PLAYER</button>
+        <button class="btn-outline" onclick="_tmShowJoinCode()">📋 JOIN CODE</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="tm-r-active">—</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-r-coaches">—</div><div class="stat-label">Coaches</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-r-invited">—</div><div class="stat-label">Invited</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="portal-tbl">
+          <thead><tr>
+            <th>NAME</th><th>POSITIONS</th><th>ROLE</th><th>STATUS</th><th>KF LINKED</th><th>JOINED</th><th></th>
+          </tr></thead>
+          <tbody id="tm-roster-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SCHEDULE ────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-schedule">
+      <!-- UPCOMING -->
+      <div id="tms-upcoming">
+        <div class="tbl-toolbar">
+          <button class="btn" onclick="_tmOpenAddEvent(this)">+ EVENT</button>
+        </div>
+        <div id="tm-upcoming-list"></div>
+      </div>
+      <!-- PAST -->
+      <div id="tms-past" style="display:none">
+        <div id="tm-past-list"></div>
+      </div>
+      <!-- AVAILABILITY -->
+      <div id="tms-availability" style="display:none">
+        <div class="section-title">Select an upcoming event to view availability</div>
+        <div id="tm-avail-events"></div>
+        <div id="tm-avail-detail" style="display:none;margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ── RESULTS ─────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-results">
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="tm-res-played">—</div><div class="stat-label">Played</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-res-won" style="color:#2e7d32">—</div><div class="stat-label">Won</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-res-drawn" style="color:#e65100">—</div><div class="stat-label">Drawn</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-res-lost" style="color:#c62828">—</div><div class="stat-label">Lost</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-res-gf">—</div><div class="stat-label">GF</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-res-ga">—</div><div class="stat-label">GA</div></div>
+      </div>
+      <div class="section-title">Game Results</div>
+      <div id="tm-results-list"></div>
+    </div>
+
+    <!-- ── TRAINING ────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-training">
+      <!-- PROGRAMS sub-panel -->
+      <div id="tmt-programs">
+        <div class="tbl-toolbar">
+          <button class="btn" onclick="_tmOpenAddPlan(this)">+ PROGRAM</button>
+        </div>
+        <div id="tm-plans-list"></div>
+      </div>
+      <!-- ASSIGNMENTS sub-panel -->
+      <div id="tmt-assignments" style="display:none">
+        <div class="section-title">Active Assignments</div>
+        <div id="tm-assignments-list"></div>
+        <div class="section-title" style="margin-top:20px">Assign a Program</div>
+        <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:16px;max-width:480px">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:10px">Select program and target, then ASSIGN. An automatic message will be sent.</div>
+          <select id="tm-assign-plan" style="width:100%;margin-bottom:8px;padding:8px;font-family:var(--font-mono);font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--s2);color:var(--text)"><option value="">— select program —</option></select>
+          <select id="tm-assign-target" style="width:100%;margin-bottom:12px;padding:8px;font-family:var(--font-mono);font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--s2);color:var(--text)"><option value="">— assign to —</option><option value="team">Whole Squad</option></select>
+          <button class="btn" onclick="_tmAssignPlan(this)" style="width:100%">ASSIGN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FITNESS ────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-fitness">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);padding:6px 12px;background:var(--s1);border-bottom:1px solid var(--border);flex-shrink:0">
+        🔗 Players who use the KritFit app share sleep, injury &amp; training data here when <strong>fitnessVisible</strong> is enabled.
+      </div>
+      <div class="tbl-toolbar">
+        <button class="btn" onclick="_tmRunReadiness(this)">⚡ AI READINESS REPORT</button>
+        <button class="btn-outline" onclick="_tmOpenLineup(this)">🎯 LINEUP BUILDER</button>
+      </div>
+      <div id="tm-fitness-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:16px"></div>
+    </div>
+
+    <!-- ── ANALYTICS ──────────────────────────────────── -->
+    <div class="tab-panel" id="tm-analytics">
+      <div class="section-title">Player Stats</div>
+      <div class="tbl-wrap">
+        <table class="portal-tbl">
+          <thead><tr>
+            <th>PLAYER</th><th>POSITION</th><th>GAMES</th><th>GOALS</th><th>ASSISTS</th><th>ATTEND %</th>
+          </tr></thead>
+          <tbody id="tm-analytics-tbody"></tbody>
+        </table>
+      </div>
+      <div class="section-title" style="margin-top:24px">Season Form</div>
+      <div id="tm-form-strip" style="display:flex;gap:4px;flex-wrap:wrap;padding:4px 0"></div>
+    </div>
+
+    <!-- ── STAFF ──────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-staff">
+      <div class="tbl-toolbar">
+        <button class="btn" onclick="_tmOpenAppointStaff(this)">+ APPOINT STAFF</button>
+      </div>
+      <div class="section-title">Coaching &amp; Management Team</div>
+      <div class="tbl-wrap">
+        <table class="portal-tbl">
+          <thead><tr>
+            <th>NAME</th><th>ROLE</th><th>POSITIONS MANAGED</th><th>KF UID</th><th></th>
+          </tr></thead>
+          <tbody id="tm-staff-tbody"></tbody>
+        </table>
+      </div>
+      <div class="section-title" style="margin-top:24px">Staff Assignments</div>
+      <div id="tm-duty-list"></div>
+    </div>
+
+    <!-- ── FINANCE ────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-finance">
+      <div class="tbl-toolbar">
+        <button class="btn" onclick="_tmOpenAddFinance('income',this)">+ INCOME</button>
+        <button class="btn-outline" onclick="_tmOpenAddFinance('expense',this)">+ EXPENSE</button>
+        <button class="btn-outline" onclick="_tmExportFinanceCSV()">⬇ CSV</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num tm-finance-income" id="tm-fin-income">£—</div><div class="stat-label">Total Income</div></div>
+        <div class="stat-card"><div class="stat-num tm-finance-expense" id="tm-fin-expense">£—</div><div class="stat-label">Total Expenses</div></div>
+        <div class="stat-card"><div class="stat-num" id="tm-fin-balance">£—</div><div class="stat-label">Balance</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="portal-tbl">
+          <thead><tr>
+            <th>DATE</th><th>TYPE</th><th>CATEGORY</th><th>DESCRIPTION</th><th>AMOUNT</th><th></th>
+          </tr></thead>
+          <tbody id="tm-finance-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TICKETING ──────────────────────────────────── -->
+    <div class="tab-panel" id="tm-ticketing">
+      <div id="tm-ticketing-locked" class="tm-ticket-lock">
+        <div class="lock-icon">🎟️</div>
+        <div class="lock-title">TICKETING</div>
+        <div class="lock-desc">Sell tickets to your home games and events directly through KritFit. Fans buy online, scan QR on the gate. No app needed for attendees.</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:20px">£1.23 per event activation &nbsp;·&nbsp; £0.12 per ticket sold</div>
+        <button class="btn" onclick="_tmActivateTicketing(this)" style="font-size:13px;padding:12px 32px">ACTIVATE TICKETING</button>
+      </div>
+      <div id="tm-ticketing-active" style="display:none">
+        <div class="tbl-toolbar">
+          <button class="btn" onclick="_tmOpenTicketEvent(this)">🎟️ NEW TICKETED EVENT</button>
+        </div>
+        <div id="tm-ticketed-events-list"></div>
+      </div>
+    </div>
+
+    <!-- ── MESSAGES ───────────────────────────────────── -->
+    <div class="tab-panel" id="tm-messages">
+      <div style="display:flex;gap:12px;padding:12px;flex-shrink:0">
+        <button class="btn" onclick="_tmOpenBroadcast(this)" style="flex:1">📣 BROADCAST TO SQUAD</button>
+        <button class="btn-outline" onclick="_tmOpenStaffThread(this)" style="flex:1">🎖️ STAFF THREAD</button>
+      </div>
+      <div class="section-title" style="margin:0 0 8px">Player Threads</div>
+      <div id="tm-threads-list"></div>
+    </div>
+
+    <!-- ── SETUP ──────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-setup">
+      <!-- Create team (if no team doc yet) -->
+      <div id="tm-create-team-section" style="display:none">
+        <div class="tm-create-team">
+          <div class="ct-icon">🏅</div>
+          <div class="ct-title">CREATE YOUR TEAM</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:24px">Set up your team profile to start managing your squad.</p>
+          <div style="max-width:400px;margin:0 auto;text-align:left">
+            <div style="margin-bottom:12px">
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">TEAM NAME</div>
+              <input type="text" id="tm-setup-name-create" placeholder="e.g. City FC" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+            </div>
+            <div style="margin-bottom:12px">
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">SPORT</div>
+              <input type="text" id="tm-setup-sport-create" placeholder="e.g. Football, Basketball, Rugby…" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+            </div>
+            <div style="margin-bottom:20px">
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">CITY / TOWN</div>
+              <input type="text" id="tm-setup-city-create" placeholder="e.g. Manchester" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+            </div>
+            <button class="btn" onclick="_tmCreateTeam(this)" style="width:100%;font-size:14px;padding:13px">CREATE TEAM</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit existing team -->
+      <div id="tm-setup-edit-section" style="display:none">
+        <div style="max-width:520px;padding:16px">
+          <div class="section-title">Team Profile</div>
+          <div style="display:grid;gap:12px">
+            <div>
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">TEAM NAME</div>
+              <input type="text" id="tm-setup-name" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;font-weight:700;background:var(--s2);color:var(--text)">
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">SPORT</div>
+              <input type="text" id="tm-setup-sport" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">CITY / TOWN</div>
+              <input type="text" id="tm-setup-city" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">WEBSITE (optional)</div>
+              <input type="text" id="tm-setup-website" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+            </div>
+          </div>
+          <button class="btn" onclick="_tmSaveSetup(this)" style="margin-top:16px">SAVE CHANGES</button>
+
+          <div class="section-title" style="margin-top:28px">Join Code</div>
+          <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px">Share this code so players can find and join your team in the KritFit app.</p>
+          <div class="code-badge" id="tm-join-code-display" onclick="_tmCopyJoinCode()" title="Click to copy">——</div>
+          <div class="code-hint">Click to copy · Codes are permanent</div>
+          <button class="btn-outline" onclick="_tmRegenerateCode(this)" style="margin-top:10px;font-size:11px">REGENERATE CODE</button>
+
+          <div class="section-title" style="margin-top:28px">Privacy</div>
+          <div class="report-chk" id="tm-allow-data-block" onclick="_tmToggleDataBlock(this)" style="max-width:400px">
+            <div class="rpt-box"></div> Allow players to hide their KritFit fitness data from coaches
+          </div>
+          <p style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:6px;max-width:400px">When OFF, all player fitness data is visible to coaches. Recommended for recreational teams.</p>
+
+          <div class="section-title" style="margin-top:28px">League Affiliation</div>
+          <div id="tm-league-section">
+            <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px">If your team belongs to a KritFit League, enter the League ID to link.</p>
+            <div style="display:flex;gap:8px;max-width:400px">
+              <input type="text" id="tm-league-id-input" placeholder="League ID" style="flex:1;padding:9px;border:1px solid var(--border);border-radius:5px;font-family:var(--font-mono);font-size:12px;background:var(--s2);color:var(--text)">
+              <button class="btn-outline" onclick="_tmLinkLeague(this)">LINK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /team-portal -->
+
+  <!-- ══ TEAM MODAL ══ -->
+  <div id="tm-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--s1);border-radius:10px;width:min(480px,96vw);max-height:88vh;overflow-y:auto;box-sizing:border-box">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:1.5px;padding:18px 20px 0" id="tm-modal-title">ADD</div>
+      <div style="padding:16px 20px" id="tm-modal-body"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding:0 20px 18px">
+        <button class="btn-outline" onclick="_tmModalClose()">CANCEL</button>
+        <button class="btn" id="tm-modal-save" onclick="_tmModalSave()">SAVE</button>
+      </div>
+    </div>
+  </div>
+
     </div><!-- /portal-main -->
   </div><!-- /portal-workspace -->
 
@@ -1738,6 +2088,13 @@
   // Stub onclick handlers until module loads
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gArchiveMember','_gDeleteArchivedMember','_gToggleArchiveView','_gConfirmModal','_gConfirmCheck','_gConfirmClose','_gConfirmExecute','_gExportCSV',
+   '_tmNav','_tmScheduleNav','_tmTrainingNav','_tmFilterRoster','_tmOpenAddPlayer','_tmShowJoinCode',
+   '_tmOpenAddEvent','_tmScheduleAvailDetail','_tmOpenAddResult',
+   '_tmOpenAddPlan','_tmAssignPlan','_tmRunReadiness','_tmOpenLineup',
+   '_tmOpenAppointStaff','_tmOpenAddFinance','_tmExportFinanceCSV',
+   '_tmActivateTicketing','_tmOpenTicketEvent','_tmOpenBroadcast','_tmOpenStaffThread',
+   '_tmCreateTeam','_tmSaveSetup','_tmCopyJoinCode','_tmRegenerateCode','_tmToggleDataBlock','_tmLinkLeague',
+   '_tmModalClose','_tmModalSave',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer','_gStripeConnect','_gRenderStripeSetup','_gLogoPickFile','_gLogoFileSelected','_gCropZoom','_gLogoCropCancel','_gLogoCropApply','_gLogoRemove',
    '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown','_gScanRefocus','_gToggleVoice','_gVoiceSettingsToggle','_gTestVoice','_gSaveVoiceSettings',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
@@ -1768,7 +2125,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.46';
+const PORTALS_VERSION = '1.47';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
@@ -2007,7 +2364,7 @@ async function _loadPortalByType(portal) {
     case 'trainer':      await _loadTrainerPortal(_authUid); break;
     case 'nutritionist': _setPortalTypePill('nutritionist'); _showComingSoon('NUTRITIONIST PORTAL'); break;
     case 'therapist':    _setPortalTypePill('therapist');    _showComingSoon('THERAPIST PORTAL'); break;
-    case 'team':         _setPortalTypePill('team');         _showComingSoon('TEAM PORTAL'); break;
+    case 'team':         await _loadTeamPortal(); break;
     case 'league':       _setPortalTypePill('league');       _showComingSoon('LEAGUE PORTAL'); break;
     case 'association':  _setPortalTypePill('association');  _showComingSoon('FEDERATION PORTAL'); break;
     case 'store':        _setPortalTypePill('store');        _showComingSoon('STORE PORTAL'); break;
@@ -7130,6 +7487,1065 @@ function _updateSidebarIndicator() {
     toggle.className = 'gray';
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// TEAM PORTAL
+// ══════════════════════════════════════════════════════════════
+
+let _teamId   = null;
+let _teamData = null;
+let _teamMembers   = [];
+let _teamEvents    = [];
+let _teamPlans     = [];
+let _teamFinances  = [];
+let _tmModalCb     = null;
+let _tmScheduleTab = 'upcoming';
+let _tmTrainingTab = 'programs';
+
+async function _loadTeamPortal() {
+  _portalType = 'team';
+  _setPortalTypePill('team');
+  document.getElementById('coming-soon-screen').style.display = 'none';
+  document.querySelectorAll('.portal-panel').forEach(p => p.style.display = 'none');
+  const tp = document.getElementById('team-portal');
+  tp.style.display = 'flex';
+
+  // Find this user's team
+  const uid = _authUid;
+  try {
+    const q1    = query(collection(db, 'teams'), where('adminUid', '==', uid));
+    const snap1 = await getDocs(q1);
+    if (!snap1.empty) {
+      _teamId   = snap1.docs[0].id;
+      _teamData = { id: _teamId, ...snap1.docs[0].data() };
+    } else {
+      const q2    = query(collection(db, 'teams'), where('ownerUid', '==', uid));
+      const snap2 = await getDocs(q2);
+      if (!snap2.empty) {
+        _teamId   = snap2.docs[0].id;
+        _teamData = { id: _teamId, ...snap2.docs[0].data() };
+      }
+    }
+  } catch(e) { console.error('[Team] load team:', e); }
+
+  if (_teamId) {
+    document.getElementById('portal-badge').textContent = _teamData.name || 'TEAM PORTAL';
+    await Promise.all([_tmLoadRoster(), _tmLoadEvents(), _tmLoadPlans(), _tmLoadFinances()]);
+    _tmRenderHome();
+    document.getElementById('tm-create-team-section').style.display = 'none';
+    document.getElementById('tm-setup-edit-section').style.display  = '';
+    _tmPopulateSetup();
+    _tmPopulateTicketing();
+  } else {
+    document.getElementById('portal-badge').textContent = 'TEAM PORTAL';
+    _tmNav('setup');
+    document.getElementById('tm-create-team-section').style.display = '';
+    document.getElementById('tm-setup-edit-section').style.display  = 'none';
+  }
+}
+
+// ── Navigation ─────────────────────────────────────────────
+
+window._tmNav = (tab) => {
+  document.querySelectorAll('#team-top-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tmnav-' + tab);
+  if (btn) btn.classList.add('active');
+
+  document.querySelectorAll('#team-portal .tab-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('tm-' + tab);
+  if (panel) panel.classList.add('active');
+
+  document.getElementById('tm-schedule-subnav-wrap').style.display  = tab === 'schedule'  ? '' : 'none';
+  document.getElementById('tm-training-subnav-wrap').style.display  = tab === 'training'  ? '' : 'none';
+
+  if (tab === 'schedule')  _tmRenderSchedule();
+  if (tab === 'results')   _tmRenderResults();
+  if (tab === 'analytics') _tmRenderAnalytics();
+  if (tab === 'fitness')   _tmRenderFitness();
+  if (tab === 'staff')     _tmRenderStaff();
+  if (tab === 'finance')   _tmRenderFinance();
+  if (tab === 'messages')  _tmRenderThreads();
+};
+
+window._tmScheduleNav = (sub) => {
+  _tmScheduleTab = sub;
+  document.querySelectorAll('#tm-schedule-subnav .nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tmsnav-' + sub);
+  if (btn) btn.classList.add('active');
+  document.getElementById('tms-upcoming').style.display    = sub === 'upcoming'     ? '' : 'none';
+  document.getElementById('tms-past').style.display        = sub === 'past'         ? '' : 'none';
+  document.getElementById('tms-availability').style.display = sub === 'availability' ? '' : 'none';
+  if (sub === 'availability') _tmRenderAvailability();
+};
+
+window._tmTrainingNav = (sub) => {
+  _tmTrainingTab = sub;
+  document.querySelectorAll('#tm-training-subnav .nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tmtnav-' + sub);
+  if (btn) btn.classList.add('active');
+  document.getElementById('tmt-programs').style.display   = sub === 'programs'    ? '' : 'none';
+  document.getElementById('tmt-assignments').style.display = sub === 'assignments' ? '' : 'none';
+  if (sub === 'assignments') _tmRenderAssignments();
+};
+
+// ── Data Loaders ───────────────────────────────────────────
+
+async function _tmLoadRoster() {
+  if (!_teamId) return;
+  try {
+    const snap = await getDocs(collection(db, 'teams', _teamId, 'members'));
+    _teamMembers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _tmRenderRoster();
+    _tmUpdateRosterStats();
+  } catch(e) { console.error('[Team] load roster:', e); }
+}
+
+async function _tmLoadEvents() {
+  if (!_teamId) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'teams', _teamId, 'events'), orderBy('date', 'asc')));
+    _teamEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { console.error('[Team] load events:', e); }
+}
+
+async function _tmLoadPlans() {
+  if (!_teamId) return;
+  try {
+    const snap = await getDocs(collection(db, 'teams', _teamId, 'plans'));
+    _teamPlans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _tmRenderPlans();
+    _tmPopulateAssignPlanSelect();
+  } catch(e) { console.error('[Team] load plans:', e); }
+}
+
+async function _tmLoadFinances() {
+  if (!_teamId) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'teams', _teamId, 'finances'), orderBy('date', 'desc')));
+    _teamFinances = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { console.error('[Team] load finances:', e); }
+}
+
+// ── HOME ───────────────────────────────────────────────────
+
+function _tmRenderHome() {
+  const active   = _teamMembers.filter(m => m.status === 'active' && m.role === 'player').length;
+  const coaches  = _teamMembers.filter(m => ['coach','admin'].includes(m.role)).length;
+  document.getElementById('tm-stat-players').textContent = active;
+  document.getElementById('tm-stat-coaches').textContent = coaches;
+
+  const games = _teamEvents.filter(e => e.type === 'game' && e.result);
+  let W = 0, D = 0, L = 0;
+  games.forEach(g => {
+    const r = g.result;
+    if (!r) return;
+    if (r.scoreHome > r.scoreAway) W++;
+    else if (r.scoreHome === r.scoreAway) D++;
+    else L++;
+  });
+  document.getElementById('tm-stat-record').textContent = games.length ? `${W}W ${D}D ${L}L` : '—';
+
+  const now = new Date();
+  const upcoming = _teamEvents.filter(e => {
+    const d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
+    return d > now;
+  });
+  if (upcoming.length) {
+    const next = upcoming[0];
+    const nd   = next.date?.toDate ? next.date.toDate() : new Date(next.date);
+    const days = Math.ceil((nd - now) / 86400000);
+    document.getElementById('tm-stat-next-days').textContent = days === 0 ? 'TODAY' : days;
+    document.getElementById('tm-home-next').innerHTML = _tmEventCard(next, false);
+  } else {
+    document.getElementById('tm-stat-next-days').textContent = '—';
+    document.getElementById('tm-home-next').innerHTML = '<div class="ph-card"><div class="ph-icon">📅</div><div class="ph-title">No upcoming events</div>Add events in the SCHEDULE tab.</div>';
+  }
+
+  const lastGame = [...games].reverse()[0];
+  if (lastGame) {
+    const r = lastGame.result;
+    const outcome = r.scoreHome > r.scoreAway ? 'W' : r.scoreHome === r.scoreAway ? 'D' : 'L';
+    document.getElementById('tm-home-last-result').innerHTML = `
+      <div class="tm-event-card">
+        <div>
+          <div class="tm-result-score">${r.scoreHome} – ${r.scoreAway}</div>
+          <span class="tm-result-badge tm-result-${outcome.toLowerCase()}">${outcome === 'W' ? 'WIN' : outcome === 'D' ? 'DRAW' : 'LOSS'}</span>
+          <div class="tm-event-meta" style="margin-top:4px">vs ${lastGame.opponentName || 'Unknown'}</div>
+        </div>
+      </div>`;
+  } else {
+    document.getElementById('tm-home-last-result').innerHTML = '<div class="ph-card"><div class="ph-icon">🏆</div><div class="ph-title">No results yet</div>Add game results after matches.</div>';
+  }
+
+  const statuses = { active: 0, inactive: 0, invited: 0 };
+  _teamMembers.forEach(m => { if (statuses[m.status] !== undefined) statuses[m.status]++; });
+  document.getElementById('tm-home-squad').innerHTML = `
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num">${statuses.active}</div><div class="stat-label">Active</div></div>
+      <div class="stat-card"><div class="stat-num">${statuses.inactive}</div><div class="stat-label">Inactive</div></div>
+      <div class="stat-card"><div class="stat-num">${statuses.invited}</div><div class="stat-label">Invited</div></div>
+    </div>`;
+}
+
+// ── ROSTER ─────────────────────────────────────────────────
+
+function _tmRenderRoster(members) {
+  members = members ?? _teamMembers;
+  const tbody = document.getElementById('tm-roster-tbody');
+  if (!members.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:#bbb;font-family:var(--font-mono)">No players yet — share your join code to get started.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = members.map(m => {
+    const roleClass = m.role === 'admin' ? 'tm-role-admin' : m.role === 'coach' ? 'tm-role-coach' : 'tm-role-player';
+    const roleLabel = (m.role || 'player').toUpperCase();
+    const joined    = m.joinedAt?.toDate ? m.joinedAt.toDate().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+    const positions = (m.positions || []).join(', ') || '—';
+    const kfLinked  = m.fitnessVisible !== undefined ? '✅' : '—';
+    const sn        = (m.displayName || '').replace(/'/g,'\\\'');
+    return `<tr>
+      <td style="font-weight:700">${m.displayName || m.handle || '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:10px">${positions}</td>
+      <td><span class="tm-staff-role-badge ${roleClass}">${roleLabel}</span></td>
+      <td><span class="status-badge ${m.status === 'active' ? 'status-active' : m.status === 'invited' ? 'status-paused' : 'status-inactive'}">${(m.status||'active').toUpperCase()}</span></td>
+      <td style="text-align:center">${kfLinked}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:#999">${joined}</td>
+      <td><button class="tbl-act-remove" onclick="_tmRemovePlayer('${m.id}','${sn}')">REMOVE</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function _tmUpdateRosterStats() {
+  document.getElementById('tm-r-active').textContent  = _teamMembers.filter(m => m.status === 'active').length;
+  document.getElementById('tm-r-coaches').textContent = _teamMembers.filter(m => ['coach','admin'].includes(m.role)).length;
+  document.getElementById('tm-r-invited').textContent = _teamMembers.filter(m => m.status === 'invited').length;
+}
+
+window._tmFilterRoster = () => {
+  const q = (document.getElementById('tm-roster-search')?.value || '').toLowerCase();
+  const out = q ? _teamMembers.filter(m =>
+    (m.displayName||'').toLowerCase().includes(q) ||
+    (m.handle||'').toLowerCase().includes(q) ||
+    (m.positions||[]).join(' ').toLowerCase().includes(q)
+  ) : _teamMembers;
+  _tmRenderRoster(out);
+};
+
+window._tmOpenAddPlayer = (btn) => {
+  _tmModalShow('ADD PLAYER', `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">DISPLAY NAME</div>
+        <input type="text" id="tma-name" placeholder="Player's name" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">POSITIONS (comma separated)</div>
+        <input type="text" id="tma-positions" placeholder="e.g. Striker, Captain" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">ROLE</div>
+        <select id="tma-role" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);font-family:var(--font-mono);font-size:12px">
+          <option value="player">Player</option>
+          <option value="coach">Coach</option>
+        </select>
+      </div>
+    </div>
+  `, async () => {
+    const name  = document.getElementById('tma-name').value.trim();
+    const pos   = document.getElementById('tma-positions').value.split(',').map(p => p.trim()).filter(Boolean);
+    const role  = document.getElementById('tma-role').value;
+    if (!name) { toast('Enter a player name'); return false; }
+    await addDoc(collection(db, 'teams', _teamId, 'members'), {
+      displayName: name, positions: pos, role, status: 'active',
+      fitnessVisible: true, joinedAt: serverTimestamp(),
+    });
+    await _tmLoadRoster();
+    _tmRenderHome();
+    toast(`${name} added.`);
+  });
+};
+
+window._tmRemovePlayer = (id, name) => {
+  if (!confirm(`Remove ${name || 'this player'} from the team?`)) return;
+  const { deleteDoc: dd, doc: d2 } = { deleteDoc, doc };
+  deleteDoc(doc(db, 'teams', _teamId, 'members', id)).then(() => {
+    _teamMembers = _teamMembers.filter(m => m.id !== id);
+    _tmRenderRoster();
+    _tmUpdateRosterStats();
+    toast(`${name || 'Player'} removed.`);
+  }).catch(e => toast('Error: ' + e.message));
+};
+
+window._tmShowJoinCode = () => {
+  const code = _teamData?.slug || _teamData?.joinCode || _teamId?.slice(0,8).toUpperCase();
+  _tmModalShow('TEAM JOIN CODE', `
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:16px">Players enter this code in the KritFit app to find and join your team.</p>
+    <div class="code-badge" style="font-size:24px;letter-spacing:6px;cursor:pointer" onclick="navigator.clipboard?.writeText('${code}').then(()=>toast('Copied!'))" title="Tap to copy">${code}</div>
+    <div class="code-hint">Tap to copy</div>
+  `, null);
+  document.getElementById('tm-modal-save').style.display = 'none';
+};
+
+// ── SCHEDULE ───────────────────────────────────────────────
+
+function _tmEventCard(ev, showActions) {
+  const d         = ev.date?.toDate ? ev.date.toDate() : new Date(ev.date);
+  const dateStr   = isNaN(d) ? '—' : d.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short' });
+  const timeStr   = isNaN(d) ? '' : d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  const typeClass = ['practice','game','meeting'].includes(ev.type) ? ev.type : 'other';
+  const rsvpCounts = ev.rsvp ? Object.values(ev.rsvp).reduce((a, v) => { a[v] = (a[v]||0)+1; return a; }, {}) : {};
+  const actBtns = showActions ? `
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      ${ev.type === 'game' && !ev.result ? `<button class="btn-outline" onclick="_tmOpenAddResult('${ev.id}',this)" style="font-size:11px;padding:4px 10px">+ RESULT</button>` : ''}
+      <button class="btn-outline" onclick="_tmDeleteEvent('${ev.id}')" style="font-size:11px;padding:4px 10px;color:#c62828;border-color:#c62828">DELETE</button>
+    </div>` : '';
+  return `<div class="tm-event-card">
+    <div class="tm-event-date">${dateStr}<br>${timeStr}</div>
+    <div style="flex:1">
+      <span class="tm-event-type ${typeClass}">${ev.type || 'event'}</span>
+      <div class="tm-event-title">${ev.title || (ev.type === 'game' ? `vs ${ev.opponentName || 'TBD'}` : 'Event')}</div>
+      ${ev.location ? `<div class="tm-event-meta">📍 ${ev.location}</div>` : ''}
+      ${ev.result ? `<div class="tm-event-meta" style="margin-top:6px"><strong>${ev.result.scoreHome} – ${ev.result.scoreAway}</strong> ${ev.result.scoreHome > ev.result.scoreAway ? '🟢 WIN' : ev.result.scoreHome === ev.result.scoreAway ? '🟡 DRAW' : '🔴 LOSS'}</div>` : ''}
+      ${Object.keys(rsvpCounts).length ? `<div class="tm-rsvp-row"><span class="tm-rsvp-yes">✓ ${rsvpCounts.yes||0}</span><span class="tm-rsvp-no">✗ ${rsvpCounts.no||0}</span><span class="tm-rsvp-maybe">? ${rsvpCounts.maybe||0}</span></div>` : ''}
+      ${actBtns}
+    </div>
+  </div>`;
+}
+
+function _tmRenderSchedule() {
+  const now = new Date();
+  const upcoming = _teamEvents.filter(e => { const d = e.date?.toDate ? e.date.toDate() : new Date(e.date); return d >= now; });
+  const past     = _teamEvents.filter(e => { const d = e.date?.toDate ? e.date.toDate() : new Date(e.date); return d < now; }).reverse();
+
+  const upEl = document.getElementById('tm-upcoming-list');
+  upEl.innerHTML = upcoming.length ? upcoming.map(e => _tmEventCard(e, true)).join('') : '<div class="ph-card"><div class="ph-icon">📅</div><div class="ph-title">No upcoming events</div></div>';
+
+  const paEl = document.getElementById('tm-past-list');
+  paEl.innerHTML = past.length ? past.map(e => _tmEventCard(e, true)).join('') : '<div class="ph-card"><div class="ph-icon">📋</div><div class="ph-title">No past events yet</div></div>';
+}
+
+function _tmRenderAvailability() {
+  const now = new Date();
+  const upcoming = _teamEvents.filter(e => { const d = e.date?.toDate ? e.date.toDate() : new Date(e.date); return d >= now; });
+  const el = document.getElementById('tm-avail-events');
+  el.innerHTML = upcoming.map(e => {
+    const d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
+    return `<div class="tm-event-card" style="cursor:pointer" onclick="_tmScheduleAvailDetail('${e.id}')">
+      <div class="tm-event-date">${d.toLocaleDateString('en-GB', { day:'2-digit', month:'short' })}</div>
+      <div style="flex:1"><span class="tm-event-type ${e.type||'other'}">${e.type||'event'}</span>
+      <div class="tm-event-title">${e.title || (e.type==='game' ? `vs ${e.opponentName||'TBD'}` : 'Event')}</div></div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">VIEW ›</div>
+    </div>`;
+  }).join('') || '<div class="ph-card"><div class="ph-icon">✅</div><div class="ph-title">No upcoming events</div></div>';
+}
+
+window._tmScheduleAvailDetail = (eventId) => {
+  const ev = _teamEvents.find(e => e.id === eventId);
+  if (!ev) return;
+  const rsvp = ev.rsvp || {};
+  const detail = document.getElementById('tm-avail-detail');
+  const rows = _teamMembers.filter(m => m.role === 'player').map(m => {
+    const v = rsvp[m.id] || 'pending';
+    const icon = v === 'yes' ? '✅' : v === 'no' ? '❌' : v === 'maybe' ? '🟡' : '⬜';
+    return `<tr><td>${m.displayName||m.handle||'—'}</td><td style="text-align:center">${icon} ${v.toUpperCase()}</td></tr>`;
+  }).join('');
+  detail.style.display = '';
+  detail.innerHTML = `
+    <div class="section-title">Availability: ${ev.title || (ev.type==='game' ? `vs ${ev.opponentName||'TBD'}` : 'Event')}</div>
+    <div class="tbl-wrap"><table class="portal-tbl"><thead><tr><th>PLAYER</th><th>RSVP</th></tr></thead><tbody>${rows || '<tr><td colspan="2" style="text-align:center;color:#bbb">No RSVPs yet</td></tr>'}</tbody></table></div>`;
+};
+
+window._tmOpenAddEvent = (btn) => {
+  _tmModalShow('ADD EVENT', `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">TYPE</div>
+        <select id="tmev-type" onchange="_tmEventTypeChanged(this)" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);font-family:var(--font-mono);font-size:12px">
+          <option value="practice">Practice</option>
+          <option value="game">Game</option>
+          <option value="meeting">Meeting</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div id="tmev-title-row">
+        <div class="section-label">TITLE (optional for games)</div>
+        <input type="text" id="tmev-title" placeholder="e.g. Monday Training" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div id="tmev-opponent-row" style="display:none">
+        <div class="section-label">OPPONENT</div>
+        <input type="text" id="tmev-opponent" placeholder="e.g. City FC" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="section-label">DATE</div>
+          <input type="date" id="tmev-date" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+        </div>
+        <div>
+          <div class="section-label">TIME</div>
+          <input type="time" id="tmev-time" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+        </div>
+      </div>
+      <div>
+        <div class="section-label">LOCATION</div>
+        <input type="text" id="tmev-location" placeholder="Venue or address" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">NOTES</div>
+        <textarea id="tmev-notes" rows="2" placeholder="Optional notes for the squad…" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);resize:vertical"></textarea>
+      </div>
+    </div>
+  `, async () => {
+    const type     = document.getElementById('tmev-type').value;
+    const title    = document.getElementById('tmev-title').value.trim();
+    const opponent = document.getElementById('tmev-opponent').value.trim();
+    const dateStr  = document.getElementById('tmev-date').value;
+    const timeStr  = document.getElementById('tmev-time').value || '10:00';
+    const location = document.getElementById('tmev-location').value.trim();
+    const notes    = document.getElementById('tmev-notes').value.trim();
+    if (!dateStr) { toast('Pick a date'); return false; }
+    const d = new Date(dateStr + 'T' + timeStr);
+    await addDoc(collection(db, 'teams', _teamId, 'events'), {
+      type, title: title || null, opponentName: opponent || null,
+      date: d, location: location || null, notes: notes || null,
+      rsvp: {}, attendance: {}, staffAssignments: [], result: null,
+      createdAt: serverTimestamp(), createdBy: _authUid,
+    });
+    await _tmLoadEvents();
+    _tmRenderSchedule();
+    _tmRenderHome();
+    toast('Event added.');
+  });
+  window._tmEventTypeChanged = (sel) => {
+    document.getElementById('tmev-opponent-row').style.display = sel.value === 'game' ? '' : 'none';
+  };
+};
+
+window._tmDeleteEvent = (id) => {
+  if (!confirm('Delete this event?')) return;
+  deleteDoc(doc(db, 'teams', _teamId, 'events', id)).then(() => {
+    _teamEvents = _teamEvents.filter(e => e.id !== id);
+    _tmRenderSchedule();
+    _tmRenderHome();
+    toast('Event deleted.');
+  }).catch(e => toast('Error: ' + e.message));
+};
+
+// ── RESULTS ────────────────────────────────────────────────
+
+function _tmRenderResults() {
+  const games = _teamEvents.filter(e => e.type === 'game');
+  const played = games.filter(g => g.result);
+  let W = 0, D = 0, L = 0, GF = 0, GA = 0;
+  played.forEach(g => {
+    const r = g.result;
+    GF += r.scoreHome || 0; GA += r.scoreAway || 0;
+    if (r.scoreHome > r.scoreAway) W++;
+    else if (r.scoreHome === r.scoreAway) D++;
+    else L++;
+  });
+  document.getElementById('tm-res-played').textContent = played.length;
+  document.getElementById('tm-res-won').textContent    = W;
+  document.getElementById('tm-res-drawn').textContent  = D;
+  document.getElementById('tm-res-lost').textContent   = L;
+  document.getElementById('tm-res-gf').textContent     = GF;
+  document.getElementById('tm-res-ga').textContent     = GA;
+
+  const el = document.getElementById('tm-results-list');
+  el.innerHTML = played.length ? [...played].reverse().map(g => _tmEventCard(g, false)).join('') : '<div class="ph-card"><div class="ph-icon">🏆</div><div class="ph-title">No results yet</div>After a game, use the + RESULT button in SCHEDULE to record the score.</div>';
+}
+
+window._tmOpenAddResult = async (eventId, btn) => {
+  const ev = _teamEvents.find(e => e.id === eventId);
+  if (!ev) return;
+  _tmModalShow(`RESULT: vs ${ev.opponentName || 'Opponent'}`, `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">YOUR SCORE</div>
+        <input type="number" id="tmr-home" min="0" value="0" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:20px;font-weight:900;text-align:center;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">OPPONENT SCORE</div>
+        <input type="number" id="tmr-away" min="0" value="0" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:20px;font-weight:900;text-align:center;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">MATCH NOTES</div>
+        <textarea id="tmr-notes" rows="3" placeholder="Scorers, key moments…" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);resize:vertical"></textarea>
+      </div>
+    </div>
+  `, async () => {
+    const scoreHome = parseInt(document.getElementById('tmr-home').value) || 0;
+    const scoreAway = parseInt(document.getElementById('tmr-away').value) || 0;
+    const notes     = document.getElementById('tmr-notes').value.trim();
+    await updateDoc(doc(db, 'teams', _teamId, 'events', eventId), {
+      result: { scoreHome, scoreAway, notes: notes || null },
+    });
+    await _tmLoadEvents();
+    _tmRenderResults();
+    _tmRenderSchedule();
+    _tmRenderHome();
+    toast('Result saved.');
+  });
+};
+
+// ── TRAINING ───────────────────────────────────────────────
+
+function _tmRenderPlans() {
+  const el = document.getElementById('tm-plans-list');
+  if (!_teamPlans.length) {
+    el.innerHTML = '<div class="ph-card"><div class="ph-icon">💪</div><div class="ph-title">No training programs yet</div>Create a reusable plan and assign it to players or the whole squad.</div>';
+    return;
+  }
+  el.innerHTML = _teamPlans.map(p => `
+    <div class="tm-event-card" style="align-items:center">
+      <div style="flex:1">
+        <div style="font-weight:700">${p.name||'Unnamed Plan'}</div>
+        <div class="tm-event-meta">${p.durationWeeks || '?'} weeks · <span style="font-family:var(--font-mono);font-size:9px;padding:1px 6px;border-radius:3px;background:${p.status==='active'?'#e8f5e9':'#f5f5f5'};color:${p.status==='active'?'#2e7d32':'#888'}">${(p.status||'draft').toUpperCase()}</span></div>
+        ${p.notes ? `<div class="tm-event-meta" style="margin-top:2px">${p.notes}</div>` : ''}
+      </div>
+      <button class="tbl-act-remove" onclick="_tmDeletePlan('${p.id}')">DELETE</button>
+    </div>`).join('');
+}
+
+function _tmPopulateAssignPlanSelect() {
+  const sel = document.getElementById('tm-assign-plan');
+  if (!sel) return;
+  const opts = _teamPlans.map(p => `<option value="${p.id}">${p.name||'Unnamed Plan'}</option>`).join('');
+  sel.innerHTML = '<option value="">— select program —</option>' + opts;
+
+  const targetSel = document.getElementById('tm-assign-target');
+  if (!targetSel) return;
+  const playerOpts = _teamMembers.filter(m => m.role === 'player').map(m =>
+    `<option value="player:${m.id}:${m.displayName||m.handle||'Player'}">${m.displayName||m.handle||'Player'}</option>`).join('');
+  targetSel.innerHTML = '<option value="">— assign to —</option><option value="team">Whole Squad</option>' + playerOpts;
+}
+
+function _tmRenderAssignments() {
+  const activePlans = _teamPlans.filter(p => p.status === 'active');
+  const el = document.getElementById('tm-assignments-list');
+  el.innerHTML = activePlans.length ? activePlans.map(p => `
+    <div class="tm-event-card">
+      <div style="flex:1">
+        <div style="font-weight:700">${p.name}</div>
+        <div class="tm-event-meta">Target: ${p.targetType === 'team' ? 'Whole Squad' : p.targetType}</div>
+      </div>
+      <button class="tbl-act-remove" onclick="_tmEndPlan('${p.id}')">END</button>
+    </div>`).join('') : '<div class="ph-card"><div class="ph-icon">📌</div><div class="ph-title">No active assignments</div></div>';
+}
+
+window._tmOpenAddPlan = (btn) => {
+  _tmModalShow('NEW TRAINING PROGRAM', `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">PROGRAM NAME</div>
+        <input type="text" id="tmp-name" placeholder="e.g. Pre-Season Conditioning" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">DURATION (weeks)</div>
+        <input type="number" id="tmp-weeks" value="4" min="1" max="52" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">NOTES</div>
+        <textarea id="tmp-notes" rows="3" placeholder="Goals, focus areas, equipment needed…" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);resize:vertical"></textarea>
+      </div>
+    </div>
+  `, async () => {
+    const name  = document.getElementById('tmp-name').value.trim();
+    const weeks = parseInt(document.getElementById('tmp-weeks').value) || 4;
+    const notes = document.getElementById('tmp-notes').value.trim();
+    if (!name) { toast('Enter a program name'); return false; }
+    await addDoc(collection(db, 'teams', _teamId, 'plans'), {
+      name, durationWeeks: weeks, notes: notes || null, status: 'draft',
+      targetType: 'team', targetIds: [], weeks: [],
+      createdAt: serverTimestamp(), createdBy: _authUid, updatedAt: serverTimestamp(),
+    });
+    await _tmLoadPlans();
+    toast(`Program "${name}" created.`);
+  });
+};
+
+window._tmAssignPlan = async (btn) => {
+  const planId = document.getElementById('tm-assign-plan').value;
+  const target = document.getElementById('tm-assign-target').value;
+  if (!planId || !target) { toast('Select a program and target'); return; }
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const [, targetId, targetName] = target.startsWith('player:') ? target.split(':') : ['team', 'team', 'Whole Squad'];
+    await updateDoc(doc(db, 'teams', _teamId, 'plans', planId), {
+      status: 'active',
+      targetType: target === 'team' ? 'team' : 'individual',
+      targetIds:  target === 'team' ? [] : [targetId],
+      startDate:  new Date().toISOString().slice(0,10),
+      updatedAt:  serverTimestamp(),
+    });
+    await _tmLoadPlans();
+    _tmRenderAssignments();
+    toast('Program assigned. Message sent to players.');
+  } catch(e) { toast('Error: ' + e.message); }
+  btn.disabled = false; btn.textContent = orig;
+};
+
+window._tmDeletePlan = (id) => {
+  if (!confirm('Delete this program?')) return;
+  deleteDoc(doc(db, 'teams', _teamId, 'plans', id)).then(() => {
+    _teamPlans = _teamPlans.filter(p => p.id !== id);
+    _tmRenderPlans();
+    _tmPopulateAssignPlanSelect();
+    toast('Program deleted.');
+  }).catch(e => toast('Error: ' + e.message));
+};
+
+window._tmEndPlan = (id) => {
+  updateDoc(doc(db, 'teams', _teamId, 'plans', id), { status: 'ended', updatedAt: serverTimestamp() })
+    .then(() => { _teamPlans = _teamPlans.map(p => p.id === id ? { ...p, status: 'ended' } : p); _tmRenderAssignments(); toast('Assignment ended.'); })
+    .catch(e => toast('Error: ' + e.message));
+};
+
+// ── FITNESS ────────────────────────────────────────────────
+
+function _tmRenderFitness() {
+  const grid = document.getElementById('tm-fitness-grid');
+  const players = _teamMembers.filter(m => m.role === 'player');
+  if (!players.length) {
+    grid.innerHTML = '<div class="ph-card" style="grid-column:1/-1"><div class="ph-icon">❤️</div><div class="ph-title">No players in roster yet</div></div>';
+    return;
+  }
+  grid.innerHTML = players.map(m => {
+    const fitnessLabel = m.fitnessVisible !== false ? '<span class="tm-readiness-green">● KF DATA</span>' : '<span style="color:#bbb">● NO DATA</span>';
+    const positions = (m.positions||[]).join(', ') || 'No position set';
+    return `<div class="tm-player-card">
+      <div style="font-weight:700">${m.displayName||m.handle||'—'}</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${positions}</div>
+      <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px">${fitnessLabel}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">${m.coachNotes||'No notes yet'}</div>
+      <button class="btn-outline" onclick="_tmEditFitnessNotes('${m.id}')" style="font-size:10px;padding:4px 10px;margin-top:8px">EDIT NOTES</button>
+    </div>`;
+  }).join('');
+}
+
+window._tmEditFitnessNotes = (uid) => {
+  const member = _teamMembers.find(m => m.id === uid);
+  if (!member) return;
+  _tmModalShow(`FITNESS NOTES — ${member.displayName||member.handle||'Player'}`, `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">POSITIONS / ROLE</div>
+        <input type="text" id="tmfn-positions" value="${(member.positions||[]).join(', ')}" placeholder="e.g. Striker, Captain" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">STRENGTHS</div>
+        <textarea id="tmfn-strengths" rows="2" placeholder="e.g. Pace, left foot, aerial ability…" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);resize:vertical">${member.strengths||''}</textarea>
+      </div>
+      <div>
+        <div class="section-label">WEAKNESSES / AREAS TO IMPROVE</div>
+        <textarea id="tmfn-weaknesses" rows="2" placeholder="e.g. Heading, composure under pressure…" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);resize:vertical">${member.weaknesses||''}</textarea>
+      </div>
+      <div>
+        <div class="section-label">COACH NOTES</div>
+        <textarea id="tmfn-notes" rows="3" placeholder="General notes, recent form, injury history…" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);resize:vertical">${member.coachNotes||''}</textarea>
+      </div>
+    </div>
+  `, async () => {
+    const positions  = document.getElementById('tmfn-positions').value.split(',').map(p => p.trim()).filter(Boolean);
+    const strengths  = document.getElementById('tmfn-strengths').value.trim();
+    const weaknesses = document.getElementById('tmfn-weaknesses').value.trim();
+    const coachNotes = document.getElementById('tmfn-notes').value.trim();
+    await updateDoc(doc(db, 'teams', _teamId, 'members', uid), { positions, strengths, weaknesses, coachNotes });
+    _teamMembers = _teamMembers.map(m => m.id === uid ? { ...m, positions, strengths, weaknesses, coachNotes } : m);
+    _tmRenderFitness();
+    toast('Notes saved.');
+  });
+};
+
+window._tmRunReadiness = (btn) => {
+  toast('AI Readiness Report — coming soon. Requires players to have KritFit app with fitness data sharing enabled.');
+};
+window._tmOpenLineup = (btn) => {
+  toast('AI Lineup Builder — coming soon.');
+};
+
+// ── ANALYTICS ─────────────────────────────────────────────
+
+function _tmRenderAnalytics() {
+  const players = _teamMembers.filter(m => m.role === 'player');
+  const games   = _teamEvents.filter(e => e.type === 'game');
+  const tbody   = document.getElementById('tm-analytics-tbody');
+
+  tbody.innerHTML = players.map(m => {
+    const attended = games.filter(g => g.attendance?.[m.id] === 'yes' || g.rsvp?.[m.id] === 'yes').length;
+    const attendPct = games.length ? Math.round(attended / games.length * 100) : '—';
+    const goals   = m.stats?.goals   || '—';
+    const assists = m.stats?.assists  || '—';
+    return `<tr>
+      <td style="font-weight:700">${m.displayName||m.handle||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:10px">${(m.positions||[]).join(', ')||'—'}</td>
+      <td style="text-align:center">${games.length}</td>
+      <td style="text-align:center">${goals}</td>
+      <td style="text-align:center">${assists}</td>
+      <td style="text-align:center">${attendPct}${typeof attendPct === 'number' ? '%' : ''}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:#bbb">No players yet</td></tr>';
+
+  const formStrip = document.getElementById('tm-form-strip');
+  const played = games.filter(g => g.result).slice(-10);
+  formStrip.innerHTML = played.map(g => {
+    const r = g.result;
+    const outcome = r.scoreHome > r.scoreAway ? 'W' : r.scoreHome === r.scoreAway ? 'D' : 'L';
+    const color   = outcome === 'W' ? '#2e7d32' : outcome === 'D' ? '#e65100' : '#c62828';
+    return `<div style="font-family:var(--font-mono);font-size:11px;font-weight:900;color:#fff;background:${color};width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:default" title="${r.scoreHome}–${r.scoreAway}">${outcome}</div>`;
+  }).join('') || '<span style="color:#bbb;font-family:var(--font-mono);font-size:11px">No results recorded yet</span>';
+}
+
+// ── STAFF ──────────────────────────────────────────────────
+
+function _tmRenderStaff() {
+  const staff = _teamMembers.filter(m => ['admin','coach'].includes(m.role));
+  const tbody = document.getElementById('tm-staff-tbody');
+  tbody.innerHTML = staff.map(m => {
+    const roleClass = m.role === 'admin' ? 'tm-role-admin' : 'tm-role-coach';
+    const sn = (m.displayName||'').replace(/'/g,'\\\'');
+    return `<tr>
+      <td style="font-weight:700">${m.displayName||m.handle||'—'}</td>
+      <td><span class="tm-staff-role-badge ${roleClass}">${(m.role||'coach').toUpperCase()}</span></td>
+      <td style="font-family:var(--font-mono);font-size:10px">${(m.positions||[]).join(', ')||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:#aaa">${m.id}</td>
+      <td>${m.role !== 'admin' ? `<button class="tbl-act-remove" onclick="_tmRemoveStaff('${m.id}','${sn}')">REMOVE</button>` : ''}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:24px;color:#bbb;font-family:var(--font-mono)">No coaches appointed yet</td></tr>';
+
+  // Duty list from upcoming events
+  const el = document.getElementById('tm-duty-list');
+  const upcomingWithDuties = _teamEvents.filter(e => {
+    const d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
+    return d > new Date() && (e.staffAssignments||[]).length > 0;
+  });
+  el.innerHTML = upcomingWithDuties.length ? upcomingWithDuties.map(ev => {
+    const d = ev.date?.toDate ? ev.date.toDate() : new Date(ev.date);
+    return `<div class="tm-event-card">
+      <div class="tm-event-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>
+      <div style="flex:1">
+        <div class="tm-event-title">${ev.title||(ev.type==='game'?`vs ${ev.opponentName||'TBD'}`:'Event')}</div>
+        ${(ev.staffAssignments||[]).map(a => `<div class="tm-event-meta">· ${a.name} — ${a.duty}</div>`).join('')}
+      </div>
+    </div>`;
+  }).join('') : '<div class="ph-card"><div class="ph-icon">📌</div><div class="ph-title">No duty assignments yet</div>Assign staff to events from the event cards above.</div>';
+}
+
+window._tmOpenAppointStaff = (btn) => {
+  const playerOptions = _teamMembers.filter(m => m.role === 'player').map(m =>
+    `<option value="${m.id}">${m.displayName||m.handle||m.id}</option>`).join('');
+  _tmModalShow('APPOINT COACH / MANAGER', `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">SELECT PLAYER TO APPOINT</div>
+        <select id="tmst-uid" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);font-family:var(--font-mono);font-size:12px">
+          <option value="">— select player —</option>
+          ${playerOptions}
+        </select>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">Only existing players can be appointed. Add them to ROSTER first.</div>
+      </div>
+      <div>
+        <div class="section-label">ROLE</div>
+        <select id="tmst-role" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);font-family:var(--font-mono);font-size:12px">
+          <option value="coach">Coach</option>
+        </select>
+      </div>
+      <div>
+        <div class="section-label">RESPONSIBILITIES (optional)</div>
+        <input type="text" id="tmst-resp" placeholder="e.g. Goalkeeper coaching, Fitness" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+    </div>
+  `, async () => {
+    const uid  = document.getElementById('tmst-uid').value;
+    const role = document.getElementById('tmst-role').value;
+    const resp = document.getElementById('tmst-resp').value.trim().split(',').map(s => s.trim()).filter(Boolean);
+    if (!uid) { toast('Select a player'); return false; }
+    await updateDoc(doc(db, 'teams', _teamId, 'members', uid), { role, positions: resp.length ? resp : [] });
+    _teamMembers = _teamMembers.map(m => m.id === uid ? { ...m, role, positions: resp } : m);
+    _tmRenderStaff();
+    toast('Staff role updated.');
+  });
+};
+
+window._tmRemoveStaff = (id, name) => {
+  if (!confirm(`Demote ${name || 'this person'} back to player?`)) return;
+  updateDoc(doc(db, 'teams', _teamId, 'members', id), { role: 'player' })
+    .then(() => { _teamMembers = _teamMembers.map(m => m.id === id ? { ...m, role: 'player' } : m); _tmRenderStaff(); toast('Role removed.'); })
+    .catch(e => toast('Error: ' + e.message));
+};
+
+// ── FINANCE ────────────────────────────────────────────────
+
+function _tmRenderFinance() {
+  let totalIncome = 0, totalExpense = 0;
+  const tbody = document.getElementById('tm-finance-tbody');
+  tbody.innerHTML = _teamFinances.map(f => {
+    if (f.type === 'income')  totalIncome  += f.amount || 0;
+    if (f.type === 'expense') totalExpense += f.amount || 0;
+    const sign = f.type === 'income' ? '+' : '-';
+    const cls  = f.type === 'income' ? 'tm-finance-income' : 'tm-finance-expense';
+    return `<tr>
+      <td style="font-family:var(--font-mono);font-size:10px">${f.date||'—'}</td>
+      <td><span class="tm-staff-role-badge ${f.type==='income'?'tm-role-coach':''}"><span class="${cls}">${(f.type||'—').toUpperCase()}</span></span></td>
+      <td style="font-family:var(--font-mono);font-size:10px">${f.category||'—'}</td>
+      <td>${f.description||'—'}</td>
+      <td style="font-family:var(--font-mono);font-weight:700" class="${cls}">${sign}£${(f.amount||0).toFixed(2)}</td>
+      <td><button class="tbl-act-remove" onclick="_tmDeleteFinance('${f.id}')">DEL</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:28px;color:#bbb;font-family:var(--font-mono)">No entries yet</td></tr>';
+
+  const balance = totalIncome - totalExpense;
+  document.getElementById('tm-fin-income').textContent  = '£' + totalIncome.toFixed(2);
+  document.getElementById('tm-fin-expense').textContent = '£' + totalExpense.toFixed(2);
+  const balEl = document.getElementById('tm-fin-balance');
+  balEl.textContent = (balance >= 0 ? '+£' : '-£') + Math.abs(balance).toFixed(2);
+  balEl.style.color = balance >= 0 ? '#2e7d32' : '#c62828';
+}
+
+window._tmOpenAddFinance = (type, btn) => {
+  _tmModalShow(type === 'income' ? 'ADD INCOME' : 'ADD EXPENSE', `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">CATEGORY</div>
+        <input type="text" id="tmf-cat" placeholder="${type==='income' ? 'e.g. Dues, Sponsorship, Fundraiser' : 'e.g. Equipment, Travel, Venue Hire'}" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div>
+        <div class="section-label">DESCRIPTION</div>
+        <input type="text" id="tmf-desc" placeholder="What is this for?" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="section-label">AMOUNT (£)</div>
+          <input type="number" id="tmf-amount" min="0" step="0.01" placeholder="0.00" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+        </div>
+        <div>
+          <div class="section-label">DATE</div>
+          <input type="date" id="tmf-date" value="${new Date().toISOString().slice(0,10)}" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+        </div>
+      </div>
+      <div>
+        <div class="section-label">NOTES (optional)</div>
+        <input type="text" id="tmf-notes" placeholder="" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text)">
+      </div>
+    </div>
+  `, async () => {
+    const category    = document.getElementById('tmf-cat').value.trim();
+    const description = document.getElementById('tmf-desc').value.trim();
+    const amount      = parseFloat(document.getElementById('tmf-amount').value) || 0;
+    const date        = document.getElementById('tmf-date').value;
+    const notes       = document.getElementById('tmf-notes').value.trim();
+    if (!category || !amount) { toast('Enter category and amount'); return false; }
+    await addDoc(collection(db, 'teams', _teamId, 'finances'), {
+      type, category, description, amount, date, notes: notes || null,
+      createdAt: serverTimestamp(), createdBy: _authUid,
+    });
+    await _tmLoadFinances();
+    _tmRenderFinance();
+    toast(`${type === 'income' ? 'Income' : 'Expense'} added.`);
+  });
+};
+
+window._tmDeleteFinance = (id) => {
+  if (!confirm('Delete this entry?')) return;
+  deleteDoc(doc(db, 'teams', _teamId, 'finances', id)).then(() => {
+    _teamFinances = _teamFinances.filter(f => f.id !== id);
+    _tmRenderFinance();
+    toast('Entry deleted.');
+  }).catch(e => toast('Error: ' + e.message));
+};
+
+window._tmExportFinanceCSV = () => {
+  const rows = [['DATE','TYPE','CATEGORY','DESCRIPTION','AMOUNT']];
+  _teamFinances.forEach(f => rows.push([f.date||'', f.type||'', f.category||'', f.description||'', (f.type==='expense'?'-':'') + (f.amount||0).toFixed(2)]));
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a'); a.href = 'data:text/csv,' + encodeURIComponent(csv); a.download = 'team-finances.csv'; a.click();
+};
+
+// ── TICKETING ──────────────────────────────────────────────
+
+function _tmPopulateTicketing() {
+  const enabled = _teamData?.config?.features?.ticketSales === true;
+  document.getElementById('tm-ticketing-locked').style.display  = enabled ? 'none' : '';
+  document.getElementById('tm-ticketing-active').style.display  = enabled ? '' : 'none';
+}
+
+window._tmActivateTicketing = (btn) => {
+  toast('Ticketing activation — requires Stripe Connect setup. Coming soon — contact support@kritfit.com.');
+};
+
+window._tmOpenTicketEvent = (btn) => {
+  toast('Ticket event creation — coming soon.');
+};
+
+// ── MESSAGES ───────────────────────────────────────────────
+
+function _tmRenderThreads() {
+  const el = document.getElementById('tm-threads-list');
+  const players = _teamMembers.filter(m => m.role === 'player');
+  el.innerHTML = players.map(m => `
+    <div class="tm-event-card" style="cursor:pointer;align-items:center" onclick="_tmOpenThread('${m.id}')">
+      <div style="flex:1">
+        <div style="font-weight:700">${m.displayName||m.handle||'—'}</div>
+        <div class="tm-event-meta">${(m.positions||[]).join(', ')||'Player'}</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">MESSAGE ›</div>
+    </div>`).join('') || '<div class="ph-card"><div class="ph-icon">💬</div><div class="ph-title">No players yet</div></div>';
+}
+
+window._tmOpenBroadcast = (btn) => {
+  _tmModalShow('BROADCAST TO SQUAD', `
+    <div style="display:grid;gap:12px">
+      <div>
+        <div class="section-label">MESSAGE</div>
+        <textarea id="tmbr-msg" rows="5" placeholder="Your message to the squad…" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;background:var(--s2);color:var(--text);resize:vertical"></textarea>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">Message will be sent to all active players and staff.</div>
+    </div>
+  `, async () => {
+    const msg = document.getElementById('tmbr-msg').value.trim();
+    if (!msg) { toast('Enter a message'); return false; }
+    await addDoc(collection(db, 'teams', _teamId, 'messages'), {
+      type: 'text', text: msg, senderUid: _authUid,
+      senderName: _teamData?.name || 'Coach',
+      archiveStatus: 'live', sentAt: serverTimestamp(), readBy: [],
+    });
+    toast('Broadcast sent to squad.');
+  });
+};
+
+window._tmOpenStaffThread = (btn) => {
+  toast('Staff thread — coming soon.');
+};
+
+window._tmOpenThread = (uid) => {
+  const member = _teamMembers.find(m => m.id === uid);
+  toast(`Direct message to ${member?.displayName || 'player'} — coming soon.`);
+};
+
+// ── SETUP ──────────────────────────────────────────────────
+
+function _tmPopulateSetup() {
+  if (!_teamData) return;
+  document.getElementById('tm-setup-name').value    = _teamData.name    || '';
+  document.getElementById('tm-setup-sport').value   = _teamData.sport   || '';
+  document.getElementById('tm-setup-city').value    = _teamData.city    || '';
+  document.getElementById('tm-setup-website').value = _teamData.website || '';
+  const code = _teamData.slug || _teamData.joinCode || _teamId.slice(0,8).toUpperCase();
+  document.getElementById('tm-join-code-display').textContent = code;
+  const blockEl = document.getElementById('tm-allow-data-block');
+  const on = _teamData.allowMemberDataBlock === true;
+  blockEl.classList.toggle('rpt-on', on);
+  const box = blockEl.querySelector('.rpt-box'); if (box) box.textContent = on ? '✓' : '';
+}
+
+window._tmSaveSetup = async (btn) => {
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '…';
+  try {
+    const updates = {
+      name:    document.getElementById('tm-setup-name').value.trim(),
+      sport:   document.getElementById('tm-setup-sport').value.trim(),
+      city:    document.getElementById('tm-setup-city').value.trim(),
+      website: document.getElementById('tm-setup-website').value.trim() || null,
+    };
+    await updateDoc(doc(db, 'teams', _teamId), updates);
+    Object.assign(_teamData, updates);
+    document.getElementById('portal-badge').textContent = updates.name || 'TEAM PORTAL';
+    toast('Team profile saved.');
+  } catch(e) { toast('Error: ' + e.message); }
+  btn.disabled = false; btn.innerHTML = orig;
+};
+
+window._tmCreateTeam = async (btn) => {
+  const name  = document.getElementById('tm-setup-name-create').value.trim();
+  const sport = document.getElementById('tm-setup-sport-create').value.trim();
+  const city  = document.getElementById('tm-setup-city-create').value.trim();
+  if (!name || !sport) { toast('Enter a team name and sport'); return; }
+  const orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = '…';
+  try {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').slice(0, 20) + '-' + Math.random().toString(36).slice(2,6);
+    const ref  = await addDoc(collection(db, 'teams'), {
+      name, sport, city: city || null, slug,
+      adminUid: _authUid, ownerUid: _authUid,
+      subscriptionTier: 'team', subscriptionStatus: 'active',
+      allowMemberDataBlock: false,
+      config: { features: { scheduling: true, trainingPlans: true, wellnessCheckin: true, readinessDashboard: true, videoGallery: true, ticketSales: false, mvpAwards: true } },
+      basePlayerCount: 20, createdAt: serverTimestamp(),
+    });
+    await addDoc(collection(db, 'teams', ref.id, 'members'), {
+      uid: _authUid, displayName: 'Team Admin', role: 'admin',
+      status: 'active', fitnessVisible: true, joinedAt: serverTimestamp(),
+    });
+    _teamId   = ref.id;
+    _teamData = { id: _teamId, name, sport, city, slug, adminUid: _authUid, ownerUid: _authUid, allowMemberDataBlock: false };
+    document.getElementById('tm-create-team-section').style.display = 'none';
+    document.getElementById('tm-setup-edit-section').style.display  = '';
+    _tmPopulateSetup();
+    await _tmLoadRoster();
+    _tmRenderHome();
+    document.getElementById('portal-badge').textContent = name;
+    _tmNav('home');
+    toast(`Team "${name}" created!`);
+  } catch(e) { toast('Error: ' + e.message); }
+  btn.disabled = false; btn.innerHTML = orig;
+};
+
+window._tmCopyJoinCode = () => {
+  const code = document.getElementById('tm-join-code-display').textContent;
+  navigator.clipboard?.writeText(code).then(() => toast('Join code copied!')).catch(() => {});
+};
+
+window._tmRegenerateCode = async (btn) => {
+  if (!confirm('Generate a new join code? The old code will stop working.')) return;
+  const newSlug = (_teamData.name||'team').toLowerCase().replace(/[^a-z0-9]/g,'-').slice(0,12) + '-' + Math.random().toString(36).slice(2,7);
+  await updateDoc(doc(db, 'teams', _teamId), { slug: newSlug });
+  _teamData.slug = newSlug;
+  document.getElementById('tm-join-code-display').textContent = newSlug;
+  toast('New join code generated.');
+};
+
+window._tmToggleDataBlock = (el) => {
+  toggleRptChk(el);
+  const on = el.classList.contains('rpt-on');
+  updateDoc(doc(db, 'teams', _teamId), { allowMemberDataBlock: on })
+    .then(() => { _teamData.allowMemberDataBlock = on; })
+    .catch(e => toast('Error: ' + e.message));
+};
+
+window._tmLinkLeague = async (btn) => {
+  const leagueId = document.getElementById('tm-league-id-input').value.trim();
+  if (!leagueId) { toast('Enter a League ID'); return; }
+  await updateDoc(doc(db, 'teams', _teamId), { leagueId });
+  _teamData.leagueId = leagueId;
+  toast('League linked.');
+};
+
+// ── Modal helper ───────────────────────────────────────────
+
+function _tmModalShow(title, body, onSave) {
+  document.getElementById('tm-modal-title').textContent = title;
+  document.getElementById('tm-modal-body').innerHTML    = body;
+  document.getElementById('tm-modal-save').style.display = onSave ? '' : 'none';
+  _tmModalCb = onSave;
+  document.getElementById('tm-modal').style.display = 'flex';
+}
+
+window._tmModalClose = () => {
+  document.getElementById('tm-modal').style.display = 'none';
+  _tmModalCb = null;
+};
+
+window._tmModalSave = async () => {
+  if (!_tmModalCb) return;
+  const btn  = document.getElementById('tm-modal-save');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle"></span>';
+  try {
+    const result = await _tmModalCb();
+    if (result !== false) _tmModalClose();
+  } catch(e) { toast('Error: ' + e.message); }
+  btn.disabled = false; btn.innerHTML = orig;
+};
 </script>
 <div id="toast"></div>
 </body>
