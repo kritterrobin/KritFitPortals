@@ -754,6 +754,15 @@
     .gc-class-pip { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:#78909c; }
     .gc-class-title { font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text); }
     .gc-class-meta  { font-family:var(--font-mono); font-size:10px; color:#888; }
+    /* ── Toast notification ── */
+    #toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+      background:var(--accent); color:#fff; padding:10px 20px; border-radius:6px;
+      font-family:var(--font-mono); font-size:12px; font-weight:600; letter-spacing:.3px;
+      box-shadow:0 4px 16px rgba(0,0,0,.25); z-index:99999; pointer-events:none;
+      opacity:0; transition:transform .22s ease, opacity .22s ease; max-width:90vw; text-align:center;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -1744,8 +1753,19 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.40';
+const PORTALS_VERSION = '1.41';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
+
+let _toastTimer = null;
+window.toast = (msg, duration = 3200) => {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  if (_toastTimer) clearTimeout(_toastTimer);
+  el.textContent = msg;
+  el.style.background = (msg.startsWith('✗') || msg.startsWith('❌')) ? '#e53935' : 'var(--accent)';
+  el.classList.add('show');
+  _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+};
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
 let _currentTier      = null;   // raw subscriptionTier from user_registry
@@ -6958,5 +6978,6 @@ function _updateSidebarIndicator() {
   }
 }
 </script>
+<div id="toast"></div>
 </body>
 </html>
