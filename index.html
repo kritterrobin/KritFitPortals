@@ -424,6 +424,29 @@
     .gf-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
     .gf-section-title { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:2px; color:#888; text-transform:uppercase; margin:16px 0 8px; }
 
+    /* ── Analytics tab ── */
+    #gym-analytics-nav .nav-btn { padding:5px 8px; }
+    #gym-analytics-nav .nav-btn .icon { font-size:14px; }
+    .an-wrap { padding:16px; }
+    .an-section-title { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:2px; color:#888; text-transform:uppercase; margin:20px 0 10px; }
+    .an-section-title:first-child { margin-top:0; }
+    .an-card { background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+    .an-card-title { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:1px; color:#bbb; text-transform:uppercase; margin-bottom:12px; }
+    .an-kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:20px; }
+    .an-kpi { background:#fff; border:1px solid var(--border); border-radius:8px; padding:14px 10px; text-align:center; }
+    .an-kpi-val { font-family:var(--font-display); font-size:26px; color:var(--accent); line-height:1; }
+    .an-kpi-lbl { font-family:var(--font-mono); font-size:9px; letter-spacing:1px; color:#999; margin-top:6px; text-transform:uppercase; }
+    .an-kpi-sub { font-family:var(--font-mono); font-size:9px; color:#bbb; margin-top:2px; }
+    .an-row2 { display:grid; grid-template-columns:1fr 2fr; gap:12px; margin-bottom:12px; }
+    @media(max-width:600px){ .an-row2 { grid-template-columns:1fr; } }
+    .an-ring-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .an-class-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:11px; }
+    .an-class-row:last-child { border-bottom:none; }
+    .an-class-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .an-bar-track { flex:1; height:8px; background:#f0f4f8; border-radius:4px; overflow:hidden; }
+    .an-bar { height:8px; border-radius:4px; background:var(--accent); opacity:.75; min-width:3px; }
+    .an-bar-val { font-size:10px; color:#888; min-width:30px; text-align:right; }
+
     /* Mobile: sidebar hidden by default, toggle floats */
     @media(max-width:767px) {
       #sidebar { position:fixed; top:57px; left:0; z-index:180; width:268px; transform:translateX(-240px); transition:transform .22s ease; }
@@ -951,8 +974,9 @@
       <button class="nav-btn"        id="gtab-trainers" onclick="_gNav('trainers')"><span class="icon">🏋️</span>TRAINERS</button>
       <button class="nav-btn"        id="gtab-payments" onclick="_gNav('payments')"><span class="icon">💳</span>PAYMENTS</button>
       <button class="nav-btn"        id="gtab-store"    onclick="_gNav('store')">   <span class="icon">🛍️</span>STORE</button>
-      <button class="nav-btn"        id="gtab-finance"  onclick="_gNav('finance')"> <span class="icon">📊</span>FINANCE</button>
-      <button class="nav-btn"        id="gtab-setup"    onclick="_gNav('setup')">   <span class="icon">⚙️</span>SETUP</button>
+      <button class="nav-btn"        id="gtab-finance"   onclick="_gNav('finance')">   <span class="icon">💰</span>FINANCE</button>
+      <button class="nav-btn"        id="gtab-analytics" onclick="_gNav('analytics')"><span class="icon">📊</span>ANALYTICS</button>
+      <button class="nav-btn"        id="gtab-setup"     onclick="_gNav('setup')">    <span class="icon">⚙️</span>SETUP</button>
     </nav>
 
     <!-- NAV-2: Finance sub-nav -->
@@ -961,6 +985,19 @@
         <button class="nav-btn active" id="gftab-pl"      onclick="_gFinanceTab('pl')">     <span class="icon">📈</span>P&amp;L</button>
         <button class="nav-btn"        id="gftab-expenses" onclick="_gFinanceTab('expenses')"><span class="icon">🧾</span>EXPENSES</button>
         <button class="nav-btn"        id="gftab-payroll"  onclick="_gFinanceTab('payroll')"> <span class="icon">💼</span>PAYROLL</button>
+      </nav>
+    </div>
+
+    <!-- NAV-2: Analytics sub-nav -->
+    <div id="gym-analytics-subnav" style="display:none;flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="gym-analytics-nav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="gatab-overview"    onclick="_gAnalyticsTab('overview')"   ><span class="icon">⚡</span>OVERVIEW</button>
+        <button class="nav-btn"        id="gatab-revenue"     onclick="_gAnalyticsTab('revenue')"    ><span class="icon">💰</span>REVENUE</button>
+        <button class="nav-btn"        id="gatab-members"     onclick="_gAnalyticsTab('members')"    ><span class="icon">👥</span>MEMBERS</button>
+        <button class="nav-btn"        id="gatab-attendance"  onclick="_gAnalyticsTab('attendance')" ><span class="icon">✅</span>ATTENDANCE</button>
+        <button class="nav-btn"        id="gatab-classes"     onclick="_gAnalyticsTab('classes')"    ><span class="icon">📅</span>CLASSES</button>
+        <button class="nav-btn"        id="gatab-trainers"    onclick="_gAnalyticsTab('trainers')"   ><span class="icon">🏋️</span>TRAINERS</button>
+        <button class="nav-btn"        id="gatab-store"       onclick="_gAnalyticsTab('store')"      ><span class="icon">🛍️</span>STORE</button>
       </nav>
     </div>
 
@@ -1040,9 +1077,12 @@
         <div class="ph-card"><div class="ph-icon">✅</div><div class="ph-title">Loading…</div></div>
       </div>
       <div class="section-title" style="margin-top:24px">Manual Check-In</div>
-      <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Enter a member name or code to log a check-in at the door.</p>
-      <div class="toolbar">
-        <input type="text" id="g-ci-manual-input" placeholder="Member name or code…" style="flex:1" onkeydown="if(event.key==='Enter')_gManualCheckin()">
+      <p style="font-family:var(--font-mono);font-size:11px;color:#888;margin-bottom:12px">Enter a member name or code to log a check-in. Select the class if applicable.</p>
+      <div class="toolbar" style="flex-wrap:wrap">
+        <input type="text" id="g-ci-manual-input" placeholder="Member name or code…" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')_gManualCheckin()">
+        <select id="g-ci-class-select" class="form-input" style="flex:0 0 auto;min-width:160px;font-family:var(--font-mono);font-size:11px;padding:7px 10px;border:2px solid #ddd;border-radius:4px;background:#fff">
+          <option value="">General / No class</option>
+        </select>
         <button class="btn" id="g-ci-manual-btn" onclick="_gManualCheckin()">CHECK IN</button>
       </div>
       <div id="g-ci-manual-result"></div>
@@ -1276,6 +1316,98 @@
       </div>
     </div><!-- /g-finance -->
 
+    <!-- ══ ANALYTICS TAB ══ -->
+    <div class="tab-panel" id="g-analytics">
+      <div class="an-wrap">
+        <!-- KPI bar -->
+        <div class="an-kpi-row" id="an-kpi-row">
+          <div class="an-kpi"><div class="an-kpi-val" id="an-kpi-members">—</div><div class="an-kpi-lbl">Active Members</div></div>
+          <div class="an-kpi"><div class="an-kpi-val" id="an-kpi-occ">—</div><div class="an-kpi-lbl">Occupancy</div><div class="an-kpi-sub" id="an-kpi-occ-sub"></div></div>
+          <div class="an-kpi"><div class="an-kpi-val" id="an-kpi-mrr">—</div><div class="an-kpi-lbl">MRR (Actual)</div></div>
+          <div class="an-kpi"><div class="an-kpi-val" id="an-kpi-checkins">—</div><div class="an-kpi-lbl">Check-ins (30d)</div></div>
+          <div class="an-kpi"><div class="an-kpi-val" id="an-kpi-ghost">—</div><div class="an-kpi-lbl">Ghost Members</div><div class="an-kpi-sub">no check-in 30d</div></div>
+        </div>
+
+        <!-- REVENUE section -->
+        <div id="ga-overview" class="an-analytics-section">
+          <div class="an-section-title">REVENUE</div>
+          <div class="an-row2">
+            <div class="an-card an-ring-wrap">
+              <div class="an-card-title">Occupancy Rate</div>
+              <div id="an-occ-ring"></div>
+            </div>
+            <div class="an-card">
+              <div class="an-card-title">Potential vs Actual MRR</div>
+              <canvas id="an-mrr-chart"></canvas>
+            </div>
+          </div>
+          <div class="an-card">
+            <div class="an-card-title">Members by Tier</div>
+            <canvas id="an-tier-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- MEMBERS section -->
+        <div id="ga-members" class="an-analytics-section">
+          <div class="an-section-title">MEMBERS</div>
+          <div class="an-row2">
+            <div class="an-card">
+              <div class="an-card-title">Status Breakdown</div>
+              <canvas id="an-status-chart"></canvas>
+            </div>
+            <div class="an-card">
+              <div class="an-card-title">New This Month</div>
+              <div id="an-new-members-body" style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:8px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ATTENDANCE section -->
+        <div id="ga-attendance" class="an-analytics-section">
+          <div class="an-section-title">ATTENDANCE · LAST 30 DAYS</div>
+          <div class="an-card">
+            <div class="an-card-title">Daily Check-Ins</div>
+            <canvas id="an-checkins-chart"></canvas>
+          </div>
+          <div class="an-card">
+            <div class="an-card-title">Peak Hours Heatmap (by day &amp; hour)</div>
+            <div id="an-heatmap"></div>
+          </div>
+        </div>
+
+        <!-- CLASSES section -->
+        <div id="ga-classes" class="an-analytics-section">
+          <div class="an-section-title">CLASS PARTICIPATION · LAST 30 DAYS</div>
+          <div class="an-card">
+            <div class="an-card-title">Check-ins per Class</div>
+            <div id="an-class-bars"></div>
+            <div id="an-class-note" style="font-family:var(--font-mono);font-size:10px;color:#bbb;margin-top:10px"></div>
+          </div>
+          <div class="an-card">
+            <div class="an-card-title">Class Schedule Summary</div>
+            <div id="an-class-schedule"></div>
+          </div>
+        </div>
+
+        <!-- TRAINERS section -->
+        <div id="ga-trainers" class="an-analytics-section">
+          <div class="an-section-title">TRAINERS</div>
+          <div id="an-trainers-body"></div>
+        </div>
+
+        <!-- STORE section — only shown when store module is active -->
+        <div id="ga-store" class="an-analytics-section" style="display:none">
+          <div class="an-section-title">STORE</div>
+          <div id="an-store-body" class="an-card">
+            <div class="an-card-title">Store Analytics</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:#bbb;text-align:center;padding:20px">
+              Store order analytics will appear here once orders are recorded.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /gym-portal -->
 
   <!-- ══ GYM MODAL ══ -->
@@ -1368,7 +1500,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.17';
+const PORTALS_VERSION = '1.18';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -1587,16 +1719,18 @@ let _gymExpenses     = [];
 let _gymPortalUsers  = [];
 let _gymRole         = '';   // role of the currently signed-in user for this gym
 let _gymPerms        = {};   // resolved permission set
+let _gymCheckins30   = [];   // last 30 days of check-ins — loaded on analytics open
+let _chartInstances  = {};   // Chart.js instance registry — destroy before recreating
 
 // ── Role permission bundles ────────────────────────────
 const _ROLE_PERMS = {
   master:     { members:true, checkins:true, classes:true, calendar:true, messaging:true, trainers:true,
                 'finance.view':true,'finance.costs':true,'finance.payroll':true,
-                billing:true, settings:true, access:true },
+                billing:true, settings:true, access:true, analytics:true },
   manager:    { members:true, checkins:true, classes:true, calendar:true, messaging:true, trainers:true,
-                'finance.view':true, settings:true },
-  finance:    { 'finance.view':true,'finance.costs':true,'finance.payroll':true, billing:true },
-  instructor: { checkins:true, classes:true, calendar:true, messaging:true },
+                'finance.view':true, settings:true, analytics:true },
+  finance:    { 'finance.view':true,'finance.costs':true,'finance.payroll':true, billing:true, analytics:true },
+  instructor: { checkins:true, classes:true, calendar:true, messaging:true, analytics:true },
   front_desk: { members:true, checkins:true, messaging:true },
   custom:     {},
 };
@@ -1658,14 +1792,15 @@ async function _loadGymPortal(gymDoc) {
 
 function _gApplyNavPerms() {
   const gates = {
-    'gtab-members':  _perm('members'),
-    'gtab-checkins': _perm('checkins'),
-    'gtab-trainers': _perm('trainers'),
-    'gtab-payments': _perm('members'),
-    'gtab-store':    _perm('settings'),
-    'gtab-entryqr':  _perm('checkins'),
-    'gtab-finance':  _perm('finance.view'),
-    'gtab-setup':    _perm('settings'),
+    'gtab-members':   _perm('members'),
+    'gtab-checkins':  _perm('checkins'),
+    'gtab-trainers':  _perm('trainers'),
+    'gtab-payments':  _perm('members'),
+    'gtab-store':     _perm('settings'),
+    'gtab-entryqr':   _perm('checkins'),
+    'gtab-finance':   _perm('finance.view'),
+    'gtab-analytics': _perm('analytics'),
+    'gtab-setup':     _perm('settings'),
   };
   Object.entries(gates).forEach(([id, show]) => {
     const el = document.getElementById(id);
@@ -2202,11 +2337,14 @@ window._gManualCheckin = async () => {
   const orig  = btn.textContent;
   btn.disabled = true; btn.textContent = 'Checking in…';
   try {
+    const classId = document.getElementById('g-ci-class-select')?.value || null;
     const data = {
       name:        member?.name || q,
       date:        today,
+      hour:        new Date().getHours(),
       timestamp:   serverTimestamp(),
       status:      'manual',
+      classId:     classId || null,
       memberCode:  member?.code || '',
       memberDocId: member?.id   || null,
       uid:         null
@@ -3068,6 +3206,326 @@ function _gRenderPL() {
     </div>`;
 }
 
+// ── Analytics ──────────────────────────────────────────
+
+async function _loadChartJs() {
+  if (window.Chart) return;
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function _anChart(id, config) {
+  if (_chartInstances[id]) { try { _chartInstances[id].destroy(); } catch(e){} }
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  _chartInstances[id] = new Chart(canvas, config);
+}
+
+function _anOccupancyRing(pct) {
+  const r = 52, cx = 60, cy = 60;
+  const circ = 2 * Math.PI * r;
+  const dash  = Math.min(pct, 1) * circ;
+  const color = pct >= 0.9 ? '#ef5350' : pct >= 0.7 ? '#ff9800' : '#00bcd4';
+  return `<svg width="120" height="120" viewBox="0 0 120 120">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#eef" stroke-width="10"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="10"
+      stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}"
+      transform="rotate(-90 ${cx} ${cy})" stroke-linecap="round"/>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" dominant-baseline="middle"
+      font-family="monospace" font-size="20" font-weight="700" fill="${color}">${Math.round(pct*100)}%</text>
+    <text x="${cx}" y="${cy+14}" text-anchor="middle"
+      font-family="monospace" font-size="9" fill="#aaa">OCCUPANCY</text>
+  </svg>`;
+}
+
+function _anHeatmap(checkins) {
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const grid = Array.from({length:7}, () => Array(24).fill(0));
+  checkins.forEach(c => {
+    const ts = c.timestamp?.toDate?.();
+    const h  = ts ? ts.getHours() : (c.hour ?? -1);
+    const d  = ts ? ts.getDay()   : -1;
+    if (h >= 0 && d >= 0) grid[d][h]++;
+  });
+  const max = Math.max(1, ...grid.flat());
+  const hours = Array.from({length:24}, (_,i) => i);
+  let html = `<div style="overflow-x:auto"><table style="border-collapse:collapse;font-family:var(--font-mono);font-size:9px">
+    <tr><th style="width:32px"></th>${hours.map(h=>`<th style="width:20px;color:#ccc;font-weight:400;text-align:center;padding:0 1px">${h%6===0?h:''}</th>`).join('')}</tr>`;
+  grid.forEach((row, d) => {
+    html += `<tr><td style="padding:2px 8px 2px 0;color:#888;white-space:nowrap">${dayNames[d]}</td>`;
+    row.forEach(v => {
+      const a = v === 0 ? 0 : Math.max(0.12, v / max);
+      html += `<td style="width:20px;height:16px;background:rgba(0,188,212,${a.toFixed(2)});border-radius:2px;margin:1px" title="${v}"></td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table></div>';
+  if (max === 1 && grid.flat().every(v=>v===0))
+    return '<div style="font-family:var(--font-mono);font-size:11px;color:#bbb;text-align:center;padding:20px">No check-in data yet — data builds after check-ins are recorded with timestamps.</div>';
+  return html;
+}
+
+async function _gdLoadAnalytics() {
+  const wrap = document.getElementById('g-analytics');
+  if (!wrap) return;
+  try {
+    await _loadChartJs();
+    if (!_gymClasses.length) await _gdLoadClasses().catch(()=>{});
+    if (!_gymStaff.length)   await _gdLoadStaff().catch(()=>{});
+    if (!_gymExpenses.length && _perm('finance.costs')) await _gdLoadExpenses().catch(()=>{});
+    // Load last 30 days of check-ins
+    const since = new Date(); since.setDate(since.getDate() - 29);
+    const sinceStr = since.toISOString().slice(0,10);
+    const ciSnap = await getDocs(query(collection(db,'gyms',_gymId,'checkins'), where('date','>=',sinceStr)));
+    _gymCheckins30 = ciSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+    _gRenderAnalytics();
+  } catch(e) {
+    console.error('[Analytics] load error:', e);
+  }
+}
+
+function _gRenderAnalytics() {
+  _gAnalyticsTab(document.querySelector('#gym-analytics-nav .nav-btn.active')?.id?.replace('gatab-','') || 'overview');
+}
+
+window._gAnalyticsTab = (tab) => {
+  document.querySelectorAll('#gym-analytics-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('gatab-' + tab)?.classList.add('active');
+  // All sections visible (scrollable page); just scroll to the section
+  const sec = document.getElementById('ga-' + tab);
+  if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
+  // Render the relevant section
+  if (tab === 'overview')   { _anRenderKPIs(); _anRenderRevenue(); }
+  if (tab === 'members')    _anRenderMembers();
+  if (tab === 'attendance') _anRenderAttendance();
+  if (tab === 'classes')    _anRenderClasses();
+  if (tab === 'trainers')   _anRenderTrainers();
+  if (tab === 'store')      _anRenderStore();
+  // Always render KPIs on first open (overview)
+  if (tab === 'overview')   _anRenderKPIs();
+};
+
+function _anRenderKPIs() {
+  const currency = _gymData?.currency || '$';
+  const active   = _gymMembers.filter(m => m.status === 'active').length;
+  const peak     = _gymData?.peakCapacity || 0;
+  const occPct   = peak > 0 ? active / peak : 0;
+
+  const tierMap  = {};
+  (_gymData?.tiers || []).forEach(t => { tierMap[t.name] = parseFloat(t.price) || 0; });
+  const mrr = _gymMembers.filter(m=>m.status==='active').reduce((s,m) => s + (tierMap[m.tier]||0), 0);
+
+  const cutoff30 = new Date(); cutoff30.setDate(cutoff30.getDate() - 30);
+  const cutoff30Str = cutoff30.toISOString().slice(0,10);
+  const ghostCount = _gymMembers.filter(m => m.status === 'active' && (!m.lastCheckin || m.lastCheckin < cutoff30Str)).length;
+
+  document.getElementById('an-kpi-members').textContent = active;
+  document.getElementById('an-kpi-occ').textContent     = Math.round(occPct * 100) + '%';
+  document.getElementById('an-kpi-occ-sub').textContent = peak > 0 ? `${active} of ${peak}` : '';
+  document.getElementById('an-kpi-mrr').textContent     = currency + mrr.toFixed(0);
+  document.getElementById('an-kpi-checkins').textContent = _gymCheckins30.length;
+  document.getElementById('an-kpi-ghost').textContent   = ghostCount;
+}
+
+function _anRenderRevenue() {
+  const currency = _gymData?.currency || '$';
+  const tierMap  = {};
+  (_gymData?.tiers || []).forEach(t => { tierMap[t.name] = parseFloat(t.price) || 0; });
+  const active   = _gymMembers.filter(m => m.status === 'active');
+  const mrr      = active.reduce((s,m) => s + (tierMap[m.tier]||0), 0);
+  const tierPrices = Object.values(tierMap);
+  const avgPrice = tierPrices.length ? tierPrices.reduce((a,b)=>a+b,0)/tierPrices.length : 0;
+  const potMRR   = (_gymData?.peakCapacity || 0) * avgPrice;
+  const occPct   = potMRR > 0 ? mrr / potMRR : (_gymMembers.length > 0 ? 1 : 0);
+
+  // Occupancy ring
+  const ringEl = document.getElementById('an-occ-ring');
+  if (ringEl) ringEl.innerHTML = _anOccupancyRing(occPct);
+
+  // Potential vs Actual bar chart
+  _anChart('an-mrr-chart', {
+    type: 'bar',
+    data: {
+      labels: ['Potential MRR', 'Actual MRR'],
+      datasets: [{ data: [potMRR, mrr],
+        backgroundColor: ['rgba(0,188,212,0.2)','rgba(0,188,212,0.85)'],
+        borderColor:     ['#00bcd4','#00bcd4'], borderWidth: 2, borderRadius: 6 }]
+    },
+    options: { plugins:{legend:{display:false}}, responsive:true,
+      scales:{ y:{ beginAtZero:true, ticks:{ callback:v => currency + v.toFixed(0) } } } }
+  });
+
+  // Members by tier horizontal bar
+  const tierCounts = {};
+  active.forEach(m => { const k = m.tier || 'No tier'; tierCounts[k] = (tierCounts[k]||0) + 1; });
+  _anChart('an-tier-chart', {
+    type: 'bar',
+    data: {
+      labels: Object.keys(tierCounts),
+      datasets: [{ data: Object.values(tierCounts),
+        backgroundColor: 'rgba(0,188,212,0.7)', borderRadius: 4 }]
+    },
+    options: { indexAxis:'y', plugins:{legend:{display:false}}, responsive:true,
+      scales:{ x:{ beginAtZero:true, ticks:{ precision:0 } } } }
+  });
+}
+
+function _anRenderMembers() {
+  const active   = _gymMembers.filter(m => m.status === 'active').length;
+  const paused   = _gymMembers.filter(m => m.status === 'paused').length;
+  const inactive = _gymMembers.filter(m => !m.status || m.status === 'inactive').length;
+
+  _anChart('an-status-chart', {
+    type: 'doughnut',
+    data: {
+      labels: ['Active','Paused','Inactive'],
+      datasets: [{ data: [active, paused, inactive],
+        backgroundColor: ['#4caf50','#ff9800','#e0e0e0'],
+        borderWidth: 0 }]
+    },
+    options: { plugins:{ legend:{ position:'bottom', labels:{ font:{size:10}, boxWidth:12, padding:10 } } },
+      cutout: '60%' }
+  });
+
+  // New members this month
+  const monthStart = new Date(); monthStart.setDate(1);
+  const monthStr   = monthStart.toISOString().slice(0,10);
+  const newCount   = _gymMembers.filter(m => (m.joinedDate||'') >= monthStr).length;
+  const el = document.getElementById('an-new-members-body');
+  if (el) el.innerHTML = `
+    <div style="font-family:var(--font-display);font-size:52px;color:var(--accent);line-height:1">${newCount}</div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:#aaa;letter-spacing:1px">JOINED THIS MONTH</div>`;
+}
+
+function _anRenderAttendance() {
+  // 30-day daily bar chart
+  const dayKeys = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    dayKeys.push(d.toISOString().slice(0,10));
+  }
+  const ciByDay = {};
+  dayKeys.forEach(k => { ciByDay[k] = 0; });
+  _gymCheckins30.forEach(c => { if (c.date && ciByDay[c.date] !== undefined) ciByDay[c.date]++; });
+
+  _anChart('an-checkins-chart', {
+    type: 'bar',
+    data: {
+      labels: dayKeys.map(k => k.slice(5)),
+      datasets: [{ data: dayKeys.map(k => ciByDay[k]),
+        backgroundColor: 'rgba(0,188,212,0.7)', borderRadius: 3,
+        borderColor: '#00bcd4', borderWidth: 1 }]
+    },
+    options: { plugins:{legend:{display:false}}, responsive:true,
+      scales: { x:{ ticks:{ maxTicksLimit:10, maxRotation:0 } }, y:{ beginAtZero:true, ticks:{ precision:0 } } } }
+  });
+
+  // Heatmap
+  const hmEl = document.getElementById('an-heatmap');
+  if (hmEl) hmEl.innerHTML = _anHeatmap(_gymCheckins30);
+}
+
+function _anRenderClasses() {
+  // Count check-ins by classId over last 30 days
+  const classCounts = {};
+  _gymCheckins30.forEach(c => { if (c.classId) classCounts[c.classId] = (classCounts[c.classId]||0) + 1; });
+  const maxCount = Math.max(1, ...Object.values(classCounts));
+  const hasClassData = Object.keys(classCounts).length > 0;
+  const noteEl   = document.getElementById('an-class-note');
+  const barsEl   = document.getElementById('an-class-bars');
+
+  if (barsEl) {
+    if (_gymClasses.length === 0) {
+      barsEl.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:#bbb;text-align:center;padding:20px">No classes configured. Add classes in SETUP → CLASSES.</div>';
+    } else if (!hasClassData) {
+      barsEl.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:#bbb;text-align:center;padding:20px">No class check-in data yet. Assign a class when checking in members.</div>';
+    } else {
+      const sorted = [..._gymClasses].sort((a,b) => (classCounts[b.id]||0) - (classCounts[a.id]||0));
+      barsEl.innerHTML = sorted.map(cls => {
+        const count = classCounts[cls.id] || 0;
+        const pct   = Math.round((count / maxCount) * 100);
+        const color = cls.color || 'var(--accent)';
+        return `<div class="an-class-row">
+          <div class="an-class-dot" style="background:${color}"></div>
+          <div style="flex:0 0 140px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_sbEsc(cls.name||'Class')}</div>
+          <div class="an-bar-track"><div class="an-bar" style="width:${pct}%;background:${color}"></div></div>
+          <div class="an-bar-val">${count}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+  if (noteEl) noteEl.textContent = hasClassData ? `Based on ${_gymCheckins30.filter(c=>c.classId).length} class check-ins in the last 30 days.` : '';
+
+  // Class schedule summary
+  const schedEl = document.getElementById('an-class-schedule');
+  if (schedEl) {
+    const dayOrder = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const dayLabel = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat', sunday:'Sun' };
+    if (_gymClasses.length === 0) {
+      schedEl.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:#bbb;text-align:center;padding:12px">No classes configured.</div>';
+    } else {
+      const byDay = {};
+      _gymClasses.filter(c => c.isActive !== false).forEach(cls => {
+        (cls.days || []).forEach(d => { if (!byDay[d]) byDay[d]=[]; byDay[d].push(cls); });
+      });
+      schedEl.innerHTML = dayOrder.filter(d => byDay[d]).map(d => `
+        <div style="display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:11px">
+          <div style="flex:0 0 36px;font-weight:700;color:#888">${dayLabel[d]}</div>
+          <div>${byDay[d].map(c=>`<span style="background:${c.color||'var(--accent)'};color:#fff;border-radius:3px;padding:1px 7px;font-size:10px;margin-right:4px">${_sbEsc(c.name)}</span>`).join('')}</div>
+        </div>`).join('') || '<div style="font-family:var(--font-mono);font-size:11px;color:#bbb;padding:10px">No days assigned to classes yet.</div>';
+    }
+  }
+}
+
+function _anRenderTrainers() {
+  const el = document.getElementById('an-trainers-body');
+  if (!el) return;
+  const trainers = _gymMembers.filter(m => m.isTrainer === true);
+  const total    = _gymMembers.filter(m => m.status === 'active').length;
+  const ratio    = trainers.length > 0 ? (total / trainers.length).toFixed(1) : '—';
+
+  el.innerHTML = `
+    <div class="an-kpi-row" style="margin-bottom:16px">
+      <div class="an-kpi"><div class="an-kpi-val">${trainers.length}</div><div class="an-kpi-lbl">Active Trainers</div></div>
+      <div class="an-kpi"><div class="an-kpi-val">${ratio}</div><div class="an-kpi-lbl">Members per Trainer</div></div>
+      <div class="an-kpi"><div class="an-kpi-val">${_gymStaff.length}</div><div class="an-kpi-lbl">Staff Members</div></div>
+    </div>
+    ${trainers.length > 0 ? `
+      <div class="an-card">
+        <div class="an-card-title">Trainer Roster</div>
+        ${trainers.map(m => `
+          <div class="an-class-row">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:700;flex-shrink:0">${(m.name||'?')[0].toUpperCase()}</div>
+            <div style="flex:1;font-size:12px">${_sbEsc(m.name||'Unnamed')}</div>
+            <div style="font-size:10px;color:#888">${m.tier||'—'}</div>
+          </div>`).join('')}
+      </div>` : `<div class="an-card"><div style="font-family:var(--font-mono);font-size:11px;color:#bbb;text-align:center;padding:16px">No trainers designated. Assign trainers in the TRAINERS tab.</div></div>`}`;
+}
+
+function _anRenderStore() {
+  const storeSection = document.getElementById('ga-store');
+  if (!storeSection) return;
+  const storeActive = _gymData?.modules?.store === true;
+  storeSection.style.display = storeActive ? '' : 'none';
+}
+
+async function _gdPopulateClassSelector() {
+  if (!_gymClasses.length) {
+    try { await _gdLoadClasses(); } catch(e) {}
+  }
+  const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const today    = dayNames[new Date().getDay()];
+  const todayClasses = _gymClasses.filter(c => c.isActive !== false && (c.days||[]).includes(today));
+  const sel = document.getElementById('g-ci-class-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">General / No class</option>' +
+    todayClasses.map(c => `<option value="${c.id}">${_sbEsc(c.name||'Class')}${c.time ? ' ('+c.time+')' : ''}</option>`).join('');
+}
+
 // ── Nav handlers ───────────────────────────────────────
 window._tNav = (tab) => {
   document.querySelectorAll('#trainer-top-nav .nav-btn').forEach(b => b.classList.remove('active'));
@@ -3081,13 +3539,15 @@ window._gNav = (tab) => {
   document.querySelectorAll('#gym-portal .tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('gtab-' + tab)?.classList.add('active');
   document.getElementById('g-' + tab)?.classList.add('active');
-  document.getElementById('gym-members-subnav').style.display  = tab === 'members' ? '' : 'none';
-  document.getElementById('gym-setup-subnav').style.display    = tab === 'setup'   ? '' : 'none';
-  document.getElementById('gym-finance-subnav').style.display  = tab === 'finance' ? '' : 'none';
-  if (tab === 'checkins') _gLoadCheckins();
-  if (tab === 'entryqr')  _gRenderEntryQR();
-  if (tab === 'trainers') _gRenderTrainers();
-  if (tab === 'finance')  _gFinanceTab('pl');
+  document.getElementById('gym-members-subnav').style.display   = tab === 'members'   ? '' : 'none';
+  document.getElementById('gym-setup-subnav').style.display     = tab === 'setup'     ? '' : 'none';
+  document.getElementById('gym-finance-subnav').style.display   = tab === 'finance'   ? '' : 'none';
+  document.getElementById('gym-analytics-subnav').style.display = tab === 'analytics' ? '' : 'none';
+  if (tab === 'checkins')  { _gLoadCheckins(); _gdPopulateClassSelector(); }
+  if (tab === 'entryqr')   _gRenderEntryQR();
+  if (tab === 'trainers')  _gRenderTrainers();
+  if (tab === 'finance')   _gFinanceTab('pl');
+  if (tab === 'analytics') _gdLoadAnalytics();
 };
 
 window._gFinanceTab = (tab) => {
