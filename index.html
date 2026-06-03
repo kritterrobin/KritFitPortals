@@ -1363,7 +1363,7 @@
         </div>
 
         <!-- MEMBERS section -->
-        <div id="ga-members" class="an-analytics-section">
+        <div id="ga-members" class="an-analytics-section" style="display:none">
           <div class="an-section-title">MEMBERS</div>
           <div class="an-row2">
             <div class="an-card">
@@ -1378,7 +1378,7 @@
         </div>
 
         <!-- ATTENDANCE section -->
-        <div id="ga-attendance" class="an-analytics-section">
+        <div id="ga-attendance" class="an-analytics-section" style="display:none">
           <div class="an-section-title">ATTENDANCE · LAST 30 DAYS</div>
           <div class="an-card">
             <div class="an-card-title">Daily Check-Ins</div>
@@ -1391,7 +1391,7 @@
         </div>
 
         <!-- CLASSES section -->
-        <div id="ga-classes" class="an-analytics-section">
+        <div id="ga-classes" class="an-analytics-section" style="display:none">
           <div class="an-section-title">CLASS PARTICIPATION · LAST 30 DAYS</div>
           <div class="an-card">
             <div class="an-card-title">Check-ins per Class</div>
@@ -1405,13 +1405,13 @@
         </div>
 
         <!-- TRAINERS section -->
-        <div id="ga-trainers" class="an-analytics-section">
+        <div id="ga-trainers" class="an-analytics-section" style="display:none">
           <div class="an-section-title">TRAINERS</div>
           <div id="an-trainers-body"></div>
         </div>
 
         <!-- BENCHMARK section -->
-        <div id="ga-benchmark" class="an-analytics-section">
+        <div id="ga-benchmark" class="an-analytics-section" style="display:none">
           <div class="an-section-title">INDUSTRY BENCHMARK COMPARISON</div>
           <div class="an-card" style="margin-bottom:8px">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -1538,7 +1538,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.19';
+const PORTALS_VERSION = '1.20';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -3336,10 +3336,11 @@ function _gRenderAnalytics() {
 window._gAnalyticsTab = (tab) => {
   document.querySelectorAll('#gym-analytics-nav .nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('gatab-' + tab)?.classList.add('active');
-  // All sections visible (scrollable page); just scroll to the section
-  const sec = document.getElementById('ga-' + tab);
-  if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
-  // Render the relevant section
+  // Show only the active section — each tab is its own page
+  ['overview','members','attendance','classes','trainers','store','benchmark'].forEach(s => {
+    const el = document.getElementById('ga-' + s);
+    if (el) el.style.display = s === tab ? '' : 'none';
+  });
   if (tab === 'overview')   { _anRenderKPIs(); _anRenderRevenue(); }
   if (tab === 'members')    _anRenderMembers();
   if (tab === 'attendance') _anRenderAttendance();
@@ -3347,8 +3348,6 @@ window._gAnalyticsTab = (tab) => {
   if (tab === 'trainers')   _anRenderTrainers();
   if (tab === 'store')      _anRenderStore();
   if (tab === 'benchmark')  _anRenderBenchmark();
-  // Always render KPIs on first open (overview)
-  if (tab === 'overview')   _anRenderKPIs();
 };
 
 function _anRenderKPIs() {
