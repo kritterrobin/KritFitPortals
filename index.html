@@ -1005,8 +1005,7 @@
     <!-- NAV-2: Analytics sub-nav -->
     <div id="gym-analytics-subnav" style="display:none;flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--border)">
       <nav class="nav" id="gym-analytics-nav" style="overflow-x:auto;scrollbar-width:none">
-        <button class="nav-btn active" id="gatab-overview"    onclick="_gAnalyticsTab('overview')"   ><span class="icon">⚡</span>OVERVIEW</button>
-        <button class="nav-btn"        id="gatab-revenue"     onclick="_gAnalyticsTab('revenue')"    ><span class="icon">💰</span>REVENUE</button>
+        <button class="nav-btn active" id="gatab-revenue"     onclick="_gAnalyticsTab('revenue')"    ><span class="icon">💰</span>REVENUE</button>
         <button class="nav-btn"        id="gatab-members"     onclick="_gAnalyticsTab('members')"    ><span class="icon">👥</span>MEMBERS</button>
         <button class="nav-btn"        id="gatab-attendance"  onclick="_gAnalyticsTab('attendance')" ><span class="icon">✅</span>ATTENDANCE</button>
         <button class="nav-btn"        id="gatab-classes"     onclick="_gAnalyticsTab('classes')"    ><span class="icon">📅</span>CLASSES</button>
@@ -1344,7 +1343,7 @@
         </div>
 
         <!-- REVENUE section -->
-        <div id="ga-overview" class="an-analytics-section">
+        <div id="ga-revenue" class="an-analytics-section">
           <div class="an-section-title">REVENUE</div>
 
           <!-- Headline summary cards -->
@@ -1559,7 +1558,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.21';
+const PORTALS_VERSION = '1.22';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -3351,18 +3350,18 @@ async function _gdLoadAnalytics() {
 }
 
 function _gRenderAnalytics() {
-  _gAnalyticsTab(document.querySelector('#gym-analytics-nav .nav-btn.active')?.id?.replace('gatab-','') || 'overview');
+  _gAnalyticsTab(document.querySelector('#gym-analytics-nav .nav-btn.active')?.id?.replace('gatab-','') || 'revenue');
 }
 
 window._gAnalyticsTab = (tab) => {
   document.querySelectorAll('#gym-analytics-nav .nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('gatab-' + tab)?.classList.add('active');
   // Show only the active section — each tab is its own page
-  ['overview','members','attendance','classes','trainers','store','benchmark'].forEach(s => {
+  ['revenue','members','attendance','classes','trainers','store','benchmark'].forEach(s => {
     const el = document.getElementById('ga-' + s);
     if (el) el.style.display = s === tab ? '' : 'none';
   });
-  if (tab === 'overview')   { _anRenderKPIs(); _anRenderRevenue(); }
+  if (tab === 'revenue')    { _anRenderKPIs(); _anRenderRevenue(); }
   if (tab === 'members')    _anRenderMembers();
   if (tab === 'attendance') _anRenderAttendance();
   if (tab === 'classes')    _anRenderClasses();
