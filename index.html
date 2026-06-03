@@ -1098,7 +1098,7 @@
         <input id="g-scan-input" type="text" autocomplete="off"
           style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none"
           onkeydown="_gScanKeydown(event)"
-          onblur="setTimeout(()=>{if(_scannerModeActive)document.getElementById('g-scan-input').focus();},40)">
+          onblur="setTimeout(_gScanRefocus,40)">
         <!-- Scanner connection status -->
         <div id="g-scan-status" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-family:var(--font-mono);font-size:11px;color:#bbb;letter-spacing:1px">
           <span id="g-scan-status-dot" style="width:8px;height:8px;border-radius:50%;background:#ddd;flex-shrink:0;transition:background .3s"></span>
@@ -1579,7 +1579,7 @@
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gdRemoveMember','_gExportCSV',
    '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer',
-   '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown','_gToggleVoice','_gVoiceSettingsToggle','_gTestVoice','_gSaveVoiceSettings',
+   '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown','_gScanRefocus','_gToggleVoice','_gVoiceSettingsToggle','_gTestVoice','_gSaveVoiceSettings',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
    '_showSubscriptions','_subsClose',
@@ -1608,7 +1608,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.29';
+const PORTALS_VERSION = '1.30';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -2505,6 +2505,8 @@ async function _gLoadCheckins() {
 }
 
 // ── Barcode / QR Scanner Mode ───────────────────────────
+window._gScanRefocus = () => { if (_scannerModeActive) document.getElementById('g-scan-input')?.focus(); };
+
 window._gToggleScannerMode = () => {
   _scannerModeActive = !_scannerModeActive;
   const btn     = document.getElementById('g-scanner-mode-btn');
