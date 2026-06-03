@@ -446,6 +446,20 @@
     .an-bar-track { flex:1; height:8px; background:#f0f4f8; border-radius:4px; overflow:hidden; }
     .an-bar { height:8px; border-radius:4px; background:var(--accent); opacity:.75; min-width:3px; }
     .an-bar-val { font-size:10px; color:#888; min-width:30px; text-align:right; }
+    .bench-row { padding:12px 0; border-bottom:1px solid var(--border); }
+    .bench-row:last-child { border-bottom:none; }
+    .bench-label { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:.5px; color:#555; margin-bottom:6px; }
+    .bench-values { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .bench-your  { font-family:var(--font-display); font-size:20px; color:var(--accent); min-width:60px; }
+    .bench-avg   { font-family:var(--font-mono); font-size:11px; color:#aaa; }
+    .bench-tag   { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+    .bench-tag-good  { background:#e8f5e9; color:#2e7d32; }
+    .bench-tag-avg   { background:#fff8e1; color:#f57f17; }
+    .bench-tag-below { background:#ffebee; color:#c62828; }
+    .bench-tag-na    { background:#f5f5f5; color:#bbb; }
+    .bench-track { flex:1; min-width:120px; height:6px; background:#f0f4f8; border-radius:3px; overflow:visible; position:relative; }
+    .bench-your-bar  { height:6px; border-radius:3px; background:var(--accent); opacity:.75; position:absolute; top:0; left:0; }
+    .bench-avg-line  { position:absolute; top:-3px; width:2px; height:12px; background:#aaa; border-radius:1px; }
 
     /* Mobile: sidebar hidden by default, toggle floats */
     @media(max-width:767px) {
@@ -998,6 +1012,7 @@
         <button class="nav-btn"        id="gatab-classes"     onclick="_gAnalyticsTab('classes')"    ><span class="icon">📅</span>CLASSES</button>
         <button class="nav-btn"        id="gatab-trainers"    onclick="_gAnalyticsTab('trainers')"   ><span class="icon">🏋️</span>TRAINERS</button>
         <button class="nav-btn"        id="gatab-store"       onclick="_gAnalyticsTab('store')"      ><span class="icon">🛍️</span>STORE</button>
+        <button class="nav-btn"        id="gatab-benchmark"   onclick="_gAnalyticsTab('benchmark')"  ><span class="icon">📐</span>BENCHMARK</button>
       </nav>
     </div>
 
@@ -1395,6 +1410,29 @@
           <div id="an-trainers-body"></div>
         </div>
 
+        <!-- BENCHMARK section -->
+        <div id="ga-benchmark" class="an-analytics-section">
+          <div class="an-section-title">INDUSTRY BENCHMARK COMPARISON</div>
+          <div class="an-card" style="margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="font-family:var(--font-mono);font-size:10px;color:#888;font-weight:700;letter-spacing:1px">GYM CATEGORY</div>
+              <select id="an-bench-category" class="form-input" style="font-family:var(--font-mono);font-size:11px;padding:5px 10px;border:2px solid #ddd;border-radius:4px;background:#fff" onchange="_anRenderBenchmark()">
+                <option value="general">General / Big-Box</option>
+                <option value="boutique">Boutique Studio</option>
+                <option value="crossfit">CrossFit / Functional</option>
+                <option value="martial_arts">Martial Arts</option>
+                <option value="sports">Sports-Specific</option>
+              </select>
+              <div style="font-family:var(--font-mono);font-size:9px;color:#bbb">Auto-detected from your specialties — change if needed</div>
+            </div>
+          </div>
+          <div id="an-bench-body"></div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:#ccc;text-align:center;padding:8px 0 4px;line-height:1.6">
+            Research data — HFA 2025 Benchmarking Report · IHRSA · FinancialModelsLab · Athletech News · Two-Brain Business<br>
+            Based on 2024 US industry averages. KritFit platform averages will replace this data as more gyms join.
+          </div>
+        </div>
+
         <!-- STORE section — only shown when store module is active -->
         <div id="ga-store" class="an-analytics-section" style="display:none">
           <div class="an-section-title">STORE</div>
@@ -1500,7 +1538,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.18';
+const PORTALS_VERSION = '1.19';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -3282,6 +3320,9 @@ async function _gdLoadAnalytics() {
     const sinceStr = since.toISOString().slice(0,10);
     const ciSnap = await getDocs(query(collection(db,'gyms',_gymId,'checkins'), where('date','>=',sinceStr)));
     _gymCheckins30 = ciSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+    // Auto-set benchmark category from specialties
+    const catSel = document.getElementById('an-bench-category');
+    if (catSel) catSel.value = _anDetectCategory();
     _gRenderAnalytics();
   } catch(e) {
     console.error('[Analytics] load error:', e);
@@ -3305,6 +3346,7 @@ window._gAnalyticsTab = (tab) => {
   if (tab === 'classes')    _anRenderClasses();
   if (tab === 'trainers')   _anRenderTrainers();
   if (tab === 'store')      _anRenderStore();
+  if (tab === 'benchmark')  _anRenderBenchmark();
   // Always render KPIs on first open (overview)
   if (tab === 'overview')   _anRenderKPIs();
 };
@@ -3511,6 +3553,199 @@ function _anRenderStore() {
   if (!storeSection) return;
   const storeActive = _gymData?.modules?.store === true;
   storeSection.style.display = storeActive ? '' : 'none';
+}
+
+// ── Industry Benchmarks (2024 research data) ───────────
+// Sources: HFA 2025 Benchmarking Report, IHRSA, FinancialModelsLab, Athletech News, Two-Brain Business
+const _GYM_BENCHMARKS = {
+  general: {
+    label: 'General / Big-Box Fitness Club',
+    occupancyRate:       { avg: 67,   unit: '%',    higherIsBetter: true,  label: 'Occupancy Rate',                note: 'Active members as % of peak capacity. Alert below 65%.' },
+    avgRevPerMember:     { avg: 65,   unit: '$/mo', higherIsBetter: true,  label: 'Avg Revenue / Member',          note: 'Dues-only monthly revenue per active member (HFA 2025).' },
+    ghostMemberRate:     { avg: 40,   unit: '%',    higherIsBetter: false, label: 'Ghost Member Rate',             note: 'Paid members with no visit in 30+ days. Industry average is high — gyms rely on this.' },
+    checkinFrequency:    { avg: 6,    unit: '/mo',  higherIsBetter: true,  label: 'Visit Frequency',               note: 'Average check-ins per active member per month (HFA: 1.5×/week).' },
+    annualChurnRate:     { avg: 35,   unit: '%',    higherIsBetter: false, label: 'Annual Churn Rate',             note: 'Members lost per year. Median 33.6% per HFA 2025.' },
+    newMemberRate:       { avg: 4.5,  unit: '%',    higherIsBetter: true,  label: 'New Member Rate (monthly)',     note: '% of total membership added as new members per month.' },
+    staffCostPct:        { avg: 44,   unit: '%',    higherIsBetter: false, label: 'Staff Cost as % of Revenue',    note: 'If above 44%, operational efficiency is declining (Two-Brain Business).' },
+    netMargin:           { avg: 23,   unit: '%',    higherIsBetter: true,  label: 'Net Margin',                    note: 'Healthy range 20–25% after all expenses incl. owner compensation (HFA 2025 median: 23.6%).' },
+    breakEvenOccupancy:  { avg: 35,   unit: '%',    higherIsBetter: null,  label: 'Break-Even Occupancy',          note: 'Estimated % of capacity needed to cover fixed costs. 30–40% for general gyms.' },
+  },
+  boutique: {
+    label: 'Boutique Studio (Yoga · Pilates · Cycling · Barre · HIIT)',
+    occupancyRate:       { avg: 77,   unit: '%',    higherIsBetter: true,  label: 'Occupancy Rate',                note: 'Target 70–85%. Below 65% is operationally at risk.' },
+    avgRevPerMember:     { avg: 150,  unit: '$/mo', higherIsBetter: true,  label: 'Avg Revenue / Member',          note: 'Boutique range $110–$200/mo. Pilates $100–$199, Yoga $110–$165.' },
+    ghostMemberRate:     { avg: 25,   unit: '%',    higherIsBetter: false, label: 'Ghost Member Rate',             note: 'Better than big-box due to class accountability and community.' },
+    checkinFrequency:    { avg: 5.5,  unit: '/mo',  higherIsBetter: true,  label: 'Visit Frequency',               note: 'Returning members average 5.1 classes/month (BFS Network / Athletech 2024).' },
+    annualChurnRate:     { avg: 25,   unit: '%',    higherIsBetter: false, label: 'Annual Churn Rate',             note: 'Better than big-box. Top studios hit 20% via community and onboarding.' },
+    newMemberRate:       { avg: 3.5,  unit: '%',    higherIsBetter: true,  label: 'New Member Rate (monthly)',     note: 'Lower than big-box — boutique retains better so needs less acquisition.' },
+    classFillRate:       { avg: 75,   unit: '%',    higherIsBetter: true,  label: 'Class Fill Rate',               note: 'Target 70–85% of class capacity. Top decile studios: 74–75% 1st-visit return.' },
+    staffCostPct:        { avg: 22,   unit: '%',    higherIsBetter: false, label: 'Staff Cost as % of Revenue',    note: 'Boutique optimum 20–25% — smaller team, premium pricing.' },
+    netMargin:           { avg: 23,   unit: '%',    higherIsBetter: true,  label: 'Net Margin',                    note: 'Healthy boutique margin 20–25%. Top NY metro avg revenue $98K/location (Mariana Tek 2024).' },
+    breakEvenOccupancy:  { avg: 40,   unit: '%',    higherIsBetter: null,  label: 'Break-Even Occupancy',          note: 'Higher fixed-cost ratio (rent, instructor pay) means higher break-even.' },
+  },
+  crossfit: {
+    label: 'CrossFit / Functional Fitness',
+    occupancyRate:       { avg: 83,   unit: '%',    higherIsBetter: true,  label: 'Occupancy Rate',                note: '85% utilisation required for sustainable profitability (FinancialModelsLab 2024).' },
+    avgRevPerMember:     { avg: 168,  unit: '$/mo', higherIsBetter: true,  label: 'Avg Revenue / Member',          note: '$167.76/mo national average. Range $103 (Mississippi) – $204 (New York) (BarBend 2024).' },
+    ghostMemberRate:     { avg: 18,   unit: '%',    higherIsBetter: false, label: 'Ghost Member Rate',             note: 'Low — WOD format creates daily accountability and strong community retention.' },
+    checkinFrequency:    { avg: 10,   unit: '/mo',  higherIsBetter: true,  label: 'Visit Frequency',               note: 'CrossFit members typically train 3–4×/week. ~10 check-ins/month average.' },
+    annualChurnRate:     { avg: 22,   unit: '%',    higherIsBetter: false, label: 'Annual Churn Rate',             note: 'Monthly churn ~7.63% — 1.3% lower than national gym average (FinancialModelsLab).' },
+    newMemberRate:       { avg: 3.5,  unit: '%',    higherIsBetter: true,  label: 'New Member Rate (monthly)',     note: 'Strong community drives referrals. Focus shifts to retention over acquisition.' },
+    classFillRate:       { avg: 83,   unit: '%',    higherIsBetter: true,  label: 'Class Fill Rate',               note: 'WOD slots typically well-booked. 85% target for profitability.' },
+    staffCostPct:        { avg: 30,   unit: '%',    higherIsBetter: false, label: 'Staff Cost as % of Revenue',    note: 'Coach pay up 15% in 2024 ($32.50/hr) — monitor carefully (BarBend 2024).' },
+    netMargin:           { avg: 23,   unit: '%',    higherIsBetter: true,  label: 'Net Margin',                    note: '88% of revenue from group memberships; strong model when fill rates are high.' },
+    breakEvenOccupancy:  { avg: 42,   unit: '%',    higherIsBetter: null,  label: 'Break-Even Occupancy',          note: 'Higher instructor-to-member ratio raises the break-even point.' },
+  },
+  martial_arts: {
+    label: 'Martial Arts / Combat Sports',
+    occupancyRate:       { avg: 75,   unit: '%',    higherIsBetter: true,  label: 'Occupancy Rate',                note: 'Mat space limits peak capacity. 70–80% is healthy utilisation.' },
+    avgRevPerMember:     { avg: 200,  unit: '$/mo', higherIsBetter: true,  label: 'Avg Revenue / Member',          note: 'ARPM benchmark $175–$250/mo. All-access tiers carry 80% margin (FinancialModelsLab 2024).' },
+    ghostMemberRate:     { avg: 17,   unit: '%',    higherIsBetter: false, label: 'Ghost Member Rate',             note: 'Belt progression and sparring partnerships drive strong attendance accountability.' },
+    checkinFrequency:    { avg: 7,    unit: '/mo',  higherIsBetter: true,  label: 'Visit Frequency',               note: 'Members typically train 2–3×/week — ~7 sessions/month average.' },
+    annualChurnRate:     { avg: 17,   unit: '%',    higherIsBetter: false, label: 'Annual Churn Rate',             note: 'Excellent retention. Target monthly churn <5%; <3% is exceptional (FinancialModelsLab).' },
+    newMemberRate:       { avg: 2.5,  unit: '%',    higherIsBetter: true,  label: 'New Member Rate (monthly)',     note: 'Low acquisition rate acceptable when retention is strong.' },
+    classFillRate:       { avg: 75,   unit: '%',    higherIsBetter: true,  label: 'Class Fill Rate',               note: 'Mat space typically limits class size. Healthy fill 70–80%.' },
+    staffCostPct:        { avg: 35,   unit: '%',    higherIsBetter: false, label: 'Staff Cost as % of Revenue',    note: 'Instructor certification cost and expertise command premium pay.' },
+    netMargin:           { avg: 23,   unit: '%',    higherIsBetter: true,  label: 'Net Margin',                    note: 'Strong margin when all-access tiers are sold at volume.' },
+    breakEvenOccupancy:  { avg: 37,   unit: '%',    higherIsBetter: null,  label: 'Break-Even Occupancy',          note: 'Higher revenue/member means lower occupancy needed to cover costs.' },
+  },
+  sports: {
+    label: 'Sports-Specific (Tennis · Swim · Gymnastics)',
+    occupancyRate:       { avg: 70,   unit: '%',    higherIsBetter: true,  label: 'Occupancy Rate',                note: 'Court/lane/apparatus limits capacity. 65–75% is healthy.' },
+    avgRevPerMember:     { avg: 125,  unit: '$/mo', higherIsBetter: true,  label: 'Avg Revenue / Member',          note: 'Municipal facilities $53–$207/mo; private clubs $220–$400+/mo (2024).' },
+    ghostMemberRate:     { avg: 30,   unit: '%',    higherIsBetter: false, label: 'Ghost Member Rate',             note: 'Seasonal sports (swim, tennis) see higher ghost rates off-season.' },
+    checkinFrequency:    { avg: 5,    unit: '/mo',  higherIsBetter: true,  label: 'Visit Frequency',               note: 'Seasonal variation significant — peaks in season, lower off-season.' },
+    annualChurnRate:     { avg: 30,   unit: '%',    higherIsBetter: false, label: 'Annual Churn Rate',             note: 'Seasonal memberships and school-year patterns drive higher churn.' },
+    newMemberRate:       { avg: 3.5,  unit: '%',    higherIsBetter: true,  label: 'New Member Rate (monthly)',     note: 'Seasonal intake spikes (September, January) — plan acquisition campaigns accordingly.' },
+    classFillRate:       { avg: 70,   unit: '%',    higherIsBetter: true,  label: 'Class Fill Rate',               note: 'Lesson/class fill rate target 65–75% to ensure lane/court efficiency.' },
+    staffCostPct:        { avg: 35,   unit: '%',    higherIsBetter: false, label: 'Staff Cost as % of Revenue',    note: 'Qualified coaching and lifeguard requirements keep labour costs elevated.' },
+    netMargin:           { avg: 23,   unit: '%',    higherIsBetter: true,  label: 'Net Margin',                    note: 'Facility infrastructure costs are high — margin depends on ancillary revenue.' },
+    breakEvenOccupancy:  { avg: 35,   unit: '%',    higherIsBetter: null,  label: 'Break-Even Occupancy',          note: 'High facility fixed costs; court/pool maintenance drives break-even up.' },
+  },
+};
+
+const _BENCH_SPECIALTY_MAP = {
+  yoga:['boutique'], pilates:['boutique'], cycling:['boutique'], spin:['boutique'],
+  barre:['boutique'], hiit:['boutique'], zumba:['boutique'], dance:['boutique'],
+  crossfit:['crossfit'], 'functional fitness':['crossfit'], 'strength & conditioning':['crossfit'],
+  bjj:['martial_arts'], 'brazilian jiu-jitsu':['martial_arts'], boxing:['martial_arts'],
+  kickboxing:['martial_arts'], 'muay thai':['martial_arts'], karate:['martial_arts'],
+  judo:['martial_arts'], taekwondo:['martial_arts'], 'mixed martial arts':['martial_arts'], mma:['martial_arts'],
+  tennis:['sports'], swimming:['sports'], gymnastics:['sports'], 'swim':['sports'],
+};
+
+function _anDetectCategory() {
+  const specialties = (_gymData?.specialties || []).map(s => s.toLowerCase());
+  const scores = { general:0, boutique:0, crossfit:0, martial_arts:0, sports:0 };
+  specialties.forEach(s => {
+    const cats = _BENCH_SPECIALTY_MAP[s] || [];
+    cats.forEach(c => { scores[c]++; });
+  });
+  const best = Object.entries(scores).sort((a,b)=>b[1]-a[1])[0];
+  return (best && best[1] > 0) ? best[0] : 'general';
+}
+
+function _anRenderBenchmark() {
+  const catSel = document.getElementById('an-bench-category');
+  const cat    = catSel?.value || 'general';
+  const bench  = _GYM_BENCHMARKS[cat];
+  if (!bench) return;
+
+  const currency = _gymData?.currency || '$';
+  const tierMap  = {};
+  (_gymData?.tiers || []).forEach(t => { tierMap[t.name] = parseFloat(t.price) || 0; });
+  const activeMembers = _gymMembers.filter(m => m.status === 'active');
+  const peak       = _gymData?.peakCapacity || 0;
+  const mrr        = activeMembers.reduce((s,m) => s + (tierMap[m.tier]||0), 0);
+  const cutoff30   = new Date(); cutoff30.setDate(cutoff30.getDate()-30);
+  const cutStr     = cutoff30.toISOString().slice(0,10);
+  const ghostCount = activeMembers.filter(m => !m.lastCheckin || m.lastCheckin < cutStr).length;
+  const monthStart = new Date(); monthStart.setDate(1);
+  const newCount   = _gymMembers.filter(m => (m.joinedDate||'') >= monthStart.toISOString().slice(0,10)).length;
+
+  // Computed metrics for the gym
+  const gymMetrics = {
+    occupancyRate:      peak > 0 ? Math.round(activeMembers.length / peak * 100) : null,
+    avgRevPerMember:    activeMembers.length > 0 ? mrr / activeMembers.length : null,
+    ghostMemberRate:    activeMembers.length > 0 ? Math.round(ghostCount / activeMembers.length * 100) : null,
+    checkinFrequency:   activeMembers.length > 0 ? parseFloat((_gymCheckins30.length / activeMembers.length).toFixed(1)) : null,
+    annualChurnRate:    null, // requires historical data — show as pending
+    newMemberRate:      _gymMembers.length > 0 ? parseFloat((newCount / _gymMembers.length * 100).toFixed(1)) : null,
+    classFillRate:      null, // requires class capacity data
+    staffCostPct:       null, // requires finance.costs perm + expense data
+    netMargin:          null,
+    breakEvenOccupancy: null,
+  };
+
+  // Compute staff cost % if we have the data
+  if (_perm('finance.costs') && _gymExpenses.length && mrr > 0) {
+    const totalExp = _gymExpenses.filter(e=>e.isActive!==false).reduce((s,e) => {
+      const p = e.period||'monthly';
+      return s + (p==='monthly'?e.amount : p==='annual'?e.amount/12 : p==='weekly'?e.amount*4.33 : e.amount);
+    }, 0);
+    gymMetrics.staffCostPct = Math.round(totalExp / mrr * 100);
+    gymMetrics.netMargin    = Math.round((mrr - totalExp) / mrr * 100);
+  }
+
+  const el = document.getElementById('an-bench-body');
+  if (!el) return;
+
+  const rows = Object.entries(bench).filter(([k]) => k !== 'label').map(([key, def]) => {
+    const gymVal = gymMetrics[key];
+    const avg    = def.avg;
+    const unit   = def.unit;
+    const hib    = def.higherIsBetter;
+
+    // Format display values
+    const fmtVal = (v) => v === null ? '—' : (unit === '$/mo' ? currency + v.toFixed(0) : v + unit);
+    const gymDisplay = gymVal === null ? '<span style="color:#ccc;font-size:14px">—</span>' :
+      `<span class="bench-your">${fmtVal(gymVal)}</span>`;
+
+    // Tag logic
+    let tagClass = 'bench-tag-na', tagText = 'NO DATA';
+    if (gymVal !== null && hib !== null) {
+      const diff = gymVal - avg;
+      const pct  = Math.abs(diff) / avg;
+      if (hib) {
+        tagClass = diff > avg * 0.05 ? 'bench-tag-good' : diff < -(avg * 0.05) ? 'bench-tag-below' : 'bench-tag-avg';
+        tagText  = diff > avg * 0.05 ? '↑ ABOVE AVERAGE' : diff < -(avg * 0.05) ? '↓ BELOW AVERAGE' : '≈ AT AVERAGE';
+      } else {
+        tagClass = diff < -(avg * 0.05) ? 'bench-tag-good' : diff > (avg * 0.05) ? 'bench-tag-below' : 'bench-tag-avg';
+        tagText  = diff < -(avg * 0.05) ? '✓ BETTER THAN AVG' : diff > (avg * 0.05) ? '↑ REVIEW NEEDED' : '≈ AT AVERAGE';
+      }
+    } else if (gymVal !== null && hib === null) {
+      tagClass = 'bench-tag-avg'; tagText = 'INFORMATIONAL';
+    }
+
+    // Mini progress bar (capped at 2× the benchmark for display)
+    let barHtml = '';
+    if (gymVal !== null && avg > 0) {
+      const cap      = avg * 2;
+      const gymPct   = Math.min(gymVal / cap, 1) * 100;
+      const avgPct   = Math.min(avg  / cap, 1) * 100;
+      barHtml = `<div class="bench-track">
+        <div class="bench-your-bar" style="width:${gymPct.toFixed(1)}%"></div>
+        <div class="bench-avg-line" style="left:${avgPct.toFixed(1)}%"></div>
+      </div>`;
+    }
+
+    return `<div class="bench-row">
+      <div class="bench-label">${def.label}</div>
+      <div class="bench-values">
+        ${gymDisplay}
+        <div style="flex:1">${barHtml}</div>
+        <div class="bench-avg" style="min-width:80px;text-align:right">avg&nbsp;${fmtVal(avg)}</div>
+        <div class="bench-tag ${tagClass}">${tagText}</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:#ccc;margin-top:4px;line-height:1.4">${def.note}</div>
+    </div>`;
+  });
+
+  el.innerHTML = `<div class="an-card">
+    <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:#888;margin-bottom:4px">${bench.label}</div>
+    <div style="font-family:var(--font-mono);font-size:9px;color:#bbb;margin-bottom:14px">Your gym values shown in <span style="color:var(--accent)">teal</span> · grey line = industry average · metrics without enough data show —</div>
+    ${rows.join('')}
+  </div>`;
 }
 
 async function _gdPopulateClassSelector() {
