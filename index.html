@@ -1753,7 +1753,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.41';
+const PORTALS_VERSION = '1.42';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
@@ -1866,6 +1866,45 @@ async function _detectAndRoute(uid) {
       }
     }
 
+    // 6. customers/ fallback — catches portal subs where user_registry.subscriptionTier
+    //    was not yet written (e.g. stripeGymStorePlatformWebhook not yet registered).
+    //    Reads what the Firebase Extension DID write, derives the tier, and self-heals
+    //    user_registry so this fallback is not needed on the next load.
+    if (!portals.some(p => ['trainer','nutritionist','therapist','sports'].includes(p.type))) {
+      const _PORTAL_KEY_TO_PTYPE = {
+        kf_trainer_personal: 'trainer', nutritionist_portal: 'nutritionist',
+        therapist_portal: 'therapist',  sports_team: 'sports',
+        sports_league: 'sports',        sports_federation: 'sports',
+      };
+      const _PORTAL_KEY_TO_TIER = {
+        kf_trainer_personal: 'trainer', nutritionist_portal: 'nutritionist',
+        therapist_portal: 'therapist',  sports_team: 'team',
+        sports_league: 'league',        sports_federation: 'association',
+      };
+      try {
+        const custSubsSnap = await getDocs(
+          query(collection(db, 'customers', uid, 'subscriptions'),
+                where('status', 'in', ['active', 'trialing']))
+        );
+        for (const subDoc of custSubsSnap.docs) {
+          const subData = subDoc.data();
+          const subKey  = subData.metadata?.subscriptionKey;
+          if (!subKey || subData.metadata?.type !== 'portal_sub') continue;
+          const ptype = _PORTAL_KEY_TO_PTYPE[subKey];
+          const ptier = _PORTAL_KEY_TO_TIER[subKey];
+          if (!ptype || !ptier) continue;
+          if (!portals.some(p => p.type === ptype)) {
+            _currentTier = ptier;
+            portals.push({ type: ptype });
+            // Heal user_registry so this fallback isn't needed next load
+            updateDoc(doc(db, 'user_registry', uid), {
+              subscriptionTier: ptier, subscriptionStatus: 'active',
+            }).catch(e => console.warn('[Portal] tier heal:', e.message));
+          }
+        }
+      } catch(e) { console.warn('[Portal] customers fallback:', e.message); }
+    }
+
     if (portals.length === 0) { _showNoPortal(tier); return; }
 
     _detectedPortals = portals;
@@ -1907,7 +1946,7 @@ async function _detectAndRoute(uid) {
 
 function _buildPortalSwitcher(portals) {
   const switcher = document.getElementById('portal-switcher');
-  if (portals.length <= 1) { switcher.style.display = 'none'; return; }
+  if (portals.length === 0) { switcher.style.display = 'none'; return; }
   const nav = document.getElementById('portal-switcher-nav');
   nav.innerHTML = portals.map((p, i) => {
     const m = _PORTAL_META[p.type] || { icon: '🔷', label: p.type.toUpperCase() };
