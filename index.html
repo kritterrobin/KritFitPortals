@@ -852,7 +852,7 @@
         </div>
 
         <!-- REVENUE -->
-        <div class="sb-section" onclick="_sbOpen('revenue')">
+        <div class="sb-section" onclick="_sbGoRevenue()">
           <div class="sb-icon">💰</div>
           <div class="sb-body">
             <div class="sb-label">REVENUE</div>
@@ -1346,6 +1346,27 @@
         <!-- REVENUE section -->
         <div id="ga-overview" class="an-analytics-section">
           <div class="an-section-title">REVENUE</div>
+
+          <!-- Headline summary cards -->
+          <div class="an-kpi-row" style="margin-bottom:12px">
+            <div class="an-kpi"><div class="an-kpi-val" id="an-rev-mrr">—</div><div class="an-kpi-lbl">Est. Monthly Revenue</div></div>
+            <div class="an-kpi"><div class="an-kpi-val" id="an-rev-active">—</div><div class="an-kpi-lbl">Active Members</div></div>
+            <div class="an-kpi"><div class="an-kpi-val" id="an-rev-per-member">—</div><div class="an-kpi-lbl">Avg / Member</div></div>
+          </div>
+
+          <!-- Payment status grid -->
+          <div class="an-card" style="margin-bottom:12px">
+            <div class="an-card-title">Payment Status</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="an-pay-grid"></div>
+          </div>
+
+          <!-- Tier breakdown table -->
+          <div class="an-card" style="margin-bottom:12px">
+            <div class="an-card-title">Tier Breakdown</div>
+            <div id="an-tier-table"></div>
+          </div>
+
+          <!-- Charts -->
           <div class="an-row2">
             <div class="an-card an-ring-wrap">
               <div class="an-card-title">Occupancy Rate</div>
@@ -1357,7 +1378,7 @@
             </div>
           </div>
           <div class="an-card">
-            <div class="an-card-title">Members by Tier</div>
+            <div class="an-card-title">Revenue by Tier</div>
             <canvas id="an-tier-chart"></canvas>
           </div>
         </div>
@@ -1538,7 +1559,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.20';
+const PORTALS_VERSION = '1.21';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
@@ -3374,44 +3395,138 @@ function _anRenderKPIs() {
 
 function _anRenderRevenue() {
   const currency = _gymData?.currency || '$';
-  const tierMap  = {};
-  (_gymData?.tiers || []).forEach(t => { tierMap[t.name] = parseFloat(t.price) || 0; });
+  // Support both field name conventions (tiers / membershipTiers, m.tier / m.membershipTier)
+  const tiers    = _gymData?.tiers || _gymData?.membershipTiers || [];
   const active   = _gymMembers.filter(m => m.status === 'active');
-  const mrr      = active.reduce((s,m) => s + (tierMap[m.tier]||0), 0);
-  const tierPrices = Object.values(tierMap);
-  const avgPrice = tierPrices.length ? tierPrices.reduce((a,b)=>a+b,0)/tierPrices.length : 0;
-  const potMRR   = (_gymData?.peakCapacity || 0) * avgPrice;
-  const occPct   = potMRR > 0 ? mrr / potMRR : (_gymMembers.length > 0 ? 1 : 0);
 
-  // Occupancy ring
+  const tierMap  = {};
+  tiers.forEach(t => { tierMap[t.name] = { price: parseFloat(t.price) || 0, interval: t.interval || 'month' }; });
+
+  // Per-tier stats
+  const tierStats = tiers.map(t => {
+    const price   = parseFloat(t.price) || 0;
+    const members = active.filter(m => (m.tier || m.membershipTier) === t.name);
+    const paid    = members.filter(m => m.payStatus === 'paid');
+    return { name: t.name, price, interval: t.interval || 'month',
+             count: members.length, paidCount: paid.length, est: paid.length * price };
+  });
+  const noTierMembers = active.filter(m => {
+    const t = m.tier || m.membershipTier;
+    return !t || !tiers.find(x => x.name === t);
+  });
+  const noTierPaid = noTierMembers.filter(m => m.payStatus === 'paid').length;
+
+  const totalMRR    = tierStats.reduce((s,t) => s + t.est, 0);
+  const totalPaid   = active.filter(m => m.payStatus === 'paid').length;
+  const totalUnpaid = active.filter(m => m.payStatus === 'unpaid' || !m.payStatus).length;
+  const totalOverdue= active.filter(m => m.payStatus === 'overdue').length;
+  const avgPerMember= active.length > 0 ? totalMRR / active.length : 0;
+
+  // ── Headline cards ──
+  const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setEl('an-rev-mrr',        currency + totalMRR.toFixed(2));
+  setEl('an-rev-active',     active.length);
+  setEl('an-rev-per-member', currency + avgPerMember.toFixed(2));
+  // Keep sidebar card in sync
+  setEl('sb-rev-value', currency + totalMRR.toFixed(0) + ' est./mo');
+  setEl('sb-rev-sub',   `${totalPaid} paid · ${totalUnpaid} unpaid · ${totalOverdue} overdue`);
+
+  // ── Payment status grid ──
+  const payGrid = document.getElementById('an-pay-grid');
+  if (payGrid) payGrid.innerHTML = `
+    <div style="background:#e8f5e9;border-radius:6px;padding:12px;text-align:center">
+      <div style="font-family:var(--font-display);font-size:28px;color:#2e7d32">${totalPaid}</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:#2e7d32;letter-spacing:1px;margin-top:4px">PAID</div>
+    </div>
+    <div style="background:#fff3e0;border-radius:6px;padding:12px;text-align:center">
+      <div style="font-family:var(--font-display);font-size:28px;color:#e65100">${totalUnpaid}</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:#e65100;letter-spacing:1px;margin-top:4px">UNPAID</div>
+    </div>
+    <div style="background:#ffebee;border-radius:6px;padding:12px;text-align:center">
+      <div style="font-family:var(--font-display);font-size:28px;color:#c62828">${totalOverdue}</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:#c62828;letter-spacing:1px;margin-top:4px">OVERDUE</div>
+    </div>`;
+
+  // ── Tier breakdown table ──
+  const tierTableEl = document.getElementById('an-tier-table');
+  if (tierTableEl) {
+    if (!tiers.length) {
+      tierTableEl.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:#bbb;text-align:center;padding:16px">No membership tiers defined yet — add them in SETUP → TIERS.</div>';
+    } else {
+      const rows = tierStats.map(t => `
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 8px;font-family:var(--font-mono);font-size:11px;font-weight:700">${_sbEsc(t.name)}</td>
+          <td style="padding:9px 8px;text-align:right;font-family:var(--font-mono);font-size:11px">${currency}${t.price.toFixed(2)}<span style="color:#aaa;font-size:9px">/${t.interval}</span></td>
+          <td style="padding:9px 8px;text-align:center;font-family:var(--font-mono);font-size:11px">${t.count}</td>
+          <td style="padding:9px 8px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#2e7d32">${t.paidCount}</td>
+          <td style="padding:9px 8px;text-align:right;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--accent)">${currency}${t.est.toFixed(2)}</td>
+        </tr>`).join('');
+      const noTierRow = noTierMembers.length ? `
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 8px;font-family:var(--font-mono);font-size:11px;color:#aaa">No tier</td>
+          <td style="padding:9px 8px;text-align:right;font-family:var(--font-mono);font-size:11px;color:#aaa">—</td>
+          <td style="padding:9px 8px;text-align:center;font-family:var(--font-mono);font-size:11px">${noTierMembers.length}</td>
+          <td style="padding:9px 8px;text-align:center;font-family:var(--font-mono);font-size:11px;color:#2e7d32">${noTierPaid}</td>
+          <td style="padding:9px 8px;text-align:right;font-family:var(--font-mono);font-size:11px;color:#aaa">—</td>
+        </tr>` : '';
+      tierTableEl.innerHTML = `
+        <div style="overflow-x:auto">
+        <table class="member-table">
+          <thead><tr>
+            <th>TIER</th>
+            <th style="text-align:right">PRICE</th>
+            <th style="text-align:center">MEMBERS</th>
+            <th style="text-align:center">PAID</th>
+            <th style="text-align:right">EST. MRR</th>
+          </tr></thead>
+          <tbody>${rows}${noTierRow}</tbody>
+          <tfoot><tr style="border-top:2px solid var(--border);background:var(--s1)">
+            <td colspan="4" style="padding:9px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#888">TOTAL</td>
+            <td style="padding:9px 8px;text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent)">${currency}${totalMRR.toFixed(2)}</td>
+          </tr></tfoot>
+        </table></div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#bbb;text-align:center;margin-top:8px">
+          Est. MRR = paid members × tier price. Actual Stripe charges may differ due to discounts or trials.
+        </div>`;
+    }
+  }
+
+  // ── Occupancy ring ──
+  const tierPrices = tiers.map(t => parseFloat(t.price) || 0);
+  const avgPrice   = tierPrices.length ? tierPrices.reduce((a,b)=>a+b,0)/tierPrices.length : 0;
+  const potMRR     = (_gymData?.peakCapacity || 0) * avgPrice;
+  const occPct     = potMRR > 0 ? totalMRR / potMRR : (active.length > 0 ? 1 : 0);
   const ringEl = document.getElementById('an-occ-ring');
   if (ringEl) ringEl.innerHTML = _anOccupancyRing(occPct);
 
-  // Potential vs Actual bar chart
+  // ── Potential vs Actual MRR bar chart ──
   _anChart('an-mrr-chart', {
     type: 'bar',
     data: {
       labels: ['Potential MRR', 'Actual MRR'],
-      datasets: [{ data: [potMRR, mrr],
+      datasets: [{ data: [potMRR, totalMRR],
         backgroundColor: ['rgba(0,188,212,0.2)','rgba(0,188,212,0.85)'],
-        borderColor:     ['#00bcd4','#00bcd4'], borderWidth: 2, borderRadius: 6 }]
+        borderColor: ['#00bcd4','#00bcd4'], borderWidth: 2, borderRadius: 6 }]
     },
     options: { plugins:{legend:{display:false}}, responsive:true,
-      scales:{ y:{ beginAtZero:true, ticks:{ callback:v => currency + v.toFixed(0) } } } }
+      scales:{ y:{ beginAtZero:true, ticks:{ callback: v => currency + v.toFixed(0) } } } }
   });
 
-  // Members by tier horizontal bar
-  const tierCounts = {};
-  active.forEach(m => { const k = m.tier || 'No tier'; tierCounts[k] = (tierCounts[k]||0) + 1; });
+  // ── Revenue by tier bar chart (est. MRR per tier) ──
+  const chartTiers  = tierStats.filter(t => t.count > 0);
+  const tierColors  = ['rgba(0,188,212,0.8)','rgba(38,198,218,0.8)','rgba(77,208,225,0.8)',
+                       'rgba(0,151,167,0.8)','rgba(0,96,100,0.8)'];
   _anChart('an-tier-chart', {
     type: 'bar',
     data: {
-      labels: Object.keys(tierCounts),
-      datasets: [{ data: Object.values(tierCounts),
-        backgroundColor: 'rgba(0,188,212,0.7)', borderRadius: 4 }]
+      labels: chartTiers.map(t => t.name),
+      datasets: [{ data: chartTiers.map(t => t.est),
+        backgroundColor: chartTiers.map((_,i) => tierColors[i % tierColors.length]),
+        borderRadius: 4, label: 'Est. MRR' }]
     },
-    options: { indexAxis:'y', plugins:{legend:{display:false}}, responsive:true,
-      scales:{ x:{ beginAtZero:true, ticks:{ precision:0 } } } }
+    options: { indexAxis:'y', plugins:{ legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx => ' ' + currency + ctx.raw.toFixed(2) } } },
+      responsive:true, scales:{ x:{ beginAtZero:true, ticks:{ callback: v => currency + v } } } }
   });
 }
 
@@ -3876,6 +3991,16 @@ window._sidebarToggle = () => {
 };
 
 // ── Sidebar overlay ────────────────────────────────────
+window._sbGoRevenue = () => {
+  if (_portalType === 'gym') {
+    // Navigate to Analytics → REVENUE tab (the authoritative detailed view)
+    _gNav('analytics');
+    setTimeout(() => _gAnalyticsTab('revenue'), 50);
+  } else {
+    _sbOpen('revenue');
+  }
+};
+
 window._sbOpen = async (section) => {
   const overlay = document.getElementById('sb-overlay');
   overlay.style.display = '';
