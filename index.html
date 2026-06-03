@@ -43,8 +43,8 @@
     .brand-sub { font-family:var(--font-mono); font-size:9px; letter-spacing:3px; color:#999; text-transform:uppercase; }
     #top-bar-center { flex:1; text-align:center; }
     #portal-badge {
-      display:inline-block; font-family:var(--font-mono); font-size:clamp(11px,1vw,13px);
-      font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text);
+      display:inline-block; font-family:var(--font-mono); font-size:clamp(12px,1.2vw,15px);
+      font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(--text);
     }
     #top-bar-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
     #user-name { font-family:var(--font-mono); font-size:11px; color:#888; }
@@ -54,20 +54,6 @@
       padding:5px 12px; cursor:pointer; letter-spacing:.5px;
     }
     #sign-out-btn:hover { border-color:#c62828; color:#c62828; }
-    /* ── Portal type pill ── */
-    #portal-type-pill {
-      display:none; font-family:var(--font-mono); font-size:11px; font-weight:700;
-      letter-spacing:2px; text-transform:uppercase; padding:4px 12px;
-      border-radius:3px; white-space:nowrap; flex-shrink:0;
-    }
-    #portal-type-pill[data-type="gym"]          { background:#1b5e20; color:#fff; }
-    #portal-type-pill[data-type="trainer"]      { background:#1565c0; color:#fff; }
-    #portal-type-pill[data-type="nutritionist"] { background:#e65100; color:#fff; }
-    #portal-type-pill[data-type="therapist"]    { background:#6a1b9a; color:#fff; }
-    #portal-type-pill[data-type="team"]          { background:#b71c1c; color:#fff; }
-    #portal-type-pill[data-type="league"]        { background:#b71c1c; color:#fff; }
-    #portal-type-pill[data-type="association"]   { background:#b71c1c; color:#fff; }
-    #portal-type-pill[data-type="store"]        { background:#006064; color:#fff; }
     /* On small screens, hide the name badge but keep the type pill */
     @media(max-width:600px) { #portal-badge { display:none; } }
 
@@ -798,7 +784,6 @@
         <div class="brand-sub" id="portals-version-sub">Portals</div>
       </a>
       <div id="top-bar-center" style="display:flex;align-items:center;gap:10px;justify-content:center">
-        <span id="portal-type-pill"></span>
         <span id="portal-badge">—</span>
       </div>
       <div id="top-bar-right">
@@ -1754,7 +1739,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.44';
+const PORTALS_VERSION = '1.45';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
