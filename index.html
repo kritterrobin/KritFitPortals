@@ -417,6 +417,13 @@
     #gym-top-nav .nav-btn, #gym-finance-nav .nav-btn { padding:5px 8px; }
     #gym-top-nav .nav-btn .icon, #gym-finance-nav .nav-btn .icon { font-size:14px; }
 
+    /* Gym NAV-2 subnavs — sticky below NAV-1 (57px header + ~39px NAV-1 = 96px) */
+    #gym-finance-subnav, #gym-analytics-subnav, #gym-members-subnav, #gym-setup-subnav {
+      position: sticky;
+      top: 96px;
+      z-index: 180;
+    }
+
     /* Finance section cards */
     .gf-metric { background:#fff; border:1px solid var(--border); border-radius:6px; padding:16px; text-align:center; }
     .gf-metric-val { font-family:var(--font-display); font-size:32px; color:var(--accent); }
@@ -1558,7 +1565,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.22';
+const PORTALS_VERSION = '1.23';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _portalType       = null;   // 'trainer' | 'gym' | 'nutritionist' | 'therapist' | 'sports'
