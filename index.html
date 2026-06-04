@@ -80,10 +80,10 @@
     /* Compact padding for portal navs */
     #trainer-top-nav .nav-btn, #trainer-subnav .nav-btn,
     #gym-top-nav .nav-btn, #gym-members-nav .nav-btn, #gym-setup-nav .nav-btn,
-    #team-top-nav .nav-btn, #tm-schedule-subnav .nav-btn, #tm-training-subnav .nav-btn { padding:5px 2px; }
+    #team-top-nav .nav-btn, #tm-squad-subnav .nav-btn, #tm-schedule-subnav .nav-btn, #tm-training-subnav .nav-btn, #tm-manage-subnav .nav-btn { padding:5px 2px; }
     #trainer-top-nav .nav-btn .icon, #trainer-subnav .nav-btn .icon,
     #gym-top-nav .nav-btn .icon, #gym-members-nav .nav-btn .icon, #gym-setup-nav .nav-btn .icon,
-    #team-top-nav .nav-btn .icon, #tm-schedule-subnav .nav-btn .icon, #tm-training-subnav .nav-btn .icon { font-size:14px; }
+    #team-top-nav .nav-btn .icon, #tm-squad-subnav .nav-btn .icon, #tm-schedule-subnav .nav-btn .icon, #tm-training-subnav .nav-btn .icon, #tm-manage-subnav .nav-btn .icon { font-size:14px; }
 
     /* Team portal styles */
     .tm-event-card { background:var(--s1); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:14px; }
@@ -1729,40 +1729,54 @@
   ══════════════════════════════════════════ -->
   <div class="portal-panel" id="team-portal">
 
-    <!-- NAV-1 -->
+    <!-- NAV-1 (6 tabs) -->
     <nav class="nav lv-hide" id="team-top-nav" style="overflow-x:auto;scrollbar-width:none;flex-shrink:0">
-      <button class="nav-btn active" id="tmnav-home"      onclick="_tmNav('home')">     <span class="icon">🏠</span>HOME</button>
-      <button class="nav-btn"        id="tmnav-roster"    onclick="_tmNav('roster')">   <span class="icon">👥</span>ROSTER</button>
-      <button class="nav-btn"        id="tmnav-schedule"  onclick="_tmNav('schedule')"> <span class="icon">📅</span>SCHEDULE</button>
-      <button class="nav-btn"        id="tmnav-results"   onclick="_tmNav('results')">  <span class="icon">🏆</span>RESULTS</button>
-      <button class="nav-btn"        id="tmnav-training"  onclick="_tmNav('training')"> <span class="icon">💪</span>TRAINING</button>
-      <button class="nav-btn"        id="tmnav-fitness"   onclick="_tmNav('fitness')">  <span class="icon">❤️</span>FITNESS</button>
-      <button class="nav-btn"        id="tmnav-analytics" onclick="_tmNav('analytics')"><span class="icon">📊</span>ANALYTICS</button>
-      <button class="nav-btn"        id="tmnav-staff"     onclick="_tmNav('staff')">    <span class="icon">🎖️</span>STAFF</button>
-      <button class="nav-btn"        id="tmnav-finance"   onclick="_tmNav('finance')">  <span class="icon">💰</span>FINANCE</button>
-      <button class="nav-btn"        id="tmnav-ticketing" onclick="_tmNav('ticketing')"><span class="icon">🎟️</span>TICKETING</button>
-      <button class="nav-btn"        id="tmnav-messages"  onclick="_tmNav('messages')"> <span class="icon">💬</span>MESSAGES</button>
-      <button class="nav-btn"        id="tmnav-setup"     onclick="_tmNav('setup')">    <span class="icon">⚙️</span>SETUP</button>
+      <button class="nav-btn active" id="tmnav-home"     onclick="_tmNav('home')"    ><span class="icon">🏠</span>HOME</button>
+      <button class="nav-btn"        id="tmnav-squad"    onclick="_tmNav('squad')"   ><span class="icon">👥</span>SQUAD</button>
+      <button class="nav-btn"        id="tmnav-schedule" onclick="_tmNav('schedule')"><span class="icon">📅</span>SCHEDULE</button>
+      <button class="nav-btn"        id="tmnav-training" onclick="_tmNav('training')"><span class="icon">💪</span>TRAINING</button>
+      <button class="nav-btn"        id="tmnav-messages" onclick="_tmNav('messages')"><span class="icon">💬</span>MESSAGES</button>
+      <button class="nav-btn"        id="tmnav-manage"   onclick="_tmNav('manage')"  ><span class="icon">⚙️</span>MANAGE</button>
     </nav>
 
-    <!-- SCHEDULE sub-nav -->
+    <!-- SQUAD sub-nav: PLAYERS | COACHES | FITNESS -->
+    <div id="tm-squad-subnav-wrap" style="display:none;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="tm-squad-subnav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="tmsqnav-players"  onclick="_tmSquadNav('players')" ><span class="icon">👥</span>PLAYERS</button>
+        <button class="nav-btn"        id="tmsqnav-coaches"  onclick="_tmSquadNav('coaches')" ><span class="icon">🎖️</span>COACHES</button>
+        <button class="nav-btn"        id="tmsqnav-fitness"  onclick="_tmSquadNav('fitness')" ><span class="icon">❤️</span>FITNESS</button>
+      </nav>
+    </div>
+
+    <!-- SCHEDULE sub-nav: UPCOMING | PAST | RESULTS | AVAILABILITY -->
     <div id="tm-schedule-subnav-wrap" style="display:none;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border)">
       <nav class="nav" id="tm-schedule-subnav" style="overflow-x:auto;scrollbar-width:none">
-        <button class="nav-btn active" id="tmsnav-upcoming"     onclick="_tmScheduleNav('upcoming')">    <span class="icon">📆</span>UPCOMING</button>
-        <button class="nav-btn"        id="tmsnav-past"         onclick="_tmScheduleNav('past')">        <span class="icon">📋</span>PAST</button>
-        <button class="nav-btn"        id="tmsnav-availability" onclick="_tmScheduleNav('availability')"><span class="icon">✅</span>AVAILABILITY</button>
+        <button class="nav-btn active" id="tmsnav-upcoming"     onclick="_tmScheduleNav('upcoming')"    ><span class="icon">📆</span>UPCOMING</button>
+        <button class="nav-btn"        id="tmsnav-past"         onclick="_tmScheduleNav('past')"        ><span class="icon">📋</span>PAST</button>
+        <button class="nav-btn"        id="tmsnav-results"      onclick="_tmScheduleNav('results')"     ><span class="icon">🏆</span>RESULTS</button>
+        <button class="nav-btn"        id="tmsnav-availability" onclick="_tmScheduleNav('availability')"><span class="icon">✅</span>AVAIL</button>
       </nav>
     </div>
 
-    <!-- TRAINING sub-nav -->
+    <!-- TRAINING sub-nav: PROGRAMS | ASSIGNMENTS | ANALYTICS -->
     <div id="tm-training-subnav-wrap" style="display:none;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border)">
       <nav class="nav" id="tm-training-subnav" style="overflow-x:auto;scrollbar-width:none">
-        <button class="nav-btn active" id="tmtnav-programs"    onclick="_tmTrainingNav('programs')">   <span class="icon">📋</span>PROGRAMS</button>
-        <button class="nav-btn"        id="tmtnav-assignments"  onclick="_tmTrainingNav('assignments')"><span class="icon">📌</span>ASSIGNMENTS</button>
+        <button class="nav-btn active" id="tmtnav-programs"    onclick="_tmTrainingNav('programs')"   ><span class="icon">📋</span>PROGRAMS</button>
+        <button class="nav-btn"        id="tmtnav-assignments" onclick="_tmTrainingNav('assignments')"><span class="icon">📌</span>ASSIGNMENTS</button>
+        <button class="nav-btn"        id="tmtnav-analytics"   onclick="_tmTrainingNav('analytics')"  ><span class="icon">📊</span>ANALYTICS</button>
       </nav>
     </div>
 
-    <!-- ── HOME ────────────────────────────────────────── -->
+    <!-- MANAGE sub-nav: FINANCE | TICKETING | SETUP -->
+    <div id="tm-manage-subnav-wrap" style="display:none;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border)">
+      <nav class="nav" id="tm-manage-subnav" style="overflow-x:auto;scrollbar-width:none">
+        <button class="nav-btn active" id="tmmnav-finance"   onclick="_tmManageNav('finance')"  ><span class="icon">💰</span>FINANCE</button>
+        <button class="nav-btn"        id="tmmnav-ticketing" onclick="_tmManageNav('ticketing')"><span class="icon">🎟️</span>TICKETING</button>
+        <button class="nav-btn"        id="tmmnav-setup"     onclick="_tmManageNav('setup')"    ><span class="icon">⚙️</span>SETUP</button>
+      </nav>
+    </div>
+
+    <!-- ── HOME ──────────────────────────────────────────── -->
     <div class="tab-panel active" id="tm-home">
       <div class="stat-row">
         <div class="stat-card"><div class="stat-num" id="tm-stat-players">—</div><div class="stat-label">Players</div></div>
@@ -1778,40 +1792,77 @@
       <div id="tm-home-squad"></div>
     </div>
 
-    <!-- ── ROSTER ──────────────────────────────────────── -->
-    <div class="tab-panel" id="tm-roster">
-      <div class="tbl-toolbar">
-        <input type="text" id="tm-roster-search" placeholder="Search players…" oninput="_tmFilterRoster()" style="flex:1;min-width:120px">
-        <button class="btn" onclick="_tmOpenAddPlayer(this)">+ PLAYER</button>
-        <button class="btn-outline" onclick="_tmShowJoinCode()">📋 JOIN CODE</button>
+    <!-- ── SQUAD ─────────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-squad">
+      <!-- PLAYERS sub-panel -->
+      <div id="tmsq-players">
+        <div class="tbl-toolbar">
+          <input type="text" id="tm-roster-search" placeholder="Search players…" oninput="_tmFilterRoster()" style="flex:1;min-width:120px">
+          <button class="btn" onclick="_tmOpenAddPlayer(this)">+ PLAYER</button>
+          <button class="btn-outline" onclick="_tmShowJoinCode()">📋 JOIN CODE</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-num" id="tm-r-active">—</div><div class="stat-label">Active</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-r-coaches">—</div><div class="stat-label">Coaches</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-r-invited">—</div><div class="stat-label">Invited</div></div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="portal-tbl">
+            <thead><tr><th>NAME</th><th>POSITIONS</th><th>ROLE</th><th>STATUS</th><th>KF</th><th>JOINED</th><th></th></tr></thead>
+            <tbody id="tm-roster-tbody"></tbody>
+          </table>
+        </div>
       </div>
-      <div class="stat-row">
-        <div class="stat-card"><div class="stat-num" id="tm-r-active">—</div><div class="stat-label">Active</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-r-coaches">—</div><div class="stat-label">Coaches</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-r-invited">—</div><div class="stat-label">Invited</div></div>
+      <!-- COACHES sub-panel -->
+      <div id="tmsq-coaches" style="display:none">
+        <div class="tbl-toolbar">
+          <button class="btn" onclick="_tmOpenAppointStaff(this)">+ APPOINT COACH</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="portal-tbl">
+            <thead><tr><th>NAME</th><th>ROLE</th><th>RESPONSIBILITIES</th><th></th></tr></thead>
+            <tbody id="tm-staff-tbody"></tbody>
+          </table>
+        </div>
+        <div class="section-title" style="margin-top:24px">Staff Assignments</div>
+        <div id="tm-duty-list"></div>
       </div>
-      <div class="tbl-wrap">
-        <table class="portal-tbl">
-          <thead><tr>
-            <th>NAME</th><th>POSITIONS</th><th>ROLE</th><th>STATUS</th><th>KF LINKED</th><th>JOINED</th><th></th>
-          </tr></thead>
-          <tbody id="tm-roster-tbody"></tbody>
-        </table>
+      <!-- FITNESS sub-panel -->
+      <div id="tmsq-fitness" style="display:none">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);padding:6px 12px;background:var(--s1);border-bottom:1px solid var(--border)">
+          🔗 Players who use the KritFit app share sleep, injury &amp; training data here when <strong>fitnessVisible</strong> is enabled.
+        </div>
+        <div class="tbl-toolbar">
+          <button class="btn" onclick="_tmRunReadiness(this)">⚡ AI READINESS REPORT</button>
+          <button class="btn-outline" onclick="_tmOpenLineup(this)">🎯 LINEUP BUILDER</button>
+        </div>
+        <div id="tm-fitness-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:16px"></div>
       </div>
     </div>
 
-    <!-- ── SCHEDULE ────────────────────────────────────── -->
+    <!-- ── SCHEDULE ───────────────────────────────────────── -->
     <div class="tab-panel" id="tm-schedule">
       <!-- UPCOMING -->
       <div id="tms-upcoming">
-        <div class="tbl-toolbar">
-          <button class="btn" onclick="_tmOpenAddEvent(this)">+ EVENT</button>
-        </div>
+        <div class="tbl-toolbar"><button class="btn" onclick="_tmOpenAddEvent(this)">+ EVENT</button></div>
         <div id="tm-upcoming-list"></div>
       </div>
       <!-- PAST -->
       <div id="tms-past" style="display:none">
         <div id="tm-past-list"></div>
+      </div>
+      <!-- RESULTS -->
+      <div id="tms-results" style="display:none">
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-num" id="tm-res-played">—</div><div class="stat-label">Played</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-res-won" style="color:#2e7d32">—</div><div class="stat-label">Won</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-res-drawn" style="color:#e65100">—</div><div class="stat-label">Drawn</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-res-lost" style="color:#c62828">—</div><div class="stat-label">Lost</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-res-gf">—</div><div class="stat-label">GF</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-res-ga">—</div><div class="stat-label">GA</div></div>
+        </div>
+        <div class="section-title">Game Results</div>
+        <div id="tm-results-list"></div>
       </div>
       <!-- AVAILABILITY -->
       <div id="tms-availability" style="display:none">
@@ -1821,30 +1872,14 @@
       </div>
     </div>
 
-    <!-- ── RESULTS ─────────────────────────────────────── -->
-    <div class="tab-panel" id="tm-results">
-      <div class="stat-row">
-        <div class="stat-card"><div class="stat-num" id="tm-res-played">—</div><div class="stat-label">Played</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-res-won" style="color:#2e7d32">—</div><div class="stat-label">Won</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-res-drawn" style="color:#e65100">—</div><div class="stat-label">Drawn</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-res-lost" style="color:#c62828">—</div><div class="stat-label">Lost</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-res-gf">—</div><div class="stat-label">GF</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-res-ga">—</div><div class="stat-label">GA</div></div>
-      </div>
-      <div class="section-title">Game Results</div>
-      <div id="tm-results-list"></div>
-    </div>
-
-    <!-- ── TRAINING ────────────────────────────────────── -->
+    <!-- ── TRAINING ───────────────────────────────────────── -->
     <div class="tab-panel" id="tm-training">
-      <!-- PROGRAMS sub-panel -->
+      <!-- PROGRAMS -->
       <div id="tmt-programs">
-        <div class="tbl-toolbar">
-          <button class="btn" onclick="_tmOpenAddPlan(this)">+ PROGRAM</button>
-        </div>
+        <div class="tbl-toolbar"><button class="btn" onclick="_tmOpenAddPlan(this)">+ PROGRAM</button></div>
         <div id="tm-plans-list"></div>
       </div>
-      <!-- ASSIGNMENTS sub-panel -->
+      <!-- ASSIGNMENTS -->
       <div id="tmt-assignments" style="display:none">
         <div class="section-title">Active Assignments</div>
         <div id="tm-assignments-list"></div>
@@ -1856,166 +1891,122 @@
           <button class="btn" onclick="_tmAssignPlan(this)" style="width:100%">ASSIGN</button>
         </div>
       </div>
-    </div>
-
-    <!-- ── FITNESS ────────────────────────────────────── -->
-    <div class="tab-panel" id="tm-fitness">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);padding:6px 12px;background:var(--s1);border-bottom:1px solid var(--border);flex-shrink:0">
-        🔗 Players who use the KritFit app share sleep, injury &amp; training data here when <strong>fitnessVisible</strong> is enabled.
-      </div>
-      <div class="tbl-toolbar">
-        <button class="btn" onclick="_tmRunReadiness(this)">⚡ AI READINESS REPORT</button>
-        <button class="btn-outline" onclick="_tmOpenLineup(this)">🎯 LINEUP BUILDER</button>
-      </div>
-      <div id="tm-fitness-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:16px"></div>
-    </div>
-
-    <!-- ── ANALYTICS ──────────────────────────────────── -->
-    <div class="tab-panel" id="tm-analytics">
-      <div class="section-title">Player Stats</div>
-      <div class="tbl-wrap">
-        <table class="portal-tbl">
-          <thead><tr>
-            <th>PLAYER</th><th>POSITION</th><th>GAMES</th><th>GOALS</th><th>ASSISTS</th><th>ATTEND %</th>
-          </tr></thead>
-          <tbody id="tm-analytics-tbody"></tbody>
-        </table>
-      </div>
-      <div class="section-title" style="margin-top:24px">Season Form</div>
-      <div id="tm-form-strip" style="display:flex;gap:4px;flex-wrap:wrap;padding:4px 0"></div>
-    </div>
-
-    <!-- ── STAFF ──────────────────────────────────────── -->
-    <div class="tab-panel" id="tm-staff">
-      <div class="tbl-toolbar">
-        <button class="btn" onclick="_tmOpenAppointStaff(this)">+ APPOINT STAFF</button>
-      </div>
-      <div class="section-title">Coaching &amp; Management Team</div>
-      <div class="tbl-wrap">
-        <table class="portal-tbl">
-          <thead><tr>
-            <th>NAME</th><th>ROLE</th><th>POSITIONS MANAGED</th><th>KF UID</th><th></th>
-          </tr></thead>
-          <tbody id="tm-staff-tbody"></tbody>
-        </table>
-      </div>
-      <div class="section-title" style="margin-top:24px">Staff Assignments</div>
-      <div id="tm-duty-list"></div>
-    </div>
-
-    <!-- ── FINANCE ────────────────────────────────────── -->
-    <div class="tab-panel" id="tm-finance">
-      <div class="tbl-toolbar">
-        <button class="btn" onclick="_tmOpenAddFinance('income',this)">+ INCOME</button>
-        <button class="btn-outline" onclick="_tmOpenAddFinance('expense',this)">+ EXPENSE</button>
-        <button class="btn-outline" onclick="_tmExportFinanceCSV()">⬇ CSV</button>
-      </div>
-      <div class="stat-row">
-        <div class="stat-card"><div class="stat-num tm-finance-income" id="tm-fin-income">£—</div><div class="stat-label">Total Income</div></div>
-        <div class="stat-card"><div class="stat-num tm-finance-expense" id="tm-fin-expense">£—</div><div class="stat-label">Total Expenses</div></div>
-        <div class="stat-card"><div class="stat-num" id="tm-fin-balance">£—</div><div class="stat-label">Balance</div></div>
-      </div>
-      <div class="tbl-wrap">
-        <table class="portal-tbl">
-          <thead><tr>
-            <th>DATE</th><th>TYPE</th><th>CATEGORY</th><th>DESCRIPTION</th><th>AMOUNT</th><th></th>
-          </tr></thead>
-          <tbody id="tm-finance-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ── TICKETING ──────────────────────────────────── -->
-    <div class="tab-panel" id="tm-ticketing">
-      <div id="tm-ticketing-locked" class="tm-ticket-lock">
-        <div class="lock-icon">🎟️</div>
-        <div class="lock-title">TICKETING</div>
-        <div class="lock-desc">Sell tickets to your home games and events directly through KritFit. Fans buy online, scan QR on the gate. No app needed for attendees.</div>
-        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:20px">£1.23 per event activation &nbsp;·&nbsp; £0.12 per ticket sold</div>
-        <button class="btn" onclick="_tmActivateTicketing(this)" style="font-size:13px;padding:12px 32px">ACTIVATE TICKETING</button>
-      </div>
-      <div id="tm-ticketing-active" style="display:none">
-        <div class="tbl-toolbar">
-          <button class="btn" onclick="_tmOpenTicketEvent(this)">🎟️ NEW TICKETED EVENT</button>
+      <!-- ANALYTICS -->
+      <div id="tmt-analytics" style="display:none">
+        <div class="section-title">Player Stats</div>
+        <div class="tbl-wrap">
+          <table class="portal-tbl">
+            <thead><tr><th>PLAYER</th><th>POSITION</th><th>GAMES</th><th>GOALS</th><th>ASSISTS</th><th>ATTEND %</th></tr></thead>
+            <tbody id="tm-analytics-tbody"></tbody>
+          </table>
         </div>
-        <div id="tm-ticketed-events-list"></div>
+        <div class="section-title" style="margin-top:24px">Season Form</div>
+        <div id="tm-form-strip" style="display:flex;gap:4px;flex-wrap:wrap;padding:4px 0"></div>
       </div>
     </div>
 
-    <!-- ── MESSAGES ───────────────────────────────────── -->
+    <!-- ── MESSAGES ───────────────────────────────────────── -->
     <div class="tab-panel" id="tm-messages">
       <div style="display:flex;gap:12px;padding:12px;flex-shrink:0">
-        <button class="btn" onclick="_tmOpenBroadcast(this)" style="flex:1">📣 BROADCAST TO SQUAD</button>
+        <button class="btn" onclick="_tmOpenBroadcast(this)" style="flex:1">📣 BROADCAST</button>
         <button class="btn-outline" onclick="_tmOpenStaffThread(this)" style="flex:1">🎖️ STAFF THREAD</button>
       </div>
       <div class="section-title" style="margin:0 0 8px">Player Threads</div>
       <div id="tm-threads-list"></div>
     </div>
 
-    <!-- ── SETUP ──────────────────────────────────────── -->
-    <div class="tab-panel" id="tm-setup">
-      <!-- Create team (if no team doc yet) -->
-      <div id="tm-create-team-section" style="display:none">
-        <div class="tm-create-team">
-          <div class="ct-icon">🏅</div>
-          <div class="ct-title">CREATE YOUR TEAM</div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:24px">Set up your team profile to start managing your squad.</p>
-          <div style="max-width:400px;margin:0 auto;text-align:left">
-            <div style="margin-bottom:12px">
-              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">TEAM NAME</div>
-              <input type="text" id="tm-setup-name-create" placeholder="e.g. City FC" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
-            </div>
-            <div style="margin-bottom:12px">
-              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">SPORT</div>
-              <input type="text" id="tm-setup-sport-create" placeholder="e.g. Football, Basketball, Rugby…" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
-            </div>
-            <div style="margin-bottom:20px">
-              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">CITY / TOWN</div>
-              <input type="text" id="tm-setup-city-create" placeholder="e.g. Manchester" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
-            </div>
-            <button class="btn" onclick="_tmCreateTeam(this)" style="width:100%;font-size:14px;padding:13px">CREATE TEAM</button>
-          </div>
+    <!-- ── MANAGE ────────────────────────────────────────── -->
+    <div class="tab-panel" id="tm-manage">
+      <!-- FINANCE -->
+      <div id="tmm-finance">
+        <div class="tbl-toolbar">
+          <button class="btn" onclick="_tmOpenAddFinance('income',this)">+ INCOME</button>
+          <button class="btn-outline" onclick="_tmOpenAddFinance('expense',this)">+ EXPENSE</button>
+          <button class="btn-outline" onclick="_tmExportFinanceCSV()">⬇ CSV</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-num tm-finance-income" id="tm-fin-income">£—</div><div class="stat-label">Total Income</div></div>
+          <div class="stat-card"><div class="stat-num tm-finance-expense" id="tm-fin-expense">£—</div><div class="stat-label">Total Expenses</div></div>
+          <div class="stat-card"><div class="stat-num" id="tm-fin-balance">£—</div><div class="stat-label">Balance</div></div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="portal-tbl">
+            <thead><tr><th>DATE</th><th>TYPE</th><th>CATEGORY</th><th>DESCRIPTION</th><th>AMOUNT</th><th></th></tr></thead>
+            <tbody id="tm-finance-tbody"></tbody>
+          </table>
         </div>
       </div>
-
-      <!-- Edit existing team -->
-      <div id="tm-setup-edit-section" style="display:none">
-        <div style="max-width:520px;padding:16px">
-          <div class="section-title">Team Profile</div>
-          <div style="display:grid;gap:12px">
-            <div>
-              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">TEAM NAME</div>
-              <input type="text" id="tm-setup-name" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;font-weight:700;background:var(--s2);color:var(--text)">
-            </div>
-            <div>
-              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">SPORT</div>
-              <input type="text" id="tm-setup-sport" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
-            </div>
-            <div>
-              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">CITY / TOWN</div>
-              <input type="text" id="tm-setup-city" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
-            </div>
-            <div>
-              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">WEBSITE (optional)</div>
-              <input type="text" id="tm-setup-website" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+      <!-- TICKETING -->
+      <div id="tmm-ticketing" style="display:none">
+        <div id="tm-ticketing-locked" class="tm-ticket-lock">
+          <div class="lock-icon">🎟️</div>
+          <div class="lock-title">TICKETING</div>
+          <div class="lock-desc">Sell tickets to your home games and events directly through KritFit. Fans buy online, scan QR on the gate. No app needed for attendees.</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:20px">£1.23 per event activation &nbsp;·&nbsp; £0.12 per ticket sold</div>
+          <button class="btn" onclick="_tmActivateTicketing(this)" style="font-size:13px;padding:12px 32px">ACTIVATE TICKETING</button>
+        </div>
+        <div id="tm-ticketing-active" style="display:none">
+          <div class="tbl-toolbar"><button class="btn" onclick="_tmOpenTicketEvent(this)">🎟️ NEW TICKETED EVENT</button></div>
+          <div id="tm-ticketed-events-list"></div>
+        </div>
+      </div>
+      <!-- SETUP -->
+      <div id="tmm-setup" style="display:none">
+        <div id="tm-create-team-section" style="display:none">
+          <div class="tm-create-team">
+            <div class="ct-icon">🏅</div>
+            <div class="ct-title">CREATE YOUR TEAM</div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:24px">Set up your team profile to start managing your squad.</p>
+            <div style="max-width:400px;margin:0 auto;text-align:left">
+              <div style="margin-bottom:12px">
+                <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">TEAM NAME</div>
+                <input type="text" id="tm-setup-name-create" placeholder="e.g. City FC" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+              </div>
+              <div style="margin-bottom:12px">
+                <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">SPORT</div>
+                <input type="text" id="tm-setup-sport-create" placeholder="e.g. Football, Basketball, Rugby…" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+              </div>
+              <div style="margin-bottom:20px">
+                <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">CITY / TOWN</div>
+                <input type="text" id="tm-setup-city-create" placeholder="e.g. Manchester" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+              </div>
+              <button class="btn" onclick="_tmCreateTeam(this)" style="width:100%;font-size:14px;padding:13px">CREATE TEAM</button>
             </div>
           </div>
-          <button class="btn" onclick="_tmSaveSetup(this)" style="margin-top:16px">SAVE CHANGES</button>
-
-          <div class="section-title" style="margin-top:28px">Join Code</div>
-          <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px">Share this code so players can find and join your team in the KritFit app.</p>
-          <div class="code-badge" id="tm-join-code-display" onclick="_tmCopyJoinCode()" title="Click to copy">——</div>
-          <div class="code-hint">Click to copy · Codes are permanent</div>
-          <button class="btn-outline" onclick="_tmRegenerateCode(this)" style="margin-top:10px;font-size:11px">REGENERATE CODE</button>
-
-          <div class="section-title" style="margin-top:28px">Privacy</div>
-          <div class="report-chk" id="tm-allow-data-block" onclick="_tmToggleDataBlock(this)" style="max-width:400px">
-            <div class="rpt-box"></div> Allow players to hide their KritFit fitness data from coaches
-          </div>
-          <p style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:6px;max-width:400px">When OFF, all player fitness data is visible to coaches. Recommended for recreational teams.</p>
-
-          <div class="section-title" style="margin-top:28px">League Affiliation</div>
-          <div id="tm-league-section">
+        </div>
+        <div id="tm-setup-edit-section" style="display:none">
+          <div style="max-width:520px;padding:16px">
+            <div class="section-title">Team Profile</div>
+            <div style="display:grid;gap:12px">
+              <div>
+                <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">TEAM NAME</div>
+                <input type="text" id="tm-setup-name" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;font-weight:700;background:var(--s2);color:var(--text)">
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">SPORT</div>
+                <input type="text" id="tm-setup-sport" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">CITY / TOWN</div>
+                <input type="text" id="tm-setup-city" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;color:var(--muted)">WEBSITE (optional)</div>
+                <input type="text" id="tm-setup-website" style="width:100%;padding:9px;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;font-size:14px;background:var(--s2);color:var(--text)">
+              </div>
+            </div>
+            <button class="btn" onclick="_tmSaveSetup(this)" style="margin-top:16px">SAVE CHANGES</button>
+            <div class="section-title" style="margin-top:28px">Join Code</div>
+            <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px">Share this code so players can find and join your team in the KritFit app.</p>
+            <div class="code-badge" id="tm-join-code-display" onclick="_tmCopyJoinCode()" title="Click to copy">——</div>
+            <div class="code-hint">Click to copy · Codes are permanent</div>
+            <button class="btn-outline" onclick="_tmRegenerateCode(this)" style="margin-top:10px;font-size:11px">REGENERATE CODE</button>
+            <div class="section-title" style="margin-top:28px">Privacy</div>
+            <div class="report-chk" id="tm-allow-data-block" onclick="_tmToggleDataBlock(this)" style="max-width:400px">
+              <div class="rpt-box"></div> Allow players to hide their KritFit fitness data from coaches
+            </div>
+            <p style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:6px;max-width:400px">When OFF, all player fitness data is visible to coaches.</p>
+            <div class="section-title" style="margin-top:28px">League Affiliation</div>
             <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px">If your team belongs to a KritFit League, enter the League ID to link.</p>
             <div style="display:flex;gap:8px;max-width:400px">
               <input type="text" id="tm-league-id-input" placeholder="League ID" style="flex:1;padding:9px;border:1px solid var(--border);border-radius:5px;font-family:var(--font-mono);font-size:12px;background:var(--s2);color:var(--text)">
@@ -2088,7 +2079,7 @@
   // Stub onclick handlers until module loads
   ['_doSignIn','_doSignOut','_tNav','_gNav','_gMembersTab','_gSetupTab','_gFilterMembers',
    '_gdSave','_gdCycleStatus','_gdCyclePay','_gAddMember','_gArchiveMember','_gDeleteArchivedMember','_gToggleArchiveView','_gConfirmModal','_gConfirmCheck','_gConfirmClose','_gConfirmExecute','_gExportCSV',
-   '_tmNav','_tmScheduleNav','_tmTrainingNav','_tmFilterRoster','_tmOpenAddPlayer','_tmShowJoinCode',
+   '_tmNav','_tmSquadNav','_tmScheduleNav','_tmTrainingNav','_tmManageNav','_tmFilterRoster','_tmOpenAddPlayer','_tmShowJoinCode',
    '_tmOpenAddEvent','_tmScheduleAvailDetail','_tmOpenAddResult',
    '_tmOpenAddPlan','_tmAssignPlan','_tmRunReadiness','_tmOpenLineup',
    '_tmOpenAppointStaff','_tmOpenAddFinance','_tmExportFinanceCSV',
@@ -2125,7 +2116,7 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const PORTALS_VERSION = '1.49';
+const PORTALS_VERSION = '1.50';
 document.getElementById('portals-version-sub').textContent = 'Portals  v' + PORTALS_VERSION;
 
 let _toastTimer = null;
@@ -7596,7 +7587,8 @@ async function _loadTeamPortal() {
     _tmPopulateTicketing();
   } else {
     document.getElementById('portal-badge').textContent = 'TEAM PORTAL';
-    _tmNav('setup');
+    _tmNav('manage');
+    _tmManageNav('setup');
     document.getElementById('tm-create-team-section').style.display = '';
     document.getElementById('tm-setup-edit-section').style.display  = 'none';
   }
@@ -7613,16 +7605,28 @@ window._tmNav = (tab) => {
   const panel = document.getElementById('tm-' + tab);
   if (panel) panel.classList.add('active');
 
-  document.getElementById('tm-schedule-subnav-wrap').style.display  = tab === 'schedule'  ? '' : 'none';
-  document.getElementById('tm-training-subnav-wrap').style.display  = tab === 'training'  ? '' : 'none';
+  document.getElementById('tm-squad-subnav-wrap').style.display    = tab === 'squad'    ? '' : 'none';
+  document.getElementById('tm-schedule-subnav-wrap').style.display = tab === 'schedule' ? '' : 'none';
+  document.getElementById('tm-training-subnav-wrap').style.display = tab === 'training' ? '' : 'none';
+  document.getElementById('tm-manage-subnav-wrap').style.display   = tab === 'manage'   ? '' : 'none';
 
-  if (tab === 'schedule')  _tmRenderSchedule();
-  if (tab === 'results')   _tmRenderResults();
-  if (tab === 'analytics') _tmRenderAnalytics();
-  if (tab === 'fitness')   _tmRenderFitness();
-  if (tab === 'staff')     _tmRenderStaff();
-  if (tab === 'finance')   _tmRenderFinance();
-  if (tab === 'messages')  _tmRenderThreads();
+  if (tab === 'squad')    _tmSquadNav('players');
+  if (tab === 'schedule') _tmScheduleNav('upcoming');
+  if (tab === 'training') _tmTrainingNav('programs');
+  if (tab === 'messages') _tmRenderThreads();
+  if (tab === 'manage')   _tmManageNav('finance');
+};
+
+window._tmSquadNav = (sub) => {
+  document.querySelectorAll('#tm-squad-subnav .nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tmsqnav-' + sub);
+  if (btn) btn.classList.add('active');
+  document.getElementById('tmsq-players').style.display = sub === 'players' ? '' : 'none';
+  document.getElementById('tmsq-coaches').style.display = sub === 'coaches' ? '' : 'none';
+  document.getElementById('tmsq-fitness').style.display = sub === 'fitness' ? '' : 'none';
+  if (sub === 'players') _tmRenderRoster();
+  if (sub === 'coaches') _tmRenderStaff();
+  if (sub === 'fitness') _tmRenderFitness();
 };
 
 window._tmScheduleNav = (sub) => {
@@ -7630,9 +7634,13 @@ window._tmScheduleNav = (sub) => {
   document.querySelectorAll('#tm-schedule-subnav .nav-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('tmsnav-' + sub);
   if (btn) btn.classList.add('active');
-  document.getElementById('tms-upcoming').style.display    = sub === 'upcoming'     ? '' : 'none';
-  document.getElementById('tms-past').style.display        = sub === 'past'         ? '' : 'none';
+  document.getElementById('tms-upcoming').style.display     = sub === 'upcoming'     ? '' : 'none';
+  document.getElementById('tms-past').style.display         = sub === 'past'         ? '' : 'none';
+  document.getElementById('tms-results').style.display      = sub === 'results'      ? '' : 'none';
   document.getElementById('tms-availability').style.display = sub === 'availability' ? '' : 'none';
+  if (sub === 'upcoming')     _tmRenderSchedule();
+  if (sub === 'past')         _tmRenderSchedule();
+  if (sub === 'results')      _tmRenderResults();
   if (sub === 'availability') _tmRenderAvailability();
 };
 
@@ -7641,9 +7649,21 @@ window._tmTrainingNav = (sub) => {
   document.querySelectorAll('#tm-training-subnav .nav-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('tmtnav-' + sub);
   if (btn) btn.classList.add('active');
-  document.getElementById('tmt-programs').style.display   = sub === 'programs'    ? '' : 'none';
+  document.getElementById('tmt-programs').style.display    = sub === 'programs'    ? '' : 'none';
   document.getElementById('tmt-assignments').style.display = sub === 'assignments' ? '' : 'none';
+  document.getElementById('tmt-analytics').style.display   = sub === 'analytics'   ? '' : 'none';
   if (sub === 'assignments') _tmRenderAssignments();
+  if (sub === 'analytics')   _tmRenderAnalytics();
+};
+
+window._tmManageNav = (sub) => {
+  document.querySelectorAll('#tm-manage-subnav .nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tmmnav-' + sub);
+  if (btn) btn.classList.add('active');
+  document.getElementById('tmm-finance').style.display   = sub === 'finance'   ? '' : 'none';
+  document.getElementById('tmm-ticketing').style.display = sub === 'ticketing' ? '' : 'none';
+  document.getElementById('tmm-setup').style.display     = sub === 'setup'     ? '' : 'none';
+  if (sub === 'finance') _tmRenderFinance();
 };
 
 // ── Data Loaders ───────────────────────────────────────────
