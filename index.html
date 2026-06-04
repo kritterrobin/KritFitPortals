@@ -119,10 +119,12 @@
     .tbl-act-remove  { font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:3px;border:1px solid #c62828;color:#c62828;background:none;cursor:pointer; }
     .tbl-act-remove:hover { background:#ffebee; }
 
-    /* Portal switcher tabs (multi-portal users) */
-    #portal-switcher { flex-shrink:0; background:var(--s2); border-bottom:2px solid var(--accent); }
-    #portal-switcher-nav .nav-btn { padding:6px 4px; }
-    #portal-switcher-nav .nav-btn .icon { font-size:14px; }
+    /* Main portal-type nav — always visible after sign-in */
+    #portal-main-nav { flex-shrink:0; background:var(--s2); border-bottom:2px solid var(--accent); }
+    #portal-main-nav .nav-btn { padding:8px 10px; font-size:11px; }
+    #portal-main-nav .nav-btn .icon { font-size:16px; }
+    #portal-main-nav .nav-btn.locked { opacity:.35; }
+    #portal-main-nav .nav-btn.locked:hover:not(.active) { opacity:.55; color:#999; }
 
     /* ── Member table ── */
     .member-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:11px; }
@@ -841,9 +843,17 @@
     </div>
   </div>
 
-  <!-- Portal switcher — only rendered when user has multiple portals -->
-  <div id="portal-switcher" style="display:none">
-    <nav class="nav" id="portal-switcher-nav" style="overflow-x:auto;scrollbar-width:none"></nav>
+  <!-- Main portal-type nav — always shown; locked buttons dim portals the user doesn't have -->
+  <div id="portal-main-nav">
+    <nav class="nav" style="overflow-x:auto;scrollbar-width:none">
+      <button class="nav-btn locked" id="pmn-gym"          onclick="_switchPortal('gym')"         ><span class="icon">🏢</span>GYM</button>
+      <button class="nav-btn locked" id="pmn-trainer"      onclick="_switchPortal('trainer')"     ><span class="icon">🏃</span>TRAINER</button>
+      <button class="nav-btn locked" id="pmn-nutritionist" onclick="_switchPortal('nutritionist')"><span class="icon">🥗</span>NUTRITIONIST</button>
+      <button class="nav-btn locked" id="pmn-therapist"    onclick="_switchPortal('therapist')"   ><span class="icon">🧠</span>THERAPIST</button>
+      <button class="nav-btn locked" id="pmn-team"         onclick="_switchPortal('team')"        ><span class="icon">🏅</span>TEAM</button>
+      <button class="nav-btn locked" id="pmn-league"       onclick="_switchPortal('league')"      ><span class="icon">🏆</span>LEAGUE</button>
+      <button class="nav-btn locked" id="pmn-association"  onclick="_switchPortal('association')" ><span class="icon">🎖️</span>FEDERATION</button>
+    </nav>
   </div>
 
   <!-- Loading -->
@@ -2190,7 +2200,6 @@ onAuthStateChanged(auth, async user => {
   if (!user) {
     _authUid = null;
     _detectedPortals = [];
-    document.getElementById('portal-switcher').style.display = 'none';
     _showScreen('sign-in');
     return;
   }
@@ -2341,24 +2350,35 @@ async function _detectAndRoute(uid) {
 }
 
 function _buildPortalSwitcher(portals) {
-  const switcher = document.getElementById('portal-switcher');
-  if (portals.length === 0) { switcher.style.display = 'none'; return; }
-  const nav = document.getElementById('portal-switcher-nav');
-  nav.innerHTML = portals.map((p, i) => {
-    const m = _PORTAL_META[p.type] || { icon: '🔷', label: p.type.toUpperCase() };
-    return `<button class="nav-btn${i === 0 ? ' active' : ''}" id="psw-${p.type}"
-      onclick="_switchPortal('${p.type}')"><span class="icon">${m.icon}</span>${m.label}</button>`;
-  }).join('');
-  switcher.style.display = '';
+  // Start all locked, unlock only what this user has subscriptions for
+  document.querySelectorAll('#portal-main-nav .nav-btn').forEach(b => {
+    b.classList.add('locked');
+    b.classList.remove('active');
+  });
+  portals.forEach((p, i) => {
+    const btn = document.getElementById('pmn-' + p.type);
+    if (btn) {
+      btn.classList.remove('locked');
+      if (i === 0) btn.classList.add('active');
+    }
+  });
 }
 
 window._switchPortal = async (type) => {
-  document.querySelectorAll('#portal-switcher-nav .nav-btn').forEach(b => b.classList.remove('active'));
-  const tab = document.getElementById('psw-' + type);
-  if (tab) tab.classList.add('active');
+  const btn = document.getElementById('pmn-' + type);
+  if (btn?.classList.contains('locked')) {
+    // Not subscribed — show coming-soon for unbuilt portals, upsell for built ones
+    const builtTypes = new Set(['gym', 'trainer', 'team']);
+    if (builtTypes.has(type)) {
+      document.getElementById('subs-screen').style.display = 'flex';
+    } else {
+      _showComingSoon((_PORTAL_META[type]?.label || type).toUpperCase() + ' PORTAL');
+    }
+    return;
+  }
+  document.querySelectorAll('#portal-main-nav .nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
   _showScreen('loading');
-  // Switcher must stay visible through the loading state
-  document.getElementById('portal-switcher').style.display = '';
   const portal = _detectedPortals.find(p => p.type === type);
   if (portal) await _loadPortalByType(portal);
 };
@@ -6019,7 +6039,6 @@ function _showPortal(which) {
 function _showNoPortal(tier) {
   _showScreen('app');
   _clearPortalTypePill();
-  document.getElementById('portal-switcher').style.display = 'none';
   document.getElementById('no-portal-screen').style.display = 'flex';
   if (tier) {
     document.getElementById('no-portal-desc').textContent =
