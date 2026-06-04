@@ -1043,7 +1043,8 @@
 
     <!-- NAV-1 -->
     <nav class="nav" id="gym-top-nav" style="overflow-x:auto;scrollbar-width:none">
-      <button class="nav-btn active" id="gtab-members"  onclick="_gNav('members')"> <span class="icon">👥</span>MEMBERS</button>
+      <button class="nav-btn active" id="gtab-overview" onclick="_gNav('overview')"><span class="icon">📊</span>OVERVIEW</button>
+      <button class="nav-btn"        id="gtab-members"  onclick="_gNav('members')"> <span class="icon">👥</span>MEMBERS</button>
       <button class="nav-btn"        id="gtab-checkins" onclick="_gNav('checkins')"><span class="icon">✅</span>CHECK-INS</button>
       <button class="nav-btn"        id="gtab-entryqr"  onclick="_gNav('entryqr')"> <span class="icon">📷</span>ENTRY QR</button>
       <button class="nav-btn"        id="gtab-trainers" onclick="_gNav('trainers')"><span class="icon">🏋️</span>TRAINERS</button>
@@ -1108,8 +1109,35 @@
       </nav>
     </div>
 
+    <!-- ══ OVERVIEW TAB ══ -->
+    <div class="tab-panel active" id="g-overview">
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="gov-stat-members">—</div><div class="stat-label">Active Members</div></div>
+        <div class="stat-card"><div class="stat-num" id="gov-stat-checkins">—</div><div class="stat-label">Check-ins Today</div></div>
+        <div class="stat-card"><div class="stat-num" id="gov-stat-expiring">—</div><div class="stat-label">Expiring ≤14 Days</div></div>
+        <div class="stat-card"><div class="stat-num" id="gov-stat-trainers">—</div><div class="stat-label">Trainers</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 12px 4px">
+        <div>
+          <div class="section-title">Expiring Soon</div>
+          <div id="gov-expiring-list"></div>
+        </div>
+        <div>
+          <div class="section-title">Today's Check-ins</div>
+          <div id="gov-checkins-today"></div>
+        </div>
+      </div>
+      <div class="section-title" style="margin:4px 0 8px">Quick Actions</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 12px 16px">
+        <button class="btn" onclick="_gAddMember()">+ ADD MEMBER</button>
+        <button class="btn-outline" onclick="_gManualCheckin()">✅ MANUAL CHECK-IN</button>
+        <button class="btn-outline" onclick="_gNav('members')">👥 ALL MEMBERS</button>
+        <button class="btn-outline" onclick="_gNav('analytics')">📊 ANALYTICS</button>
+      </div>
+    </div>
+
     <!-- ══ MEMBERS TAB ══ -->
-    <div class="tab-panel active" id="g-members">
+    <div class="tab-panel" id="g-members">
       <div class="stat-row">
         <div class="stat-card"><div class="stat-num" id="g-stat-members">—</div><div class="stat-label">Active Members</div></div>
         <div class="stat-card"><div class="stat-num" id="g-stat-pending">—</div><div class="stat-label">Pending</div></div>
@@ -1733,7 +1761,7 @@
 
     <!-- NAV-1 (6 tabs) -->
     <nav class="nav lv-hide" id="team-top-nav" style="overflow-x:auto;scrollbar-width:none;flex-shrink:0">
-      <button class="nav-btn active" id="tmnav-home"     onclick="_tmNav('home')"    ><span class="icon">🏠</span>HOME</button>
+      <button class="nav-btn active" id="tmnav-overview"  onclick="_tmNav('overview')"  ><span class="icon">📊</span>OVERVIEW</button>
       <button class="nav-btn"        id="tmnav-squad"    onclick="_tmNav('squad')"   ><span class="icon">👥</span>SQUAD</button>
       <button class="nav-btn"        id="tmnav-schedule" onclick="_tmNav('schedule')"><span class="icon">📅</span>SCHEDULE</button>
       <button class="nav-btn"        id="tmnav-training" onclick="_tmNav('training')"><span class="icon">💪</span>TRAINING</button>
@@ -1779,7 +1807,7 @@
     </div>
 
     <!-- ── HOME ──────────────────────────────────────────── -->
-    <div class="tab-panel active" id="tm-home">
+    <div class="tab-panel active" id="tm-overview">
       <div class="stat-row">
         <div class="stat-card"><div class="stat-num" id="tm-stat-players">—</div><div class="stat-label">Players</div></div>
         <div class="stat-card"><div class="stat-num" id="tm-stat-record">—</div><div class="stat-label">Season Record</div></div>
@@ -2088,7 +2116,7 @@
    '_tmActivateTicketing','_tmOpenTicketEvent','_tmOpenBroadcast','_tmOpenStaffThread',
    '_tmCreateTeam','_tmSaveSetup','_tmCopyJoinCode','_tmRegenerateCode','_tmToggleDataBlock','_tmLinkLeague',
    '_tmModalClose','_tmModalSave',
-   '_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer','_gStripeConnect','_gRenderStripeSetup','_gLogoPickFile','_gLogoFileSelected','_gCropZoom','_gLogoCropCancel','_gLogoCropApply','_gLogoRemove',
+   '_gRenderOverview','_gSaveAbout','_gToggleModule','_gAddTier','_gdDeleteTier','_gAddTrainer','_gdRemoveTrainer','_gStripeConnect','_gRenderStripeSetup','_gLogoPickFile','_gLogoFileSelected','_gCropZoom','_gLogoCropCancel','_gLogoCropApply','_gLogoRemove',
    '_gAddProduct','_gAddClass','_gdDeleteClass','_gLoadPeriod','_gManualCheckin','_gToggleScannerMode','_gScanKeydown','_gScanRefocus','_gToggleVoice','_gVoiceSettingsToggle','_gTestVoice','_gSaveVoiceSettings',
    '_gModalClose','_gModalSave','_copyCode','_sidebarToggle','_sbOpen',
    '_sbClose','_sbOverlayClick','_sbInboxBack','_sbSendMessage','_sbComposeKeydown',
@@ -2552,6 +2580,8 @@ async function _gdLoadMembers() {
 
     // Revenue sidebar card — estimated MRR
     _sbUpdateRevenueCard();
+    // Refresh overview if it's the active tab
+    if (document.getElementById('g-overview')?.classList.contains('active')) _gRenderOverview();
   } catch(e) { console.error('[Gym] load members:', e); }
 }
 
@@ -5847,6 +5877,57 @@ window._tNav = (tab) => {
   document.getElementById('t-' + tab)?.classList.add('active');
 };
 
+function _gRenderOverview() {
+  const live     = _gymMembers.filter(m => m.status !== 'left');
+  const active   = live.filter(m => m.status === 'active').length;
+  const trainers = live.filter(m => m.isTrainer).length;
+
+  const todayStr = new Date().toISOString().slice(0,10);
+  const checkinsToday = live.filter(m => {
+    if (!m.lastCheckin) return false;
+    const d = m.lastCheckin?.toDate ? m.lastCheckin.toDate() : new Date(m.lastCheckin);
+    return d.toISOString().slice(0,10) === todayStr;
+  });
+
+  const now14 = new Date(); now14.setDate(now14.getDate() + 14);
+  const expiring = live.filter(m => {
+    if (m.status !== 'active' || !m.validTo) return false;
+    const d = new Date(m.validTo);
+    return d <= now14 && d >= new Date();
+  }).sort((a,b) => new Date(a.validTo) - new Date(b.validTo));
+
+  document.getElementById('gov-stat-members').textContent  = active;
+  document.getElementById('gov-stat-checkins').textContent = checkinsToday.length;
+  document.getElementById('gov-stat-expiring').textContent = expiring.length;
+  document.getElementById('gov-stat-trainers').textContent = trainers;
+
+  const expiringEl = document.getElementById('gov-expiring-list');
+  if (expiring.length) {
+    expiringEl.innerHTML = expiring.slice(0,6).map(m => {
+      const d    = new Date(m.validTo);
+      const days = Math.ceil((d - new Date()) / 86400000);
+      const col  = days <= 3 ? '#c62828' : '#e65100';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-family:var(--font-mono);font-size:11px">${m.name||'—'}</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:${col};font-weight:700">${days===0?'TODAY':days+'d'}</span>
+      </div>`;
+    }).join('') + (expiring.length > 6 ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);padding:5px 0">+${expiring.length-6} more</div>` : '');
+  } else {
+    expiringEl.innerHTML = '<div class="ph-card" style="margin:0"><div class="ph-icon">✅</div><div class="ph-title">None expiring soon</div></div>';
+  }
+
+  const checkinsEl = document.getElementById('gov-checkins-today');
+  if (checkinsToday.length) {
+    checkinsEl.innerHTML = checkinsToday.slice(0,6).map(m => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-family:var(--font-mono);font-size:11px">${m.name||'—'}</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:#2e7d32">✅</span>
+      </div>`).join('') + (checkinsToday.length > 6 ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);padding:5px 0">+${checkinsToday.length-6} more</div>` : '');
+  } else {
+    checkinsEl.innerHTML = '<div class="ph-card" style="margin:0"><div class="ph-icon">🚪</div><div class="ph-title">No check-ins yet today</div></div>';
+  }
+}
+
 window._gNav = (tab) => {
   document.querySelectorAll('#gym-top-nav .nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('#gym-portal .tab-panel').forEach(p => p.classList.remove('active'));
@@ -5857,6 +5938,7 @@ window._gNav = (tab) => {
   document.getElementById('gym-finance-subnav').style.display   = tab === 'finance'   ? '' : 'none';
   document.getElementById('gym-analytics-subnav').style.display = tab === 'analytics' ? '' : 'none';
   document.getElementById('gym-marketing-subnav').style.display = tab === 'marketing' ? '' : 'none';
+  if (tab === 'overview')  _gRenderOverview();
   if (tab === 'checkins')  { _gLoadCheckins(); _gdPopulateClassSelector(); }
   if (tab === 'entryqr')   _gRenderEntryQR();
   if (tab === 'trainers')  _gRenderTrainers();
@@ -7620,7 +7702,7 @@ async function _loadTeamPortal() {
   if (_teamId) {
     document.getElementById('portal-badge').textContent = _teamData.name || 'TEAM PORTAL';
     await Promise.all([_tmLoadRoster(), _tmLoadEvents(), _tmLoadPlans(), _tmLoadFinances()]);
-    _tmRenderHome();
+    _tmRenderOverview();
     document.getElementById('tm-create-team-section').style.display = 'none';
     document.getElementById('tm-setup-edit-section').style.display  = '';
     _tmPopulateSetup();
@@ -7747,7 +7829,7 @@ async function _tmLoadFinances() {
 
 // ── HOME ───────────────────────────────────────────────────
 
-function _tmRenderHome() {
+function _tmRenderOverview() {
   const active   = _teamMembers.filter(m => m.status === 'active' && m.role === 'player').length;
   const coaches  = _teamMembers.filter(m => ['coach','admin'].includes(m.role)).length;
   document.getElementById('tm-stat-players').textContent = active;
@@ -7879,7 +7961,7 @@ window._tmOpenAddPlayer = (btn) => {
       fitnessVisible: true, joinedAt: serverTimestamp(),
     });
     await _tmLoadRoster();
-    _tmRenderHome();
+    _tmRenderOverview();
     toast(`${name} added.`);
   });
 };
@@ -8031,7 +8113,7 @@ window._tmOpenAddEvent = (btn) => {
     });
     await _tmLoadEvents();
     _tmRenderSchedule();
-    _tmRenderHome();
+    _tmRenderOverview();
     toast('Event added.');
   });
   window._tmEventTypeChanged = (sel) => {
@@ -8044,7 +8126,7 @@ window._tmDeleteEvent = (id) => {
   deleteDoc(doc(db, 'teams', _teamId, 'events', id)).then(() => {
     _teamEvents = _teamEvents.filter(e => e.id !== id);
     _tmRenderSchedule();
-    _tmRenderHome();
+    _tmRenderOverview();
     toast('Event deleted.');
   }).catch(e => toast('Error: ' + e.message));
 };
@@ -8101,7 +8183,7 @@ window._tmOpenAddResult = async (eventId, btn) => {
     await _tmLoadEvents();
     _tmRenderResults();
     _tmRenderSchedule();
-    _tmRenderHome();
+    _tmRenderOverview();
     toast('Result saved.');
   });
 };
@@ -8601,9 +8683,9 @@ window._tmCreateTeam = async (btn) => {
     document.getElementById('tm-setup-edit-section').style.display  = '';
     _tmPopulateSetup();
     await _tmLoadRoster();
-    _tmRenderHome();
+    _tmRenderOverview();
     document.getElementById('portal-badge').textContent = name;
-    _tmNav('home');
+    _tmNav('overview');
     toast(`Team "${name}" created!`);
   } catch(e) { toast('Error: ' + e.message); }
   btn.disabled = false; btn.innerHTML = orig;
