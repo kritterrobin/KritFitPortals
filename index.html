@@ -77,15 +77,16 @@
     .nav-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
     .nav-btn:hover:not(.active) { color:#333; }
 
-    /* Compact padding for portal navs */
+    /* Compact padding — sub-navs and trainer nav */
     #trainer-top-nav .nav-btn, #trainer-subnav .nav-btn,
-    #gym-top-nav .nav-btn, #gym-members-nav .nav-btn, #gym-setup-nav .nav-btn,
-    #team-top-nav .nav-btn, #tm-squad-subnav .nav-btn, #tm-schedule-subnav .nav-btn, #tm-training-subnav .nav-btn, #tm-manage-subnav .nav-btn { padding:5px 2px; }
+    #gym-members-nav .nav-btn, #gym-setup-nav .nav-btn,
+    #tm-squad-subnav .nav-btn, #tm-schedule-subnav .nav-btn, #tm-training-subnav .nav-btn, #tm-manage-subnav .nav-btn { padding:5px 6px; }
     #trainer-top-nav .nav-btn .icon, #trainer-subnav .nav-btn .icon,
-    #gym-top-nav .nav-btn .icon, #gym-members-nav .nav-btn .icon, #gym-setup-nav .nav-btn .icon,
-    #team-top-nav .nav-btn .icon, #tm-squad-subnav .nav-btn .icon, #tm-schedule-subnav .nav-btn .icon, #tm-training-subnav .nav-btn .icon, #tm-manage-subnav .nav-btn .icon { font-size:14px; }
-
-    #team-top-nav .nav-btn { padding:5px 8px; }
+    #gym-members-nav .nav-btn .icon, #gym-setup-nav .nav-btn .icon,
+    #tm-squad-subnav .nav-btn .icon, #tm-schedule-subnav .nav-btn .icon, #tm-training-subnav .nav-btn .icon, #tm-manage-subnav .nav-btn .icon { font-size:14px; }
+    /* GYM and TEAM top-navs — larger, more prominent */
+    #gym-top-nav .nav-btn, #team-top-nav .nav-btn { padding:8px 10px; font-size:11px; }
+    #gym-top-nav .nav-btn .icon, #team-top-nav .nav-btn .icon { font-size:16px; }
     /* Team portal styles */
     .tm-event-card { background:var(--s1); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:14px; }
     .tm-event-date { font-family:var(--font-mono); font-size:10px; color:var(--muted); min-width:72px; padding-top:2px; }
@@ -453,9 +454,9 @@
     .modal-title { font-family:var(--font-display); font-size:24px; letter-spacing:3px; color:var(--accent); margin-bottom:20px; }
     .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
 
-    /* Compact padding for ALL gym nav bars */
-    #gym-top-nav .nav-btn, #gym-finance-nav .nav-btn { padding:5px 8px; }
-    #gym-top-nav .nav-btn .icon, #gym-finance-nav .nav-btn .icon { font-size:14px; }
+    /* Compact padding for gym sub-navs (top-nav is handled by the global GYM/TEAM rule) */
+    #gym-finance-nav .nav-btn { padding:5px 6px; }
+    #gym-finance-nav .nav-btn .icon { font-size:14px; }
 
 
     /* Finance section cards */
@@ -910,7 +911,7 @@
         <div class="sb-section" onclick="_sbOpen('inbox')">
           <div class="sb-icon">💬</div>
           <div class="sb-body">
-            <div class="sb-label">INBOX</div>
+            <div class="sb-label" id="sb-inbox-label">INBOX</div>
             <div class="sb-value" id="sb-inbox-value">No new messages</div>
           </div>
           <span class="sb-badge" id="sb-inbox-badge" style="display:none">0</span>
@@ -920,7 +921,7 @@
         <div id="sb-cal-section" class="sb-section" onclick="_sbOpen('calendar')">
           <div class="sb-icon">📅</div>
           <div class="sb-body">
-            <div class="sb-label">CALENDAR</div>
+            <div class="sb-label" id="sb-cal-label">CALENDAR</div>
             <div class="sb-value" id="sb-cal-value">No events today</div>
             <div class="sb-sub"  id="sb-cal-sub"></div>
           </div>
@@ -930,7 +931,7 @@
         <div class="sb-section" onclick="_sbOpen('notifications')">
           <div class="sb-icon">🔔</div>
           <div class="sb-body">
-            <div class="sb-label">NOTIFICATIONS</div>
+            <div class="sb-label" id="sb-notif-label">NOTIFICATIONS</div>
             <div class="sb-value" id="sb-notif-value">All clear</div>
           </div>
           <span class="sb-badge" id="sb-notif-badge" style="display:none">0</span>
@@ -5978,7 +5979,11 @@ window._sbOpen = async (section) => {
   if      (section === 'inbox')         await _sbRenderInboxList(body);
   else if (section === 'revenue')       await _sbRenderRevenue(body);
   else if (section === 'calendar')      await _sbRenderCalendar(body);
-  else if (section === 'notifications') body.innerHTML = _sbPh('🔔','NOTIFICATIONS','System alerts and activity notifications — coming soon.');
+  else if (section === 'notifications') {
+    const notifTitles = { trainer: 'CLIENT ALERTS', gym: 'GYM ALERTS', team: 'SQUAD ALERTS' };
+    const notifDescs  = { trainer: 'Session reminders, client updates, and late check-ins — coming soon.', gym: 'New member joins, check-in activity, and member alerts — coming soon.', team: 'Injury reports, training attendance, and squad updates — coming soon.' };
+    body.innerHTML = _sbPh('🔔', notifTitles[_portalType] || 'NOTIFICATIONS', notifDescs[_portalType] || 'Activity notifications — coming soon.');
+  }
   else if (section === 'add-store')     body.innerHTML = _sbPh('🛍️','ADD STORE','Add the Store module for <strong>$3.45/mo</strong>.<br><br>Manage product inventory and sell directly to your clients. Coming soon.');
 };
 
@@ -6018,7 +6023,8 @@ async function _sbRenderInboxList(body) {
     body.innerHTML = _sbPh('⚠️','NOT LOADED','Portal not fully loaded. Please refresh.');
     return;
   }
-  if (_portalType === 'gym') { _gymInboxRenderTabs(body); return; }
+  if (_portalType === 'gym')  { _gymInboxRenderTabs(body); return; }
+  if (_portalType === 'team') { _sbRenderTeamInboxList(body); return; }
   // Trainer inbox (trainer_connections subcollection)
   try {
     const connsSnap = await getDocs(query(collection(db,'trainer_connections'), where('trainerId','==',_currentUid)));
@@ -6509,10 +6515,43 @@ let _gcCreateType = 'class';
 let _gcEventsUnsub = null;
 
 function _sbConfigureForPortal(type) {
-  // Show/hide sidebar sections based on which portal is active.
-  // Calendar is meaningful for gym and team; hide it for all others.
-  const calSection = document.getElementById('sb-cal-section');
+  const calSection  = document.getElementById('sb-cal-section');
+  const inboxLabel  = document.getElementById('sb-inbox-label');
+  const calLabel    = document.getElementById('sb-cal-label');
+  const calValue    = document.getElementById('sb-cal-value');
+  const notifLabel  = document.getElementById('sb-notif-label');
+
   if (calSection) calSection.style.display = ['gym','team'].includes(type) ? '' : 'none';
+
+  const labels = {
+    trainer: { inbox: 'CLIENTS',  cal: 'CALENDAR',  calEmpty: 'No sessions today',  notif: 'CLIENT ALERTS'  },
+    gym:     { inbox: 'MEMBERS',  cal: 'SCHEDULE',  calEmpty: 'No classes today',   notif: 'GYM ALERTS'     },
+    team:    { inbox: 'SQUAD',    cal: 'FIXTURES',  calEmpty: 'No fixtures today',  notif: 'SQUAD ALERTS'   },
+  };
+  const l = labels[type] || { inbox: 'INBOX', cal: 'CALENDAR', calEmpty: 'No events today', notif: 'NOTIFICATIONS' };
+  if (inboxLabel) inboxLabel.textContent = l.inbox;
+  if (calLabel)   calLabel.textContent   = l.cal;
+  if (notifLabel) notifLabel.textContent = l.notif;
+  if (calValue && (calValue.textContent === 'No events today' || calValue.textContent === 'No classes today' || calValue.textContent === 'No fixtures today' || calValue.textContent === 'No sessions today'))
+    calValue.textContent = l.calEmpty;
+}
+
+function _sbRenderTeamInboxList(body) {
+  const players = _teamMembers.filter(m => m.status === 'active');
+  if (!players.length) {
+    body.innerHTML = _sbPh('💬', 'NO TEAM MEMBERS YET', 'Add players to your squad to start messaging them.');
+    return;
+  }
+  body.innerHTML = `<button class="gi-fab" onclick="window._tmOpenBroadcast(this)">📣 BROADCAST</button>` +
+    players.map(m => `
+    <div class="sb-thread-item" onclick="window._tmOpenThread('${m.id}')">
+      <div class="sb-thread-avatar">${((m.displayName||m.handle||'?')[0]||'?').toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${_sbEsc(m.displayName||m.handle||'—')}</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:#999">${_sbEsc((m.positions||[]).join(', ')||m.role||'Player')}</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">›</div>
+    </div>`).join('');
 }
 
 async function _sbRenderCalendar(body) {
