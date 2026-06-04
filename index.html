@@ -299,19 +299,23 @@
     .np-tier strong { display:block; font-size:14px; color:var(--accent); letter-spacing:2px; }
     .np-cta { background:var(--accent); color:#fff; border:none; font-family:var(--font-mono); font-size:12px; font-weight:700; padding:12px 28px; cursor:pointer; letter-spacing:1px; margin-top:8px; }
 
-    /* ── Coming soon portal ── */
-    #coming-soon-screen {
-      display:none; min-height:calc(100vh - 60px);
+    /* ── Portal upsell screen ── */
+    #upsell-screen {
+      display:none; min-height:calc(100vh - 120px);
       align-items:center; justify-content:center;
-      flex-direction:column; gap:12px; text-align:center; padding:40px 20px;
+      flex-direction:column; gap:0; padding:32px 20px; text-align:center;
     }
-    .cs-badge {
-      font-family:var(--font-mono); font-size:10px; font-weight:700;
-      letter-spacing:3px; background:var(--accent); color:#fff;
-      padding:4px 14px; text-transform:uppercase;
-    }
-    .cs-title { font-family:var(--font-display); font-size:40px; letter-spacing:4px; color:#ddd; }
-    .cs-desc { font-family:var(--font-mono); font-size:11px; color:#bbb; letter-spacing:1px; max-width:380px; line-height:1.9; }
+    .us-icon    { font-size:56px; margin-bottom:10px; }
+    .us-name    { font-family:var(--font-display); font-size:34px; letter-spacing:4px; color:var(--text); margin-bottom:4px; }
+    .us-price   { font-family:var(--font-mono); font-size:14px; font-weight:700; color:var(--accent); letter-spacing:2px; margin-bottom:4px; }
+    .us-sub     { font-family:var(--font-mono); font-size:10px; color:#aaa; letter-spacing:1px; margin-bottom:14px; }
+    .us-tagline { font-family:var(--font-mono); font-size:12px; color:#777; max-width:400px; line-height:1.9; margin-bottom:18px; }
+    .us-features { list-style:none; padding:0; margin:0 0 22px; display:flex; flex-direction:column; gap:7px; text-align:left; max-width:340px; width:100%; }
+    .us-features li { font-family:var(--font-mono); font-size:11px; color:#555; display:flex; align-items:flex-start; gap:9px; }
+    .us-features li::before { content:'✓'; color:var(--accent); font-weight:700; flex-shrink:0; margin-top:1px; }
+    .us-cta  { background:var(--accent); color:#fff; border:none; font-family:var(--font-mono); font-size:12px; font-weight:700; padding:13px 32px; cursor:pointer; letter-spacing:1.5px; border-radius:4px; transition:opacity .15s; }
+    .us-cta:hover { opacity:.88; }
+    .us-note { font-family:var(--font-mono); font-size:10px; color:#bbb; letter-spacing:.5px; margin-top:10px; }
 
     /* ── Portal workspace (sidebar + main) ── */
     #portal-workspace { display:flex; height:calc(100vh - 57px); overflow:hidden; }
@@ -876,11 +880,16 @@
     <button class="np-cta" onclick="window.open('https://kritfit.com','_blank')">GET A PORTAL SUBSCRIPTION →</button>
   </div>
 
-  <!-- Coming soon (nutritionist / therapist / sports) -->
-  <div id="coming-soon-screen">
-    <span class="cs-badge">Coming Soon</span>
-    <div class="cs-title" id="cs-portal-name">PORTAL</div>
-    <div class="cs-desc">This portal is in active development. You'll be notified as soon as it launches. Your subscription will activate automatically.</div>
+  <!-- Portal upsell (shown when clicking a locked portal tab) -->
+  <div id="upsell-screen">
+    <div class="us-icon"    id="upsell-icon">🔷</div>
+    <div class="us-name"    id="upsell-name">PORTAL</div>
+    <div class="us-price"   id="upsell-price"></div>
+    <div class="us-sub"     id="upsell-sub"></div>
+    <div class="us-tagline" id="upsell-tagline"></div>
+    <ul  class="us-features" id="upsell-features"></ul>
+    <button class="us-cta" onclick="window.open('https://kritfit.com','_blank')">GET THIS PORTAL →</button>
+    <div class="us-note">Subscribe in the KritFit app · Activates instantly</div>
   </div>
 
   <!-- ══ LOGO CROP MODAL ══ -->
@@ -2221,6 +2230,65 @@ const _PORTAL_META = {
   store:        { icon: '🛍️', label: 'STORE' },
 };
 
+const _UPSELL = {
+  gym: {
+    price: 'FROM $89 / MONTH',
+    sub: 'Covers 89 members · $1 per member above that',
+    tagline: 'Everything you need to run a professional gym — members, check-ins, classes, trainers, store and finances.',
+    features: ['Member management & QR entry scanner','Class schedule & booking','Trainer management & assignments','Gym store with product sales','Finance tracking & payroll','Analytics, marketing & broadcasts'],
+  },
+  trainer: {
+    price: '$5.67 / MONTH',
+    sub: 'Upgrade from your KritFit subscription',
+    tagline: 'Run your training business from one place — clients, sessions, programmes and messaging.',
+    features: ['Client management & invite codes','Session scheduling & history','Training programme builder','Client messaging & progress notes','Reports & analytics'],
+  },
+  nutritionist: {
+    price: '$5.67 / MONTH',
+    sub: 'Upgrade from your KritFit subscription',
+    tagline: 'Manage your nutrition clients, meal plans and food programmes with professional tools.',
+    features: ['Client management & intake forms','Meal plan & programme builder','Food tracking & compliance','Client messaging','Optional store for plans & guides ($7.89/mo)'],
+  },
+  therapist: {
+    price: '$5.67 / MONTH',
+    sub: 'Upgrade from your KritFit subscription',
+    tagline: 'Run your therapy or wellness practice — appointments, session notes, client management and messaging.',
+    features: ['Client management & onboarding','Session scheduling & notes','Appointment tracking','Secure client messaging','Practice analytics'],
+  },
+  team: {
+    price: '$12.34 / MONTH',
+    sub: 'Includes 24 members · $1.23/mo per additional member',
+    tagline: 'The complete sports team desk — squad, fixtures, training programmes, results and finances.',
+    features: ['Squad & roster management','Fixture & event scheduling','Results tracking & season record','Training programme assignment','Finance tracking','Team messaging & broadcasts'],
+  },
+  league: {
+    price: '$23.45 / MONTH',
+    sub: 'Includes 6 teams · $12.34/mo per additional team',
+    tagline: 'Run your sports league — standings, fixtures, teams and results across a full season.',
+    features: ['Team management & join codes','League table & standings','Fixture generator & scheduling','Results & season statistics','League-wide messaging'],
+  },
+  association: {
+    price: '$45.67 / MONTH',
+    sub: 'Includes 4 leagues · $23.45/mo per additional league',
+    tagline: 'The full sporting authority — manage leagues, cross-standings, media accreditation and cascade billing.',
+    features: ['League & federation management','Cross-league standings','Media accreditation & press releases','Cascade billing management','Federation-wide broadcasts'],
+  },
+};
+
+function _showUpsell(type) {
+  const meta = _PORTAL_META[type] || { icon: '🔷', label: type.toUpperCase() };
+  const data = _UPSELL[type]      || { price: '', sub: '', tagline: '', features: [] };
+  _showScreen('app');
+  document.getElementById('portal-badge').textContent   = meta.label + ' PORTAL';
+  document.getElementById('upsell-icon').textContent    = meta.icon;
+  document.getElementById('upsell-name').textContent    = meta.label + ' PORTAL';
+  document.getElementById('upsell-price').textContent   = data.price;
+  document.getElementById('upsell-sub').textContent     = data.sub;
+  document.getElementById('upsell-tagline').textContent = data.tagline;
+  document.getElementById('upsell-features').innerHTML  = data.features.map(f => `<li>${f}</li>`).join('');
+  document.getElementById('upsell-screen').style.display = 'flex';
+}
+
 async function _detectAndRoute(uid) {
   try {
     const portals = [];
@@ -2367,13 +2435,7 @@ function _buildPortalSwitcher(portals) {
 window._switchPortal = async (type) => {
   const btn = document.getElementById('pmn-' + type);
   if (btn?.classList.contains('locked')) {
-    // Not subscribed — show coming-soon for unbuilt portals, upsell for built ones
-    const builtTypes = new Set(['gym', 'trainer', 'team']);
-    if (builtTypes.has(type)) {
-      document.getElementById('subs-screen').style.display = 'flex';
-    } else {
-      _showComingSoon((_PORTAL_META[type]?.label || type).toUpperCase() + ' PORTAL');
-    }
+    _showUpsell(type);
     return;
   }
   document.querySelectorAll('#portal-main-nav .nav-btn').forEach(b => b.classList.remove('active'));
@@ -2403,12 +2465,12 @@ async function _loadPortalByType(portal) {
   switch (portal.type) {
     case 'gym':          await _loadGymPortal(portal.gymDoc); break;
     case 'trainer':      await _loadTrainerPortal(_authUid); break;
-    case 'nutritionist': _setPortalTypePill('nutritionist'); _showComingSoon('NUTRITIONIST PORTAL'); break;
-    case 'therapist':    _setPortalTypePill('therapist');    _showComingSoon('THERAPIST PORTAL'); break;
+    case 'nutritionist': _setPortalTypePill('nutritionist'); _showUpsell('nutritionist'); break;
+    case 'therapist':    _setPortalTypePill('therapist');    _showUpsell('therapist'); break;
     case 'team':         await _loadTeamPortal(); break;
-    case 'league':       _setPortalTypePill('league');       _showComingSoon('LEAGUE PORTAL'); break;
-    case 'association':  _setPortalTypePill('association');  _showComingSoon('FEDERATION PORTAL'); break;
-    case 'store':        _setPortalTypePill('store');        _showComingSoon('STORE PORTAL'); break;
+    case 'league':       _setPortalTypePill('league');       _showUpsell('league'); break;
+    case 'association':  _setPortalTypePill('association');  _showUpsell('association'); break;
+    case 'store':        _setPortalTypePill('store');        _showUpsell('store'); break;
     default:             _showNoPortal(null);
   }
 }
@@ -6022,7 +6084,7 @@ function _showScreen(which) {
   document.getElementById('portal-app').style.display            = isSignIn       ? 'none'  : '';
   document.getElementById('loading-screen').style.display        = which === 'loading'   ? 'flex' : 'none';
   document.getElementById('no-portal-screen').style.display      = 'none';
-  document.getElementById('coming-soon-screen').style.display    = 'none';
+  document.getElementById('upsell-screen').style.display         = 'none';
   document.getElementById('portal-workspace').style.display      = 'none';
   document.getElementById('subs-screen').style.display           = 'none';  // fixed overlay — always close on nav
   document.querySelectorAll('.portal-panel').forEach(p => p.classList.remove('active'));
@@ -6046,12 +6108,6 @@ function _showNoPortal(tier) {
   }
 }
 
-function _showComingSoon(name) {
-  _showScreen('app');
-  document.getElementById('cs-portal-name').textContent = name;
-  document.getElementById('coming-soon-screen').style.display = 'flex';
-  document.getElementById('portal-badge').textContent = name;
-}
 
 // ── Sidebar toggle ─────────────────────────────────────
 window._sidebarToggle = () => {
